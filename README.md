@@ -12,12 +12,12 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 
 - Live City of Calgary open-data connection
 - City dataset update timestamp, when available
-- Permit status summary, interactive Calgary street map and applications-by-year chart
+- Permit status summary, simplified community overview, granular Calgary street map and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year and status
 - Application, decision, release and SDAB appeal details
 - Links to development plans and public SDAB appeal packages when the City publishes them
-- Configuration-driven community, feed, field mappings, refresh timing, status categories and map provider
+- Configuration-driven community, feed, field mappings, refresh timing, status categories, overview labels and map provider
 - Clear data-freshness, community-scope and official-verification warnings
 
 ## Documentation
