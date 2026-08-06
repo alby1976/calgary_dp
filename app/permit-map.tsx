@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
-  type GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
+  Marker,
   NavigationControl,
 } from "maplibre-gl";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
@@ -20,42 +20,17 @@ type MapPoint = {
 type Props = {
   points: MapPoint[];
   selectedPermitNumber?: string;
+  focusPermitNumber?: string;
   communityName: string;
   mapConfig: PublicDashboardConfig["map"];
   onSelect: (permitNumber: string) => void;
 };
 
-type PermitFeatureCollection = {
-  type: "FeatureCollection";
-  features: Array<{
-    type: "Feature";
-    geometry: { type: "Point"; coordinates: [number, number] };
-    properties: {
-      permitnum: string;
-      address: string;
-      group: string;
-    };
-  }>;
+type MarkerEntry = {
+  marker: Marker;
+  element: HTMLButtonElement;
+  permitNumber: string;
 };
-
-function toFeatureCollection(points: MapPoint[]): PermitFeatureCollection {
-  return {
-    type: "FeatureCollection",
-    features: points.flatMap(({ permit, lat, lon, group }) => {
-      const permitnum = permit.permitnum?.trim();
-      if (!permitnum) return [];
-      return [{
-        type: "Feature" as const,
-        geometry: { type: "Point" as const, coordinates: [lon, lat] as [number, number] },
-        properties: {
-          permitnum,
-          address: permit.address?.trim() || "Address not reported",
-          group,
-        },
-      }];
-    }),
-  };
-}
 
 function fitPoints(
   map: MapLibreMap,
@@ -78,16 +53,23 @@ function fitPoints(
   });
 }
 
-export default function PermitMap({ points, selectedPermitNumber, communityName, mapConfig, onSelect }: Props) {
+export default function PermitMap({
+  points,
+  selectedPermitNumber,
+  focusPermitNumber,
+  communityName,
+  mapConfig,
+  onSelect,
+}: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const pointsRef = useRef(points);
   const onSelectRef = useRef(onSelect);
   const selectedPermitRef = useRef(selectedPermitNumber);
+  const markerEntriesRef = useRef<MarkerEntry[]>([]);
+  const mapReadyRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
-
-  const features = useMemo(() => toFeatureCollection(points), [points]);
 
   useEffect(() => {
     pointsRef.current = points;
@@ -129,59 +111,20 @@ export default function PermitMap({ points, selectedPermitNumber, communityName,
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
     map.on("load", () => {
-      map.addSource("permits", {
-        type: "geojson",
-        data: toFeatureCollection(pointsRef.current),
-      });
-      map.addLayer({
-        id: "permit-points",
-        type: "circle",
-        source: "permits",
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 4, 15, 7],
-          "circle-color": [
-            "match", ["get", "group"],
-            "active", "#d86638",
-            "approved", "#1b6b55",
-            "closed", "#a94840",
-            "#78858a",
-          ],
-          "circle-stroke-color": "#fffdf8",
-          "circle-stroke-width": 2,
-          "circle-opacity": 0.92,
-        },
-      });
-      map.addLayer({
-        id: "selected-permit",
-        type: "circle",
-        source: "permits",
-        filter: ["==", ["get", "permitnum"], selectedPermitRef.current ?? ""],
-        paint: {
-          "circle-radius": 12,
-          "circle-color": "rgba(255,255,255,0.2)",
-          "circle-stroke-color": "#17242d",
-          "circle-stroke-width": 3,
-        },
-      });
-
-      map.on("mouseenter", "permit-points", () => {
-        map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", "permit-points", () => {
-        map.getCanvas().style.cursor = "";
-      });
-      map.on("click", "permit-points", (event) => {
-        const permitNumber = event.features?.[0]?.properties?.permitnum;
-        if (typeof permitNumber === "string") onSelectRef.current(permitNumber);
-      });
-
       fitPoints(map, pointsRef.current, mapConfig.fallbackBounds);
+      mapReadyRef.current = true;
+      setMapError(false);
       setMapReady(true);
     });
 
-    map.on("error", () => setMapError(true));
+    map.on("error", () => {
+      if (!mapReadyRef.current) setMapError(true);
+    });
 
     return () => {
+      markerEntriesRef.current.forEach(({ marker }) => marker.remove());
+      markerEntriesRef.current = [];
+      mapReadyRef.current = false;
       map.remove();
       mapRef.current = null;
     };
@@ -190,19 +133,56 @@ export default function PermitMap({ points, selectedPermitNumber, communityName,
   useEffect(() => {
     const map = mapRef.current;
     if (!mapReady || !map) return;
-    (map.getSource("permits") as GeoJSONSource | undefined)?.setData(features);
-  }, [features, mapReady]);
+
+    markerEntriesRef.current.forEach(({ marker }) => marker.remove());
+    markerEntriesRef.current = points.flatMap(({ permit, lat, lon, group }) => {
+      const permitNumber = permit.permitnum?.trim();
+      if (!permitNumber) return [];
+
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `granular-map-point status-${group}`;
+      element.title = `${permitNumber} · ${permit.address?.trim() || "Address not reported"}`;
+      element.setAttribute(
+        "aria-label",
+        `Select ${permitNumber} at ${permit.address?.trim() || "address not reported"}`,
+      );
+      element.setAttribute("aria-pressed", String(permitNumber === selectedPermitRef.current));
+      element.classList.toggle("selected", permitNumber === selectedPermitRef.current);
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
+        onSelectRef.current(permitNumber);
+      });
+
+      const marker = new Marker({ element, anchor: "center" })
+        .setLngLat([lon, lat])
+        .addTo(map);
+
+      return [{ marker, element, permitNumber }];
+    });
+  }, [mapReady, points]);
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!mapReady || !map?.getLayer("selected-permit")) return;
-    map.setFilter("selected-permit", ["==", ["get", "permitnum"], selectedPermitNumber ?? ""]);
+    if (!mapReady || !map) return;
 
-    const selected = points.find((point) => point.permit.permitnum === selectedPermitNumber);
-    if (selected && !map.getBounds().contains([selected.lon, selected.lat])) {
-      map.easeTo({ center: [selected.lon, selected.lat], duration: 350 });
+    markerEntriesRef.current.forEach(({ element, permitNumber }) => {
+      const isSelected = permitNumber === selectedPermitNumber;
+      element.classList.toggle("selected", isSelected);
+      element.setAttribute("aria-pressed", String(isSelected));
+    });
+
+    const selected = points.find(
+      (point) => point.permit.permitnum?.trim() === focusPermitNumber,
+    );
+    if (selected) {
+      map.easeTo({
+        center: [selected.lon, selected.lat],
+        zoom: Math.max(map.getZoom(), 15),
+        duration: 450,
+      });
     }
-  }, [mapReady, points, selectedPermitNumber]);
+  }, [focusPermitNumber, mapReady, points, selectedPermitNumber]);
 
   return (
     <div className="street-map-shell">
