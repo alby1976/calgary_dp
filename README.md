@@ -12,21 +12,83 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 
 - Live City of Calgary open-data connection
 - City dataset update timestamp, when available
-- Permit status summary
-- Approximate geographic activity plot
-- Applications-by-year chart
+- Permit status summary, approximate geographic plot and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year and status
 - Application, decision, release and SDAB appeal details
 - Links to development plans and public SDAB appeal packages when the City publishes them
-- Clear data-freshness, Varsity-only scope and official-verification warnings
+- Configuration-driven community, feed, field mappings, refresh timing, status categories and map labels
+- Clear data-freshness, community-scope and official-verification warnings
 
-## Data source
+## Configure the dashboard and City feed
+
+All settings that normally change between communities or City data feeds are in:
+
+```text
+config/dashboard.json
+```
+
+The application validates this file when it starts or builds. Invalid URLs, field names, refresh intervals, ordering or missing mappings fail early instead of silently producing a misleading dashboard.
+
+### Change to another Calgary community
+
+Update these values in `config/dashboard.json`:
+
+```json
+{
+  "site": {
+    "name": "Your Community Development Watch",
+    "brandMark": "Y",
+    "communityDisplayName": "Your Community",
+    "wardLabel": "Ward X"
+  },
+  "feed": {
+    "filter": {
+      "field": "communityname",
+      "value": "EXACT CITY COMMUNITY NAME"
+    }
+  }
+}
+```
+
+Use the exact `communityname` value published by Calgary Open Data. The code automatically rebuilds both the live GeoJSON request and the shareable filtered JSON-query link. You do not need to edit `app/page.tsx`, `app/dashboard.tsx` or `app/layout.tsx`.
+
+Also update `map.fallbackBounds` and `map.roadLabels` so the approximate activity plot suits the new community.
+
+### Change the City dataset or API fields
+
+The `feed` section controls:
+
+- `baseUrl`: Calgary Open Data host
+- `resourceDatasetId`: Socrata resource ID used by the GeoJSON feed and metadata endpoint
+- `queryViewId`: API v3 view ID used for the shareable JSON query
+- `datasetPageUrl`: official dataset information page
+- `filter`: field and community value
+- `order`: sort field and direction
+- `limit`: maximum records returned
+- `refreshSeconds`: feed and metadata refresh interval
+- `requestTimeoutMilliseconds`: maximum wait for a City feed response
+- `selectFields`: City fields requested from the feed
+- `fieldMap`: translation from dashboard concepts to City field names
+
+If the City renames a source field, update the relevant value under `fieldMap` and make sure the source field is present in `selectFields`. The UI continues to use stable internal names.
+
+The `links` section controls the Calgary Development Map and SDAB sources, including the appeal-page refresh and request timeout. The development-application template must keep the `{permitNumber}` placeholder.
+
+The `statuses` section controls which words place a City status into the active, approved or closed dashboard group.
+
+After any configuration change, run:
+
+```bash
+npm test
+```
+
+## Data source and disclaimer
 
 Development Permits — City of Calgary Open Data:
 https://data.calgary.ca/Business-and-Economic-Activity/Development-Permits/6933-unw5
 
-The included query is filtered to the City community name `VARSITY`. Every count, map, chart and permit list therefore describes Varsity only. A fork for another community must use a corresponding Calgary Open Data JSON query with that community's exact `communityname` value.
+The default configuration is filtered to the City community name `VARSITY`. Every count, map, chart and permit list therefore describes Varsity only. A fork for another community must use the corresponding exact `communityname` value in `config/dashboard.json`.
 
 The dashboard is an independent public-interest interpretation of municipal open data. It is not an official City notice. For comment periods, appeal deadlines or other time-sensitive decisions, verify the file with the City of Calgary.
 
@@ -64,55 +126,27 @@ Use a Linux server with:
 
 - Node.js 22.13 or newer and npm
 - Git, curl, flock and GNU `timeout`
-- A non-root Linux account that will run the dashboard
+- A non-root Linux account to run the dashboard
 - A domain or subdomain whose DNS points to the server
 - A reverse proxy such as Caddy or Nginx
 - Outbound HTTPS access to `data.calgary.ca`
 - Inbound ports 80 and 443 open for the reverse proxy
 
-The City, DMap and SDAB links are public web links. Visitors must be able to reach `calgary.ca` and `publicaccess.calgary.ca` to open those records.
+Visitors must be able to reach `calgary.ca` and `publicaccess.calgary.ca` to open linked City, DMap and SDAB records.
 
-### 2. Clone and install
-
-The example below uses `/srv/calgary_dp`. Choose another path if preferred, but use the same path in the service configuration.
+### 2. Clone, configure and build
 
 ```bash
 git clone https://github.com/alby1976/calgary_dp.git /srv/calgary_dp
 cd /srv/calgary_dp
 npm ci
+# Edit config/dashboard.json if you are not hosting the Varsity dashboard.
+npm test
 ```
 
 Make the directory readable and writable by the non-root account that will run the service.
 
-### 3. Use Varsity or customize another community
-
-No change is needed to host the Varsity dashboard.
-
-For another Calgary community, find all community-specific text and query filters:
-
-```bash
-cd /srv/calgary_dp
-rg -n 'VARSITY|Varsity' app
-```
-
-Edit:
-
-- `app/page.tsx`: replace the `VARSITY` Open Data filters with the exact City `communityname` value.
-- `app/dashboard.tsx`: update the dashboard title, community labels, accessibility text and scope disclaimer.
-- `app/layout.tsx`: update the page title and description.
-
-The variable names in `app/page.tsx` may also be renamed for clarity, but that is optional. Do not remove the community filter unless you intentionally want a city-wide feed. Rebuild after every change.
-
-### 4. Validate and build
-
-```bash
-cd /srv/calgary_dp
-npm test
-```
-
-This creates the production build and runs the rendered-HTML checks. Fix any failure before starting or restarting the public service.
-
-To test the production server manually:
+Test the production server manually:
 
 ```bash
 HOST=127.0.0.1 PORT=3000 npm run start
@@ -120,15 +154,9 @@ HOST=127.0.0.1 PORT=3000 npm run start
 
 Open `http://127.0.0.1:3000` on the server, or run `curl http://127.0.0.1:3000`. Press Ctrl+C when the check is complete.
 
-### 5. Keep it running with systemd
+### 3. Keep it running with systemd
 
-First find npm's absolute path:
-
-```bash
-command -v npm
-```
-
-Create `/etc/systemd/system/calgary-dp.service` with the following content. Replace `YOUR_LINUX_USER`, the working directory, npm path and domain where needed.
+Find npm's absolute path with `command -v npm`. Create `/etc/systemd/system/calgary-dp.service`, replacing the user, directory, npm path and domain where needed:
 
 ```ini
 [Unit]
@@ -152,7 +180,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Then enable and start it:
+Enable and start it:
 
 ```bash
 sudo systemctl daemon-reload
@@ -160,17 +188,13 @@ sudo systemctl enable --now calgary-dp
 sudo systemctl status calgary-dp
 ```
 
-View service logs with:
-
-```bash
-journalctl -u calgary-dp -f
-```
+View logs with `journalctl -u calgary-dp -f`.
 
 The Node.js service deliberately listens only on `127.0.0.1:3000`. Do not expose port 3000 publicly when using a reverse proxy.
 
-### 6. Add HTTPS with a reverse proxy
+### 4. Add HTTPS with a reverse proxy
 
-Use either Caddy or Nginx, not both. Replace `dashboard.example.ca` with the real domain.
+Use either Caddy or Nginx. Replace `dashboard.example.ca` with the real domain.
 
 Caddy example:
 
@@ -179,8 +203,6 @@ dashboard.example.ca {
     reverse_proxy 127.0.0.1:3000
 }
 ```
-
-Place that site block in your Caddy configuration and reload Caddy. With working DNS and public access to ports 80 and 443, Caddy can manage the HTTPS certificate.
 
 Nginx example:
 
@@ -200,9 +222,9 @@ server {
 }
 ```
 
-Enable the Nginx site, check the configuration with `sudo nginx -t`, reload Nginx and configure an HTTPS certificate using your normal certificate manager. Once HTTPS works, redirect HTTP to HTTPS.
+Check and reload the reverse proxy, then configure an HTTPS certificate using your normal certificate manager. Once HTTPS works, redirect HTTP to HTTPS.
 
-### 7. Update the deployment
+### 5. Update the deployment
 
 ```bash
 cd /srv/calgary_dp
@@ -213,15 +235,15 @@ sudo systemctl restart calgary-dp
 sudo systemctl status calgary-dp
 ```
 
-Check the public page after every update. If a release fails validation, do not restart the running service until the problem is fixed.
+Check the public page after every update. If validation fails, do not restart the running service until the problem is fixed.
 
 ### Hosting notes
 
 - No API key or secret is currently required.
-- `PORT` defaults to `3000` and `HOST` defaults to `0.0.0.0`; the examples override `HOST` to keep the app private behind the reverse proxy.
+- `PORT` defaults to `3000`; the example overrides `HOST` to keep the app private behind the reverse proxy.
 - Set `VINEXT_TRUSTED_HOSTS` to the public dashboard hostname when forwarding host and protocol headers.
-- The City can change its APIs or public document systems. Monitor the dashboard and server logs, and verify important records against official City sources.
-- Back up local customizations before pulling future upstream changes.
+- The City can change its APIs or public document systems. Monitor the dashboard and logs, and verify important records against official City sources.
+- Back up local configuration changes before pulling future upstream updates.
 
 ## Licence and attribution
 
