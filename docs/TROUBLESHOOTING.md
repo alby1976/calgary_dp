@@ -123,7 +123,26 @@ Check in this order:
 
 Keep port 3000 bound to loopback when Caddy or Nginx is the public entry point.
 
+## A managed host reports a failed health check or 502 error
+
+Check:
+
+1. the service type is a persistent web service rather than a static deployment;
+2. the start command is `npm run start`;
+3. `HOST` is `0.0.0.0`;
+4. the application uses the `PORT` assigned by the provider;
+5. the provider uses Node.js 22.13 or newer on Linux;
+6. the build command completed `npm ci` and `npm test`; and
+7. the health-check path is `/`.
+
+If the process starts but server-rendered behaviour fails, treat it as a Node/Vinext compatibility issue. The Worker runtime is the primary production target. See the [third-party hosting guide](THIRD-PARTY-HOSTING.md).
+
+## A third-party deployment loads but has no City data
+
+Confirm the provider allows outbound DNS and HTTPS connections to `data.calgary.ca`. Then check request timeouts, the configured dataset identifiers and the exact community filter.
+
+Do not accept an empty dashboard as proof that deployment succeeded. Use the [third-party acceptance checks](THIRD-PARTY-HOSTING.md#acceptance-checks).
+
 ## Safe recovery after an update
 
 If new source fails validation, do not restart the working production service. Keep the last working process running, correct the source, rerun `npm test`, and restart only after validation passes.
-
