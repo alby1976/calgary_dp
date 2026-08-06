@@ -38,7 +38,7 @@ type Props = {
   cityDataUpdatedAt: string | null;
   live: boolean;
   datasetUrl: string;
-  filteredQueryUrl?: string;
+  filteredQueryUrl: string;
   developmentMapUrl: string;
 };
 
