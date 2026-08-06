@@ -101,7 +101,7 @@ The default OpenStreetMap service is intended for normal interactive use, not bu
 
 Confirm that the configured latitude and longitude mappings are correct. Then adjust `map.fallbackBounds` for the selected community.
 
-The map only plots records with valid coordinates from the City feed. It does not geocode records with missing coordinates. A marker position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
+Both the overview and street map only plot records with valid coordinates from the City feed. They do not geocode records with missing coordinates. The overview is intentionally simplified; use the street map for granular context. A marker position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
 
 ## Status totals look wrong
 
