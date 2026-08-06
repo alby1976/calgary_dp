@@ -1,0 +1,129 @@
+# Troubleshooting
+
+Start with the symptom below. Avoid changing several settings at once; that tends to turn one useful error into three mysterious ones.
+
+## Quick checks
+
+From the project directory:
+
+```bash
+npm ci
+npm test
+```
+
+For a self-hosted service:
+
+```bash
+sudo systemctl status calgary-dp
+journalctl -u calgary-dp -n 100 --no-pager
+```
+
+## The build reports a configuration error
+
+Read the setting name in the error and inspect [`config/dashboard.json`](../config/dashboard.json).
+
+Common causes:
+
+- missing comma, extra trailing comma or invalid JSON quotes;
+- non-HTTPS URL;
+- misspelled or missing `fieldMap` key;
+- invalid Socrata field name;
+- zero, negative or non-integer limit/timeout/refresh value;
+- sort direction other than `ASC` or `DESC`; or
+- missing `{permitNumber}` in the DMap template.
+
+After correcting the JSON, rerun `npm test`.
+
+## The page says the City feed is unavailable
+
+Check:
+
+1. `feed.baseUrl` is `https://data.calgary.ca` unless the official source has changed.
+2. `resourceDatasetId` still identifies a GeoJSON-accessible dataset.
+3. Every field in `selectFields` still exists.
+4. Every `fieldMap` value still exists in the City schema.
+5. The host server can make outbound HTTPS requests to `data.calgary.ca`.
+6. `requestTimeoutMilliseconds` is reasonable for the server's connection.
+
+Do not remove the community filter merely to make the request return data. That can turn a community dashboard into a citywide feed without making the change obvious to readers.
+
+## The dashboard loads but shows zero permits
+
+The feed may be working while the filter matches nothing.
+
+Check:
+
+- `feed.filter.field` is the City's community field;
+- `feed.filter.value` exactly matches Calgary's published community value;
+- the shareable filtered JSON-query link on the dashboard returns records; and
+- the configured dataset actually contains the selected community.
+
+Display capitalization is controlled separately by `site.communityDisplayName`.
+
+## The City update time says unavailable
+
+Permit records and metadata are separate requests. If permits appear normally, the metadata endpoint may be unavailable or may no longer provide `dataUpdatedAt`.
+
+Confirm `resourceDatasetId`, then inspect the server log. Do not replace the City timestamp with the dashboard refresh time; they describe different events.
+
+## Development plans link is missing
+
+The permit-specific link appears only when the permit number matches `DPYYYY-number`, such as `DP2025-05349`.
+
+If the button appears but DMap has no plans, Calgary may not currently publish them. The dashboard cannot make a non-public document public.
+
+## Public SDAB appeal package is missing
+
+The package button requires all of the following:
+
+- the permit feed includes an appeal number;
+- the number matches the expected `YYYY-number` form;
+- Calgary's configured active-appeals page lists the same number;
+- that listing has a public report link; and
+- the report link uses HTTPS and the configured `appealReportsHost`.
+
+An omitted button does not prove that no appeal or document exists. Verify the file with SDAB when the information matters.
+
+## Map points look compressed or misplaced
+
+Confirm that the configured latitude and longitude mappings are correct. Then adjust `map.fallbackBounds` for the selected community.
+
+The plot scales itself to available coordinates and is intentionally approximate. It should not be used for lot-line or parcel-level conclusions.
+
+## Status totals look wrong
+
+Compare the exact City status wording with the fragments under `statuses.active`, `statuses.approved` and `statuses.closed`.
+
+Matching is case-insensitive and the first group wins. Use specific fragments when a broad word could match several meanings.
+
+## A configuration change does not appear
+
+The JSON file is build-time configuration. A running production process will not automatically reread it.
+
+For local development, restart the development server if hot reload did not detect the change. For production:
+
+```bash
+npm test
+sudo systemctl restart calgary-dp
+```
+
+For a hosted worker, create and publish a new deployment.
+
+## Self-hosted page is unreachable
+
+Check in this order:
+
+1. `systemctl status calgary-dp` reports the Node.js service as running.
+2. `curl http://127.0.0.1:3000` works on the server.
+3. `HOST=127.0.0.1` and `PORT=3000` match the reverse-proxy target.
+4. The reverse-proxy configuration passes its syntax check.
+5. DNS points to the correct server.
+6. Ports 80 and 443 are allowed through the firewall.
+7. The HTTPS certificate is valid for the dashboard hostname.
+
+Keep port 3000 bound to loopback when Caddy or Nginx is the public entry point.
+
+## Safe recovery after an update
+
+If new source fails validation, do not restart the working production service. Keep the last working process running, correct the source, rerun `npm test`, and restart only after validation passes.
+
