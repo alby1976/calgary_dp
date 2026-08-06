@@ -33,4 +33,6 @@ test("renders development preview metadata", async () => {
   assert.match(html, developmentPreviewMeta);
   assert.match(html, /Varsity Development Watch/i);
   assert.match(html, /config\/dashboard\.json/i);
+  assert.match(html, /Map data © OpenStreetMap contributors/i);
+  assert.match(html, /Fit visible permits/i);
 });
