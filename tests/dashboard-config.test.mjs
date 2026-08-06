@@ -42,4 +42,6 @@ test("street map provider remains valid and configuration-driven", () => {
   assert.equal(new URL(config.map.attributionUrl).protocol, "https:");
   assert.equal(new URL(config.map.issueUrl).protocol, "https:");
   assert.ok(config.map.minZoom < config.map.maxZoom);
+  assert.ok(config.map.overviewLabels.length > 0);
+  assert.ok(config.map.overviewLabels.every((label) => label.text && /^road-(one|two|three)$/.test(label.className)));
 });
