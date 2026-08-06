@@ -12,12 +12,12 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 
 - Live City of Calgary open-data connection
 - City dataset update timestamp, when available
-- Permit status summary, approximate geographic plot and applications-by-year chart
+- Permit status summary, interactive Calgary street map and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year and status
 - Application, decision, release and SDAB appeal details
 - Links to development plans and public SDAB appeal packages when the City publishes them
-- Configuration-driven community, feed, field mappings, refresh timing, status categories and map labels
+- Configuration-driven community, feed, field mappings, refresh timing, status categories and map provider
 - Clear data-freshness, community-scope and official-verification warnings
 
 ## Documentation
@@ -62,7 +62,7 @@ Update these values in `config/dashboard.json`:
 
 Use the exact `communityname` value published by Calgary Open Data. The code automatically rebuilds both the live GeoJSON request and the shareable filtered JSON-query link. You do not need to edit `app/page.tsx`, `app/dashboard.tsx` or `app/layout.tsx`.
 
-Also update `map.fallbackBounds` and `map.roadLabels` so the approximate activity plot suits the new community.
+Also update `map.fallbackBounds` so the map opens around the new community when no visible permit has usable coordinates.
 
 ### Change the City dataset or API fields
 
@@ -109,6 +109,7 @@ The dashboard is an independent public-interest interpretation of municipal open
 - Next.js-compatible Vinext runtime
 - TypeScript
 - Tailwind CSS
+- MapLibre GL JS with OpenStreetMap raster tiles
 - Cloudflare-compatible worker deployment
 - Node.js compatibility deployment for tested third-party hosts
 
@@ -151,7 +152,7 @@ Use a Linux server with:
 - Outbound HTTPS access to `data.calgary.ca`
 - Inbound ports 80 and 443 open for the reverse proxy
 
-Visitors must be able to reach `calgary.ca` and `publicaccess.calgary.ca` to open linked City, DMap and SDAB records.
+Visitors must be able to reach `tile.openstreetmap.org` to see the basemap, and `calgary.ca` and `publicaccess.calgary.ca` to open linked City, DMap and SDAB records.
 
 ### 2. Clone, configure and build
 
