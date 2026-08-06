@@ -52,7 +52,32 @@ function yearOf(value?: string) {
   return Number.isFinite(year) ? String(year) : "Unknown";
 }
 
-function statusGroup(status: string | undefined, keywords: PublicDashboardConfig["statuses"]) {
+const STATUS_GUIDES = {
+  active: {
+    label: "Active / under review",
+    meaning: "Still moving through the City process.",
+    detail: "It may be newly submitted, under review, circulating, awaiting revisions or involved in an appeal. Check the plans, deadlines and assigned planner.",
+  },
+  approved: {
+    label: "Approved / released",
+    meaning: "The City said yes—check which stage.",
+    detail: "Approved may still involve conditions or an appeal period. Released is a later step. Green does not mean construction has started or finished.",
+  },
+  closed: {
+    label: "Refused / cancelled",
+    meaning: "Stopped in its current form.",
+    detail: "The permit may be refused, cancelled, expired or lapsed. It could still be appealed, revised or submitted again.",
+  },
+  other: {
+    label: "Other status",
+    meaning: "Read the exact City status before drawing a conclusion.",
+    detail: "The status may be missing, unusual or new, or may not fit the dashboard's main groups. Grey does not automatically mean inactive.",
+  },
+} as const;
+
+type StatusGuideGroup = keyof typeof STATUS_GUIDES;
+
+function statusGroup(status: string | undefined, keywords: PublicDashboardConfig["statuses"]): StatusGuideGroup {
   const value = (status ?? "unknown").toLowerCase();
   if (keywords.active.some((word) => value.includes(word.toLowerCase()))) return "active";
   if (keywords.approved.some((word) => value.includes(word.toLowerCase()))) return "approved";
@@ -81,6 +106,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [year, setYear] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
@@ -227,21 +253,44 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 style={overviewPointStyle(lat, lon)}
                 title={`${text(permit.permitnum)} · ${text(permit.address)}`}
                 aria-label={`Select ${text(permit.permitnum)} at ${text(permit.address)}`}
+                aria-describedby={`status-help-${permitGroup}`}
+                onMouseEnter={() => setHoveredGuide(permitGroup)}
+                onMouseLeave={() => setHoveredGuide(null)}
+                onFocus={() => setHoveredGuide(permitGroup)}
+                onBlur={() => setHoveredGuide(null)}
                 onClick={() => permit.permitnum && setSelected(permit.permitnum)}
               />
             ))}
+            {hoveredGuide && (
+              <aside className={`status-guide-popover status-${hoveredGuide}`} role="status">
+                <p className="status-guide-label">{STATUS_GUIDES[hoveredGuide].label}</p>
+                <strong>{STATUS_GUIDES[hoveredGuide].meaning}</strong>
+                <p>{STATUS_GUIDES[hoveredGuide].detail}</p>
+              </aside>
+            )}
           </div>
           <div className="overview-legend" role="list" aria-label="Community activity pattern colour legend">
-            {[
-              ["active", "Active / under review"],
-              ["approved", "Approved / released"],
-              ["closed", "Refused / cancelled"],
-              ["other", "Other status"],
-            ].map(([legendGroup, label]) => (
-              <span className="legend-item" role="listitem" key={legendGroup}>
-                <StatusDot group={legendGroup} />
-                {label}
-              </span>
+            {(Object.entries(STATUS_GUIDES) as Array<[StatusGuideGroup, (typeof STATUS_GUIDES)[StatusGuideGroup]]>).map(([legendGroup, guide]) => (
+              <div className="legend-entry" role="listitem" key={legendGroup}>
+                <button
+                  type="button"
+                  className="legend-item"
+                  aria-describedby={`status-help-${legendGroup}`}
+                  onMouseEnter={() => setHoveredGuide(legendGroup)}
+                  onMouseLeave={() => setHoveredGuide(null)}
+                  onFocus={() => setHoveredGuide(legendGroup)}
+                  onBlur={() => setHoveredGuide(null)}
+                  onClick={() => setHoveredGuide(hoveredGuide === legendGroup ? null : legendGroup)}
+                >
+                  <StatusDot group={legendGroup} />
+                  {guide.label}
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="sr-only">
+            {(Object.entries(STATUS_GUIDES) as Array<[StatusGuideGroup, (typeof STATUS_GUIDES)[StatusGuideGroup]]>).map(([guideGroup, guide]) => (
+              <p id={`status-help-${guideGroup}`} key={guideGroup}>{guide.meaning} {guide.detail}</p>
             ))}
           </div>
           <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
