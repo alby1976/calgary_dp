@@ -36,6 +36,11 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Map data © OpenStreetMap contributors/i);
   assert.match(html, /Fit visible permits/i);
   assert.match(html, /Community activity pattern/i);
+  assert.match(html, /Community activity pattern colour legend/i);
+  assert.match(html, /Active \/ under review/i);
+  assert.match(html, /Approved \/ released/i);
+  assert.match(html, /Refused \/ cancelled/i);
+  assert.match(html, /Other status/i);
   assert.match(html, /Street-level permit map/i);
   assert.match(html, /Linked selection · both views/i);
   assert.match(html, /Highlighted in the community overview and the street-level map/i);
