@@ -112,6 +112,11 @@
     "issueUrl": "https://www.openstreetmap.org/fixthemap",
     "minZoom": 9,
     "maxZoom": 19,
+    "overviewLabels": [
+      { "text": "Crowchild Trail", "className": "road-one" },
+      { "text": "Shaganappi Trail", "className": "road-two" },
+      { "text": "Dalhousie Drive", "className": "road-three" }
+    ],
     "fallbackBounds": {
       "minLatitude": 51.075,
       "maxLatitude": 51.105,
