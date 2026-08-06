@@ -30,7 +30,9 @@ Common causes:
 - invalid Socrata field name;
 - zero, negative or non-integer limit/timeout/refresh value;
 - sort direction other than `ASC` or `DESC`; or
-- missing `{permitNumber}` in the DMap template.
+- missing `{permitNumber}` in the DMap template;
+- missing `{z}`, `{x}` or `{y}` in the map tile template; or
+- an invalid map zoom range.
 
 After correcting the JSON, rerun `npm test`.
 
@@ -84,11 +86,22 @@ The package button requires all of the following:
 
 An omitted button does not prove that no appeal or document exists. Verify the file with SDAB when the information matters.
 
-## Map points look compressed or misplaced
+## The street map is blank but permit details load
+
+Check the browser developer console and network panel for failed tile requests. Confirm:
+
+- `map.tileUrlTemplate` is a valid HTTPS template containing `{z}`, `{x}` and `{y}`;
+- the visitor's network can reach the configured tile host;
+- the tile provider allows requests from the dashboard's public domain; and
+- attribution remains visible and complies with the provider's terms.
+
+The default OpenStreetMap service is intended for normal interactive use, not bulk tile downloading. Review its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) if traffic or usage patterns change.
+
+## Permit points look misplaced or are missing
 
 Confirm that the configured latitude and longitude mappings are correct. Then adjust `map.fallbackBounds` for the selected community.
 
-The plot scales itself to available coordinates and is intentionally approximate. It should not be used for lot-line or parcel-level conclusions.
+The map only plots records with valid coordinates from the City feed. It does not geocode records with missing coordinates. A marker position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
 
 ## Status totals look wrong
 
