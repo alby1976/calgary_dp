@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { dashboardConfig } from "../lib/dashboard-config";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Varsity Development Watch",
-  description:
-    "A community-first view of City of Calgary development permits in Varsity: current status, locations, dates, decisions and appeals.",
+  title: dashboardConfig.site.name,
+  description: `${dashboardConfig.site.description} Focused on ${dashboardConfig.site.communityDisplayName}.`,
   other: {
     "codex-preview": "development",
   },
