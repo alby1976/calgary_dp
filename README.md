@@ -25,7 +25,8 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - [Configuration guide](docs/CONFIGURATION.md) — change communities, dataset IDs, City fields, links, status rules and map settings
 - [Architecture and data flow](docs/ARCHITECTURE.md) — understand fetching, normalization, failure isolation and the server/client boundary
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnose empty feeds, missing timestamps or documents, map issues and self-hosting failures
-- [Self-hosting](#self-hosting-on-your-own-server) — run the dashboard on a Linux server behind Caddy or Nginx
+- [Third-party hosting](docs/THIRD-PARTY-HOSTING.md) — deploy to a managed Node host, container platform, VPS or independent Worker account
+- [Self-hosting on a Linux VPS](#self-hosting-on-a-linux-vps) — run the dashboard behind Caddy or Nginx
 - [Licence](LICENSE) — noncommercial reuse terms and municipal-data attribution
 
 ## Quick configuration
@@ -109,7 +110,7 @@ The dashboard is an independent public-interest interpretation of municipal open
 - TypeScript
 - Tailwind CSS
 - Cloudflare-compatible worker deployment
-- Self-hostable Node.js production server
+- Node.js compatibility deployment for tested third-party hosts
 
 ## Local development
 
@@ -126,9 +127,17 @@ Production validation:
 npm test
 ```
 
-## Self-hosting on your own server
+## Third-party hosting
 
-The dashboard is server-rendered. It needs a running Node.js process; uploading only the repository or `dist` directory to a static file host is not sufficient.
+The dashboard can be deployed outside ChatGPT Sites, but the hosting model matters. A Cloudflare-compatible Worker is the closest match to the application's primary production runtime. Managed Node, container and VPS deployments are possible only where a persistent Node.js 22 service is supported and the completed deployment is tested.
+
+See [Hosting on third-party infrastructure](docs/THIRD-PARTY-HOSTING.md) for provider requirements, deployment settings, environment variables, custom domains, acceptance tests, monitoring and rollback guidance.
+
+Static-only hosts are not supported.
+
+## Self-hosting on a Linux VPS
+
+The dashboard is server-rendered. It needs a running Node.js process; uploading only the repository or `dist` directory to a static file host is not sufficient. Vinext's Node server is less complete than its Worker runtime, so test the deployed dashboard before relying on it publicly.
 
 ### 1. Prepare the server
 
