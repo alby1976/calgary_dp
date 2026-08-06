@@ -33,6 +33,7 @@ server-rendered page -> client-side search, filters, map and charts
 | `app/layout.tsx` | Metadata derived from the site configuration |
 | `tests/dashboard-config.test.mjs` | Configuration structure and integration-template checks |
 | `tests/rendered-html.test.mjs` | Production worker and rendered-page checks |
+| `docs/THIRD-PARTY-HOSTING.md` | Provider-neutral hosting, verification, monitoring and rollback guidance |
 
 ## Server-side data loading
 
@@ -104,7 +105,10 @@ For comment periods, appeal deadlines and statutory decisions, users must verify
 The project can run as:
 
 - a Cloudflare-compatible worker through the hosted Sites deployment; or
-- a persistent Node.js service behind Caddy or Nginx.
+- a separately configured Cloudflare-compatible Worker;
+- a managed or containerized persistent Node.js service after compatibility testing; or
+- a persistent Node.js service behind Caddy or Nginx on a Linux VPS.
 
-Both deployment modes read the same build-time JSON configuration. Configuration changes require a new build and deployment or a service restart using a newly built artifact.
+Cloudflare Workers are Vinext's primary production target. The `vinext start` Node server is less complete and should be treated as a compatibility deployment, not an automatic equivalent.
 
+All deployment modes read the same build-time JSON configuration. Configuration changes require a new build and deployment or a service restart using a newly built artifact. See the [third-party hosting guide](THIRD-PARTY-HOSTING.md) for requirements and acceptance checks.
