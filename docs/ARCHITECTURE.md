@@ -29,7 +29,8 @@ server-rendered page -> client-side search, filters, map and charts
 | `lib/dashboard-config.ts` | Runtime validation, Socrata URL construction and City-field normalization |
 | `lib/permit.ts` | Stable internal permit type used by server and client code |
 | `app/page.tsx` | Server-side fetching, data freshness and appeal-package enrichment |
-| `app/dashboard.tsx` | Interactive search, filters, charts, approximate plot and record details |
+| `app/dashboard.tsx` | Interactive search, filters, charts and record details |
+| `app/permit-map.tsx` | MapLibre street basemap, permit marker layers, fit-to-results and map interaction |
 | `app/layout.tsx` | Metadata derived from the site configuration |
 | `tests/dashboard-config.test.mjs` | Configuration structure and integration-template checks |
 | `tests/rendered-html.test.mjs` | Production worker and rendered-page checks |
@@ -76,10 +77,18 @@ External City requests run on the server. The client receives normalized permit 
 - text search;
 - year and status filters;
 - selected permit state;
-- chart and plot calculations; and
+- chart calculations and map selection; and
 - show-more behaviour.
 
 No user search or filter state is currently stored on the server.
+
+## Street map
+
+`app/permit-map.tsx` renders a client-side MapLibre map. The default configuration uses ordinary browser requests to OpenStreetMap raster tiles and displays the required attribution. It does not bulk-download or prefetch tiles.
+
+Filtered permit coordinates become GeoJSON point features in MapLibre. Marker colour reflects the dashboard status group, selecting a marker selects the matching permit, and **Fit visible permits** returns the viewport to the filtered results. If the filtered records have no valid coordinates, the map uses the configured community bounds.
+
+The City permit feed remains the source of marker positions. The basemap is contextual cartography and does not change or geocode City records.
 
 ## Public-document links
 
