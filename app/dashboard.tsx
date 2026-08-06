@@ -34,6 +34,7 @@ export type Permit = {
 type Props = {
   permits: Permit[];
   fetchedAt: string;
+  cityDataUpdatedAt?: string | null;
   live: boolean;
   datasetUrl: string;
   developmentMapUrl: string;
@@ -54,6 +55,21 @@ function formatDate(value?: string) {
     month: "short",
     day: "numeric",
     timeZone: "America/Edmonton",
+  }).format(date);
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return "Unavailable";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "America/Edmonton",
+    timeZoneName: "short",
   }).format(date);
 }
 
@@ -80,7 +96,7 @@ function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
 
-export default function Dashboard({ permits, fetchedAt, live, datasetUrl, developmentMapUrl }: Props) {
+export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, datasetUrl, developmentMapUrl }: Props) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
@@ -173,9 +189,15 @@ export default function Dashboard({ permits, fetchedAt, live, datasetUrl, develo
           <p className="aside-label">Open-data snapshot</p>
           <p className="big-number">{permits.length.toLocaleString("en-CA")}</p>
           <p className="big-number-label">Varsity permits in the feed</p>
-          <div className="freshness">
-            <span>Page refreshed</span>
-            <strong>{formatDate(fetchedAt)}</strong>
+          <div className="freshness-list">
+            <div className="freshness">
+              <span>City data updated</span>
+              <strong>{formatDateTime(cityDataUpdatedAt)}</strong>
+            </div>
+            <div className="freshness">
+              <span>Dashboard refreshed</span>
+              <strong>{formatDateTime(fetchedAt)}</strong>
+            </div>
           </div>
           <p className="caveat">This is a public-interest interpretation of municipal open data—not an official City notice.</p>
         </div>
