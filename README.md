@@ -20,7 +20,15 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - Configuration-driven community, feed, field mappings, refresh timing, status categories and map labels
 - Clear data-freshness, community-scope and official-verification warnings
 
-## Configure the dashboard and City feed
+## Documentation
+
+- [Configuration guide](docs/CONFIGURATION.md) — change communities, dataset IDs, City fields, links, status rules and map settings
+- [Architecture and data flow](docs/ARCHITECTURE.md) — understand fetching, normalization, failure isolation and the server/client boundary
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnose empty feeds, missing timestamps or documents, map issues and self-hosting failures
+- [Self-hosting](#self-hosting-on-your-own-server) — run the dashboard on a Linux server behind Caddy or Nginx
+- [Licence](LICENSE) — noncommercial reuse terms and municipal-data attribution
+
+## Quick configuration
 
 All settings that normally change between communities or City data feeds are in:
 
@@ -28,7 +36,7 @@ All settings that normally change between communities or City data feeds are in:
 config/dashboard.json
 ```
 
-The application validates this file when it starts or builds. Invalid URLs, field names, refresh intervals, ordering or missing mappings fail early instead of silently producing a misleading dashboard.
+The application validates this file when it starts or builds. Invalid URLs, field names, refresh intervals, ordering or missing mappings fail early instead of silently producing a misleading dashboard. See the [complete configuration reference](docs/CONFIGURATION.md) before changing the City dataset or field mappings.
 
 ### Change to another Calgary community
 
@@ -82,6 +90,8 @@ After any configuration change, run:
 ```bash
 npm test
 ```
+
+Configuration is applied at build time. Rebuild and restart or redeploy after the test passes.
 
 ## Data source and disclaimer
 
