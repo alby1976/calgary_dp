@@ -42,13 +42,18 @@ export type DashboardConfig = {
     closed: string[];
   };
   map: {
+    tileUrlTemplate: string;
+    attributionLabel: string;
+    attributionUrl: string;
+    issueUrl: string;
+    minZoom: number;
+    maxZoom: number;
     fallbackBounds: {
       minLatitude: number;
       maxLatitude: number;
       minLongitude: number;
       maxLongitude: number;
     };
-    roadLabels: Array<{ text: string; className: string }>;
   };
 };
 
@@ -108,9 +113,20 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
     "links.developmentApplicationUrlTemplate",
   );
   requireUrl(value.links.activeAppealsUrl, "links.activeAppealsUrl");
+  requireUrl(
+    value.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "700").replace("{y}", "1300"),
+    "map.tileUrlTemplate",
+  );
+  requireUrl(value.map.attributionUrl, "map.attributionUrl");
+  requireUrl(value.map.issueUrl, "map.issueUrl");
 
   if (!value.links.developmentApplicationUrlTemplate.includes("{permitNumber}")) {
     throw new Error("links.developmentApplicationUrlTemplate must contain {permitNumber}");
+  }
+  for (const placeholder of ["{z}", "{x}", "{y}"]) {
+    if (!value.map.tileUrlTemplate.includes(placeholder)) {
+      throw new Error(`map.tileUrlTemplate must contain ${placeholder}`);
+    }
   }
 
   identifier(value.feed.filter.field, "feed.filter.field");
@@ -125,6 +141,11 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
     value.links.appealRequestTimeoutMilliseconds,
     "links.appealRequestTimeoutMilliseconds",
   );
+  positiveInteger(value.map.minZoom, "map.minZoom");
+  positiveInteger(value.map.maxZoom, "map.maxZoom");
+  if (value.map.minZoom >= value.map.maxZoom || value.map.maxZoom > 22) {
+    throw new Error("map zoom range must increase and cannot exceed 22");
+  }
   if (value.feed.order.direction !== "ASC" && value.feed.order.direction !== "DESC") {
     throw new Error("feed.order.direction must be ASC or DESC");
   }
