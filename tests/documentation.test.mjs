@@ -11,6 +11,7 @@ const documents = [
   "docs/CONFIGURATION.md",
   "docs/ARCHITECTURE.md",
   "docs/TROUBLESHOOTING.md",
+  "docs/THIRD-PARTY-HOSTING.md",
 ];
 
 test("documentation has no broken relative file links", () => {
