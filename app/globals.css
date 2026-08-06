@@ -82,8 +82,17 @@ h1 em { color: var(--green); font-weight: 400; }
 .road-three { left: 38%; top: 22%; transform: rotate(-28deg); }
 .map-point { position: absolute; width: 9px; height: 9px; padding: 0; border: 2px solid rgba(255,255,255,.9); border-radius: 50%; transform: translate(-50%,-50%); box-shadow: 0 1px 4px rgba(0,0,0,.25); cursor: pointer; z-index: 3; }
 .map-point:hover, .map-point.selected, .map-point:focus-visible { width: 18px; height: 18px; z-index: 5; box-shadow: 0 0 0 5px rgba(255,255,255,.78), 0 3px 10px rgba(0,0,0,.3); outline: none; }
+.status-guide-popover { position: absolute; z-index: 8; left: 12px; right: 12px; bottom: 12px; max-width: 520px; padding: 14px 16px; border-left: 5px solid #8b9497; background: rgba(255,253,248,.96); box-shadow: 0 5px 20px rgba(23,36,45,.22); pointer-events: none; }
+.status-guide-popover.status-active { border-left-color: var(--orange); }
+.status-guide-popover.status-approved { border-left-color: var(--green); }
+.status-guide-popover.status-closed { border-left-color: var(--red); }
+.status-guide-popover .status-guide-label { margin: 0 0 5px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.status-guide-popover strong { display: block; font: 700 16px/1.25 Georgia, serif; }
+.status-guide-popover > p:last-child { margin: 7px 0 0; color: #43545b; font-size: 11px; line-height: 1.5; }
 .overview-legend { display: flex; flex-wrap: wrap; gap: 9px 18px; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--line); background: #f4f0e8; }
-.legend-item { display: inline-flex; align-items: center; gap: 7px; color: #43545b; font-size: 10px; font-weight: 800; }
+.legend-entry { display: flex; }
+.legend-item { display: inline-flex; align-items: center; gap: 7px; border: 0; border-radius: 3px; background: transparent; color: #43545b; padding: 4px 5px; cursor: help; font-size: 10px; font-weight: 800; }
+.legend-item:hover, .legend-item:focus-visible { background: white; outline: 2px solid rgba(27,107,85,.35); outline-offset: 1px; }
 .street-map-shell { position: relative; overflow: hidden; border: 1px solid #b9c6c0; background: #e7ece6; }
 .permit-map { height: 460px; width: 100%; background: #e7ece6; }
 .permit-map .maplibregl-canvas { outline: none; }
