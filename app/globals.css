@@ -95,6 +95,13 @@ h1 em { color: var(--green); font-weight: 400; }
 .detail-list > div { display: grid; grid-template-columns: 105px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px solid rgba(217,212,201,.8); font-size: 12px; }
 .detail-list dt { color: var(--muted); }
 .detail-list dd { margin: 0; font-weight: 700; }
+.appeal-action { margin-top: 24px; padding: 18px; border-left: 4px solid var(--orange); background: var(--orange-soft); }
+.appeal-action .appeal-label { margin: 0; color: #94421f; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.appeal-action .appeal-summary { margin: 7px 0 14px; color: var(--ink); font: 700 15px/1.4 Georgia, serif; }
+.appeal-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; padding: 12px 14px; border-radius: 3px; background: var(--ink); color: white; font-size: 12px; font-weight: 800; text-decoration: none; }
+.appeal-action a:hover { background: #273b48; }
+.appeal-action a:focus-visible { outline: 3px solid rgba(216,102,56,.45); outline-offset: 3px; }
+.appeal-action .appeal-note { margin: 9px 0 0; color: #70442e; font-size: 10px; line-height: 1.5; }
 .plans-action { margin-top: 24px; }
 .plans-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; width: 100%; padding: 14px 16px; border-radius: 3px; background: var(--green); color: white; font-size: 13px; font-weight: 800; text-decoration: none; }
 .plans-action a:hover { background: #145540; }
