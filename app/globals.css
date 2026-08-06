@@ -95,6 +95,11 @@ h1 em { color: var(--green); font-weight: 400; }
 .detail-list > div { display: grid; grid-template-columns: 105px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px solid rgba(217,212,201,.8); font-size: 12px; }
 .detail-list dt { color: var(--muted); }
 .detail-list dd { margin: 0; font-weight: 700; }
+.plans-action { margin-top: 24px; }
+.plans-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; width: 100%; padding: 14px 16px; border-radius: 3px; background: var(--green); color: white; font-size: 13px; font-weight: 800; text-decoration: none; }
+.plans-action a:hover { background: #145540; }
+.plans-action a:focus-visible { outline: 3px solid rgba(216,102,56,.45); outline-offset: 3px; }
+.plans-action p { margin: 9px 2px 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 .activity-panel { border-bottom: 1px solid var(--line); }
 .bar-chart { height: 260px; display: grid; grid-template-columns: repeat(8, 1fr); gap: clamp(8px, 2vw, 26px); align-items: end; padding-top: 18px; }
