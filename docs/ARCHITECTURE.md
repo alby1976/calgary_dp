@@ -86,7 +86,7 @@ No user search or filter state is currently stored on the server.
 
 `app/permit-map.tsx` renders a client-side MapLibre map. The default configuration uses ordinary browser requests to OpenStreetMap raster tiles and displays the required attribution. It does not bulk-download or prefetch tiles.
 
-Filtered permit coordinates first appear in a simplified overview plot for cluster recognition, then become GeoJSON point features in MapLibre for street-level context. Marker colour reflects the dashboard status group in both views. Selecting either type of marker selects the same permit, and **Fit visible permits** returns the street-map viewport to the filtered results. If the filtered records have no valid coordinates, both views use the configured community bounds.
+Filtered permit coordinates appear in a simplified overview plot for cluster recognition and become GeoJSON point features in MapLibre for street-level context. Both visualizations render the same filtered point set and share one selected permit state. Selecting either type of marker highlights the corresponding point in both views and updates the shared permit-information panel. If a filter removes the selected permit, both views fall back to the first visible result. **Fit visible permits** returns the street-map viewport to the filtered results. If the filtered records have no valid coordinates, both views use the configured community bounds.
 
 The City permit feed remains the source of marker positions. The basemap is contextual cartography and does not change or geocode City records.
 
