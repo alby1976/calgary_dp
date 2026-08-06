@@ -304,6 +304,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <PermitMap
             points={plotted.slice(0, 500)}
             selectedPermitNumber={selectedPermit?.permitnum}
+            focusPermitNumber={selected ?? undefined}
             communityName={config.site.communityDisplayName}
             mapConfig={config.map}
             onSelect={setSelected}
