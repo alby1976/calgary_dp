@@ -1,0 +1,121 @@
+{
+  "site": {
+    "name": "Varsity Development Watch",
+    "brandMark": "V",
+    "eyebrow": "Community planning intelligence",
+    "communityDisplayName": "Varsity",
+    "wardLabel": "Ward 1",
+    "cityName": "Calgary",
+    "heroHeading": "See what is changing.",
+    "heroEmphasis": "Before it disappears in the paperwork.",
+    "description": "A community-first view of City of Calgary development permits: current status, location, timing, decisions and appeals in one place."
+  },
+  "feed": {
+    "baseUrl": "https://data.calgary.ca",
+    "resourceDatasetId": "6933-unw5",
+    "queryViewId": "m3bg-37bv",
+    "datasetPageUrl": "https://data.calgary.ca/Business-and-Economic-Activity/Development-Permits/6933-unw5",
+    "filter": {
+      "field": "communityname",
+      "value": "VARSITY"
+    },
+    "order": {
+      "field": "permitnum",
+      "direction": "DESC"
+    },
+    "limit": 5000,
+    "refreshSeconds": 900,
+    "requestTimeoutMilliseconds": 6500,
+    "selectFields": [
+      "point",
+      "permitnum",
+      "address",
+      "applicant",
+      "category",
+      "description",
+      "proposedusecode",
+      "proposedusedescription",
+      "permitteddiscretionary",
+      "landusedistrict",
+      "landusedistrictdescription",
+      "concurrent_loc",
+      "statuscurrent",
+      "applieddate",
+      "decisiondate",
+      "releasedate",
+      "mustcommencedate",
+      "canceledrefuseddate",
+      "decision",
+      "decisionby",
+      "sdabnumber",
+      "sdabhearingdate",
+      "sdabdecision",
+      "sdabdecisiondate",
+      "communitycode",
+      "communityname",
+      "ward",
+      "quadrant",
+      "latitude",
+      "longitude",
+      "locationcount",
+      "locationtypes",
+      "locationaddresses",
+      "locationsgeojson",
+      "locationswkt"
+    ],
+    "fieldMap": {
+      "permitNumber": "permitnum",
+      "address": "address",
+      "applicant": "applicant",
+      "category": "category",
+      "description": "description",
+      "proposedUseCode": "proposedusecode",
+      "proposedUseDescription": "proposedusedescription",
+      "permittedDiscretionary": "permitteddiscretionary",
+      "landUseDistrict": "landusedistrict",
+      "landUseDistrictDescription": "landusedistrictdescription",
+      "status": "statuscurrent",
+      "appliedDate": "applieddate",
+      "decisionDate": "decisiondate",
+      "releaseDate": "releasedate",
+      "mustCommenceDate": "mustcommencedate",
+      "cancelledRefusedDate": "canceledrefuseddate",
+      "decision": "decision",
+      "decisionBy": "decisionby",
+      "appealNumber": "sdabnumber",
+      "appealHearingDate": "sdabhearingdate",
+      "appealDecision": "sdabdecision",
+      "appealDecisionDate": "sdabdecisiondate",
+      "communityName": "communityname",
+      "ward": "ward",
+      "latitude": "latitude",
+      "longitude": "longitude"
+    }
+  },
+  "links": {
+    "developmentMapUrl": "https://developmentmap.calgary.ca/",
+    "developmentApplicationUrlTemplate": "https://dmap.calgary.ca/?p={permitNumber}",
+    "activeAppealsUrl": "https://www.calgary.ca/content/sdab/en/home/active-appeals.html",
+    "appealReportsHost": "publicaccess.calgary.ca",
+    "appealRefreshSeconds": 3600,
+    "appealRequestTimeoutMilliseconds": 3500
+  },
+  "statuses": {
+    "active": ["pending", "review", "circulation", "application", "appeal"],
+    "approved": ["approved", "released"],
+    "closed": ["cancel", "refus", "expired"]
+  },
+  "map": {
+    "fallbackBounds": {
+      "minLatitude": 51.075,
+      "maxLatitude": 51.105,
+      "minLongitude": -114.175,
+      "maxLongitude": -114.135
+    },
+    "roadLabels": [
+      { "text": "Crowchild Trail", "className": "road-one" },
+      { "text": "Shaganappi Trail", "className": "road-two" },
+      { "text": "Dalhousie Drive", "className": "road-three" }
+    ]
+  }
+}
