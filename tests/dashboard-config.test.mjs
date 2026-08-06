@@ -33,3 +33,13 @@ test("external application link remains configuration-driven", () => {
   assert.equal(new URL(config.links.activeAppealsUrl).protocol, "https:");
   assert.ok(config.links.appealReportsHost);
 });
+
+test("street map provider remains valid and configuration-driven", () => {
+  assert.equal(new URL(config.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "1000").replace("{y}", "1000")).protocol, "https:");
+  assert.match(config.map.tileUrlTemplate, /\{z\}/);
+  assert.match(config.map.tileUrlTemplate, /\{x\}/);
+  assert.match(config.map.tileUrlTemplate, /\{y\}/);
+  assert.equal(new URL(config.map.attributionUrl).protocol, "https:");
+  assert.equal(new URL(config.map.issueUrl).protocol, "https:");
+  assert.ok(config.map.minZoom < config.map.maxZoom);
+});
