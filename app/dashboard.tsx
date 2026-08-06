@@ -1,48 +1,18 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-export type Permit = {
-  permitnum?: string;
-  address?: string;
-  applicant?: string;
-  category?: string;
-  description?: string;
-  proposedusecode?: string;
-  proposedusedescription?: string;
-  permitteddiscretionary?: string;
-  landusedistrict?: string;
-  landusedistrictdescription?: string;
-  statuscurrent?: string;
-  applieddate?: string;
-  decisiondate?: string;
-  releasedate?: string;
-  mustcommencedate?: string;
-  canceledrefuseddate?: string;
-  decision?: string;
-  decisionby?: string;
-  sdabnumber?: string;
-  sdabhearingdate?: string;
-  sdabdecision?: string;
-  sdabdecisiondate?: string;
-  appealreporturl?: string;
-  communityname?: string;
-  ward?: string;
-  latitude?: string;
-  longitude?: string;
-};
+import type { PublicDashboardConfig } from "../lib/dashboard-config";
+import type { Permit } from "../lib/permit";
 
 type Props = {
   permits: Permit[];
   fetchedAt: string;
   cityDataUpdatedAt: string | null;
   live: boolean;
+  config: PublicDashboardConfig;
   datasetUrl: string;
   filteredQueryUrl: string;
-  developmentMapUrl: string;
 };
-
-const ACTIVE_WORDS = ["pending", "review", "circulation", "application", "appeal"];
 
 function text(value?: string) {
   return value?.trim() || "Not reported";
@@ -81,11 +51,11 @@ function yearOf(value?: string) {
   return Number.isFinite(year) ? String(year) : "Unknown";
 }
 
-function statusGroup(status?: string) {
+function statusGroup(status: string | undefined, keywords: PublicDashboardConfig["statuses"]) {
   const value = (status ?? "unknown").toLowerCase();
-  if (ACTIVE_WORDS.some((word) => value.includes(word))) return "active";
-  if (value.includes("approved") || value.includes("released")) return "approved";
-  if (value.includes("cancel") || value.includes("refus") || value.includes("expired")) return "closed";
+  if (keywords.active.some((word) => value.includes(word.toLowerCase()))) return "active";
+  if (keywords.approved.some((word) => value.includes(word.toLowerCase()))) return "approved";
+  if (keywords.closed.some((word) => value.includes(word.toLowerCase()))) return "closed";
   return "other";
 }
 
@@ -94,22 +64,23 @@ function permitYear(permit: Permit) {
   return match ? match[0].replace(/^DP/i, "") : yearOf(permit.applieddate);
 }
 
-function developmentMapApplicationUrl(permitNumber?: string) {
+function developmentMapApplicationUrl(permitNumber: string | undefined, template: string) {
   const normalized = permitNumber?.trim().toUpperCase();
   if (!normalized || !/^DP\d{4}-\d+$/.test(normalized)) return null;
-  return `https://dmap.calgary.ca/?p=${encodeURIComponent(normalized)}`;
+  return template.replace("{permitNumber}", encodeURIComponent(normalized));
 }
 
 function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
 
-export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, datasetUrl, filteredQueryUrl, developmentMapUrl }: Props) {
+export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, config, datasetUrl, filteredQueryUrl }: Props) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
     () => [...new Set(permits.map(permitYear).filter((value) => value !== "Unknown"))].sort((a, b) => b.localeCompare(a)),
@@ -118,14 +89,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
 
   const grouped = useMemo(() => {
     const counts = { active: 0, approved: 0, closed: 0, other: 0 };
-    permits.forEach((permit) => counts[statusGroup(permit.statuscurrent)]++);
+    permits.forEach((permit) => counts[statusGroup(permit.statuscurrent, config.statuses)]++);
     return counts;
-  }, [permits]);
+  }, [permits, config.statuses]);
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return permits.filter((permit) => {
-      const matchesGroup = group === "all" || statusGroup(permit.statuscurrent) === group;
+      const matchesGroup = group === "all" || statusGroup(permit.statuscurrent, config.statuses) === group;
       const matchesYear = year === "all" || permitYear(permit) === year;
       const haystack = [permit.permitnum, permit.address, permit.description, permit.applicant, permit.statuscurrent]
         .filter(Boolean)
@@ -133,7 +104,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         .toLowerCase();
       return matchesGroup && matchesYear && (!needle || haystack.includes(needle));
     });
-  }, [permits, query, group, year]);
+  }, [permits, query, group, year, config.statuses]);
 
   const recent = useMemo(
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
@@ -141,7 +112,10 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   );
   const displayed = showAll ? recent : recent.slice(0, 12);
   const selectedPermit = permits.find((permit) => permit.permitnum === selected) ?? displayed[0];
-  const selectedApplicationUrl = developmentMapApplicationUrl(selectedPermit?.permitnum);
+  const selectedApplicationUrl = developmentMapApplicationUrl(
+    selectedPermit?.permitnum,
+    config.links.developmentApplicationUrlTemplate,
+  );
 
   const chartYears = years.slice(0, 8).reverse();
   const yearCounts = chartYears.map((value) => ({
@@ -159,10 +133,10 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon));
   const lats = plotted.map((item) => item.lat);
   const lons = plotted.map((item) => item.lon);
-  const minLat = Math.min(...lats, 51.075);
-  const maxLat = Math.max(...lats, 51.105);
-  const minLon = Math.min(...lons, -114.175);
-  const maxLon = Math.max(...lons, -114.135);
+  const minLat = Math.min(...lats, config.map.fallbackBounds.minLatitude);
+  const maxLat = Math.max(...lats, config.map.fallbackBounds.maxLatitude);
+  const minLon = Math.min(...lons, config.map.fallbackBounds.minLongitude);
+  const maxLon = Math.max(...lons, config.map.fallbackBounds.maxLongitude);
   const pointStyle = (lat: number, lon: number) => ({
     left: `${7 + ((lon - minLon) / Math.max(0.001, maxLon - minLon)) * 86}%`,
     top: `${7 + (1 - (lat - minLat) / Math.max(0.001, maxLat - minLat)) * 86}%`,
@@ -171,10 +145,10 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   return (
     <main>
       <header className="site-header">
-        <div className="brand-mark" aria-hidden="true"><span>V</span></div>
+        <div className="brand-mark" aria-hidden="true"><span>{config.site.brandMark}</span></div>
         <div>
-          <p className="eyebrow">Community planning intelligence</p>
-          <p className="brand-name">Varsity Development Watch</p>
+          <p className="eyebrow">{config.site.eyebrow}</p>
+          <p className="brand-name">{config.site.name}</p>
         </div>
         <div className={`data-state ${live ? "is-live" : "is-offline"}`}>
           <span /> {live ? "City feed connected" : "City feed unavailable"}
@@ -183,12 +157,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
 
       <section className="hero">
         <div className="hero-copy">
-          <p className="kicker">Varsity · Ward 1 · Calgary</p>
-          <h1>See what is changing.<br /><em>Before it disappears in the paperwork.</em></h1>
-          <p className="hero-lede">
-            A community-first view of City of Calgary development permits: current status, location,
-            timing, decisions and appeals in one place.
+          <p className="kicker">
+            {[config.site.communityDisplayName, config.site.wardLabel, config.site.cityName].filter(Boolean).join(" · ")}
           </p>
+          <h1>{config.site.heroHeading}<br /><em>{config.site.heroEmphasis}</em></h1>
+          <p className="hero-lede">{config.site.description}</p>
           <div className="hero-actions">
             <a href="#permit-explorer" className="primary-action">Explore permits <span>↓</span></a>
             <a href={datasetUrl} target="_blank" rel="noreferrer" className="text-action">View official source ↗</a>
@@ -197,7 +170,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         <div className="hero-aside">
           <p className="aside-label">Open-data snapshot</p>
           <p className="big-number">{permits.length.toLocaleString("en-CA")}</p>
-          <p className="big-number-label">Varsity permits in the feed</p>
+          <p className="big-number-label">{config.site.communityDisplayName} permits in the feed</p>
           <div className="freshness-list">
             <div className="freshness">
               <span>City data updated</span>
@@ -238,15 +211,17 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             <div><p className="eyebrow">Where activity is concentrated</p><h2>Permit geography</h2></div>
             <p>{plotted.length} plotted</p>
           </div>
-          <div className="permit-map" aria-label="Approximate geographic plot of filtered Varsity permits">
+          <div className="permit-map" aria-label={`Approximate geographic plot of filtered ${config.site.communityDisplayName} permits`}>
             <span className="north">N ↑</span>
-            <span className="map-road road-one">Crowchild Trail</span>
-            <span className="map-road road-two">Shaganappi Trail</span>
-            <span className="map-road road-three">Dalhousie Drive</span>
+            {config.map.roadLabels.map((label) => (
+              <span key={`${label.className}-${label.text}`} className={`map-road ${label.className}`}>
+                {label.text}
+              </span>
+            ))}
             {plotted.slice(0, 500).map(({ permit, lat, lon }, index) => (
               <button
                 key={`${permit.permitnum}-${index}`}
-                className={`map-point status-${statusGroup(permit.statuscurrent)} ${selected === permit.permitnum ? "selected" : ""}`}
+                className={`map-point status-${groupFor(permit.statuscurrent)} ${selected === permit.permitnum ? "selected" : ""}`}
                 style={pointStyle(lat, lon)}
                 title={`${text(permit.permitnum)} · ${text(permit.address)}`}
                 aria-label={`Select ${text(permit.permitnum)} at ${text(permit.address)}`}
@@ -263,7 +238,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             <>
               <div className="permit-title-row">
                 <div><h2>{text(selectedPermit.permitnum)}</h2><p>{text(selectedPermit.address)}</p></div>
-                <span className={`status-pill status-${statusGroup(selectedPermit.statuscurrent)}`}>{text(selectedPermit.statuscurrent)}</span>
+                <span className={`status-pill status-${groupFor(selectedPermit.statuscurrent)}`}>{text(selectedPermit.statuscurrent)}</span>
               </div>
               <p className="permit-description">{text(selectedPermit.description)}</p>
               <dl className="detail-list">
@@ -350,9 +325,9 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         <div className="permit-list">
           {displayed.map((permit, index) => (
             <button className={selected === permit.permitnum ? "permit-row selected" : "permit-row"} key={`${permit.permitnum}-${index}`} onClick={() => setSelected(permit.permitnum ?? null)}>
-              <span className="permit-id"><StatusDot group={statusGroup(permit.statuscurrent)} /><strong>{text(permit.permitnum)}</strong><small>{formatDate(permit.applieddate)}</small></span>
+              <span className="permit-id"><StatusDot group={groupFor(permit.statuscurrent)} /><strong>{text(permit.permitnum)}</strong><small>{formatDate(permit.applieddate)}</small></span>
               <span className="permit-address"><strong>{text(permit.address)}</strong><small>{text(permit.description)}</small></span>
-              <span className={`status-pill status-${statusGroup(permit.statuscurrent)}`}>{text(permit.statuscurrent)}</span>
+              <span className={`status-pill status-${groupFor(permit.statuscurrent)}`}>{text(permit.statuscurrent)}</span>
               <span className="row-arrow">→</span>
             </button>
           ))}
@@ -373,28 +348,29 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       <section className="data-scope-notice" aria-labelledby="data-scope-heading">
         <div>
           <p className="eyebrow">Community-filter disclaimer</p>
-          <h2 id="data-scope-heading">This dashboard is filtered for Varsity.</h2>
+          <h2 id="data-scope-heading">This dashboard is filtered for {config.site.communityDisplayName}.</h2>
         </div>
         <div className="scope-copy">
           <p>
             This is not a citywide permit list. The Calgary Open Data query is restricted to records
-            where <code>communityname</code> is <code>VARSITY</code>, so every count, map, chart and
-            permit list on this page describes the Varsity community only.
+            where <code>{config.feedScope.filterField}</code> is <code>{config.feedScope.filterValue}</code>, so every count, map, chart and
+            permit list on this page describes the {config.site.communityDisplayName} community only.
           </p>
           <p>
-            To reuse this dashboard for another Calgary community, create the corresponding JSON query
-            by replacing <code>VARSITY</code> with the exact community name used in Calgary Open Data,
-            and change the dashboard&apos;s community filter to match.
+            To reuse this dashboard for another Calgary community, edit <code>config/dashboard.json</code>:
+            set the community display text and replace <code>{config.feedScope.filterValue}</code> with
+            the exact community name used in Calgary Open Data. The application builds the corresponding
+            API and JSON-query URLs automatically.
           </p>
           <a href={filteredQueryUrl} target="_blank" rel="noreferrer">
-            Open the Varsity-filtered JSON query <span aria-hidden="true">↗</span>
+            Open the {config.site.communityDisplayName}-filtered JSON query <span aria-hidden="true">↗</span>
           </a>
         </div>
       </section>
 
       <footer>
-        <div><p className="brand-name">Varsity Development Watch</p><p>Built for informed community discussion.</p></div>
-        <div className="footer-links"><a href={datasetUrl} target="_blank" rel="noreferrer">Calgary Open Data ↗</a><a href={developmentMapUrl} target="_blank" rel="noreferrer">Development Map ↗</a></div>
+        <div><p className="brand-name">{config.site.name}</p><p>Built for informed community discussion.</p></div>
+        <div className="footer-links"><a href={datasetUrl} target="_blank" rel="noreferrer">Calgary Open Data ↗</a><a href={config.links.developmentMapUrl} target="_blank" rel="noreferrer">Development Map ↗</a></div>
         <p className="licence-note">Contains information licensed under the Open Government Licence – City of Calgary. Independent community project; not affiliated with or endorsed by The City of Calgary.</p>
       </footer>
     </main>
