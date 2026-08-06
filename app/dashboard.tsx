@@ -25,6 +25,7 @@ export type Permit = {
   sdabhearingdate?: string;
   sdabdecision?: string;
   sdabdecisiondate?: string;
+  appealreporturl?: string;
   communityname?: string;
   ward?: string;
   latitude?: string;
@@ -274,6 +275,19 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 <div><dt>Decision by</dt><dd>{text(selectedPermit.decisionby)}</dd></div>
                 <div><dt>SDAB</dt><dd>{selectedPermit.sdabnumber ? `${selectedPermit.sdabnumber} · ${text(selectedPermit.sdabdecision)}` : "No appeal reported"}</dd></div>
               </dl>
+              {selectedPermit.sdabnumber && selectedPermit.appealreporturl && (
+                <div className="appeal-action">
+                  <p className="appeal-label">Public SDAB appeal package</p>
+                  <p className="appeal-summary">
+                    Appeal {selectedPermit.sdabnumber}
+                    {selectedPermit.sdabhearingdate ? ` · Hearing ${formatDate(selectedPermit.sdabhearingdate)}` : ""}
+                  </p>
+                  <a href={selectedPermit.appealreporturl} target="_blank" rel="noreferrer">
+                    View appeal reports, submissions &amp; plans <span aria-hidden="true">↗</span>
+                  </a>
+                  <p className="appeal-note">Shown only when Calgary lists a public report package for this appeal.</p>
+                </div>
+              )}
               {selectedApplicationUrl && (
                 <div className="plans-action">
                   <a href={selectedApplicationUrl} target="_blank" rel="noreferrer">
