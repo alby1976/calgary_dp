@@ -106,16 +106,17 @@
     "closed": ["cancel", "refus", "expired"]
   },
   "map": {
+    "tileUrlTemplate": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "attributionLabel": "Map data © OpenStreetMap contributors",
+    "attributionUrl": "https://www.openstreetmap.org/copyright",
+    "issueUrl": "https://www.openstreetmap.org/fixthemap",
+    "minZoom": 9,
+    "maxZoom": 19,
     "fallbackBounds": {
       "minLatitude": 51.075,
       "maxLatitude": 51.105,
       "minLongitude": -114.175,
       "maxLongitude": -114.135
-    },
-    "roadLabels": [
-      { "text": "Crowchild Trail", "className": "road-one" },
-      { "text": "Shaganappi Trail", "className": "road-two" },
-      { "text": "Dalhousie Drive", "className": "road-three" }
-    ]
+    }
   }
 }
