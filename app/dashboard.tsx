@@ -231,6 +231,19 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               />
             ))}
           </div>
+          <div className="overview-legend" role="list" aria-label="Community activity pattern colour legend">
+            {[
+              ["active", "Active / under review"],
+              ["approved", "Approved / released"],
+              ["closed", "Refused / cancelled"],
+              ["other", "Other status"],
+            ].map(([legendGroup, label]) => (
+              <span className="legend-item" role="listitem" key={legendGroup}>
+                <StatusDot group={legendGroup} />
+                {label}
+              </span>
+            ))}
+          </div>
           <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
         </article>
 
