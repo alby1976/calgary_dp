@@ -30,7 +30,7 @@ server-rendered page -> client-side search, filters, map and charts
 | `lib/permit.ts` | Stable internal permit type used by server and client code |
 | `app/page.tsx` | Server-side fetching, data freshness and appeal-package enrichment |
 | `app/dashboard.tsx` | Interactive search, filters, simplified coordinate overview, charts and record details |
-| `app/permit-map.tsx` | MapLibre street basemap, permit marker layers, fit-to-results and map interaction |
+| `app/permit-map.tsx` | MapLibre street basemap, accessible DOM permit markers, fit-to-results and map interaction |
 | `app/layout.tsx` | Metadata derived from the site configuration |
 | `tests/dashboard-config.test.mjs` | Configuration structure and integration-template checks |
 | `tests/rendered-html.test.mjs` | Production worker and rendered-page checks |
@@ -86,7 +86,7 @@ No user search or filter state is currently stored on the server.
 
 `app/permit-map.tsx` renders a client-side MapLibre map. The default configuration uses ordinary browser requests to OpenStreetMap raster tiles and displays the required attribution. It does not bulk-download or prefetch tiles.
 
-Filtered permit coordinates appear in a simplified overview plot for cluster recognition and become GeoJSON point features in MapLibre for street-level context. The legend identifies the shared status colours. Hovering or focusing either an overview point or legend control temporarily opens its plain-language status guide; legend controls can also be tapped. Equivalent descriptions remain available to assistive technology. Both visualizations render the same filtered point set and share one selected permit state. Selecting either type of marker highlights the corresponding point in both views and updates the shared permit-information panel. If a filter removes the selected permit, both views fall back to the first visible result. **Fit visible permits** returns the street-map viewport to the filtered results. If the filtered records have no valid coordinates, both views use the configured community bounds.
+Filtered permit coordinates appear in a simplified overview plot for cluster recognition and as accessible DOM markers positioned by MapLibre for street-level context. DOM markers remain visible independently of the raster basemap's tile rendering. The legend identifies the shared status colours. Hovering or focusing either an overview point or legend control temporarily opens its plain-language status guide; legend controls can also be tapped. Equivalent descriptions remain available to assistive technology. Both visualizations render the same filtered point set and share one selected permit state. Selecting either type of marker highlights the corresponding point in both views, centres and zooms the street map on that permit, and updates the shared permit-information panel. If a filter removes the selected permit, both views fall back to the first visible result. **Fit visible permits** returns the street-map viewport to the filtered results. If the filtered records have no valid coordinates, both views use the configured community bounds.
 
 The City permit feed remains the source of marker positions. The basemap is contextual cartography and does not change or geocode City records.
 
