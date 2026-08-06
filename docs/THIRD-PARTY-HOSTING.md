@@ -176,6 +176,7 @@ Before directing users to the third-party deployment, verify:
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
 - year and status filters work;
+- the simplified overview and detailed street map show the same filtered permit set;
 - Calgary streets and the configured map attribution are visible;
 - **Fit visible permits** frames the filtered results;
 - a map point can select a permit;
