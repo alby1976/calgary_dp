@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
 import type { Permit } from "../lib/permit";
+import PermitMap from "./permit-map";
 
 type Props = {
   permits: Permit[];
@@ -129,18 +130,9 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       permit,
       lat: Number(permit.latitude),
       lon: Number(permit.longitude),
+      group: groupFor(permit.statuscurrent),
     }))
     .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon));
-  const lats = plotted.map((item) => item.lat);
-  const lons = plotted.map((item) => item.lon);
-  const minLat = Math.min(...lats, config.map.fallbackBounds.minLatitude);
-  const maxLat = Math.max(...lats, config.map.fallbackBounds.maxLatitude);
-  const minLon = Math.min(...lons, config.map.fallbackBounds.minLongitude);
-  const maxLon = Math.max(...lons, config.map.fallbackBounds.maxLongitude);
-  const pointStyle = (lat: number, lon: number) => ({
-    left: `${7 + ((lon - minLon) / Math.max(0.001, maxLon - minLon)) * 86}%`,
-    top: `${7 + (1 - (lat - minLat) / Math.max(0.001, maxLat - minLat)) * 86}%`,
-  });
 
   return (
     <main>
@@ -211,25 +203,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             <div><p className="eyebrow">Where activity is concentrated</p><h2>Permit geography</h2></div>
             <p>{plotted.length} plotted</p>
           </div>
-          <div className="permit-map" aria-label={`Approximate geographic plot of filtered ${config.site.communityDisplayName} permits`}>
-            <span className="north">N ↑</span>
-            {config.map.roadLabels.map((label) => (
-              <span key={`${label.className}-${label.text}`} className={`map-road ${label.className}`}>
-                {label.text}
-              </span>
-            ))}
-            {plotted.slice(0, 500).map(({ permit, lat, lon }, index) => (
-              <button
-                key={`${permit.permitnum}-${index}`}
-                className={`map-point status-${groupFor(permit.statuscurrent)} ${selected === permit.permitnum ? "selected" : ""}`}
-                style={pointStyle(lat, lon)}
-                title={`${text(permit.permitnum)} · ${text(permit.address)}`}
-                aria-label={`Select ${text(permit.permitnum)} at ${text(permit.address)}`}
-                onClick={() => setSelected(permit.permitnum ?? null)}
-              />
-            ))}
-          </div>
-          <p className="map-note">Approximate coordinate plot for pattern-spotting; use the address and official record for parcel-level decisions.</p>
+          <PermitMap
+            points={plotted.slice(0, 500)}
+            selectedPermitNumber={selectedPermit?.permitnum}
+            communityName={config.site.communityDisplayName}
+            mapConfig={config.map}
+            onSelect={setSelected}
+          />
+          <p className="map-note">Permit points use City-provided coordinates on a real street basemap. Verify the address and official record before making parcel-level decisions.</p>
         </article>
 
         <article className="panel detail-panel">
