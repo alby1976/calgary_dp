@@ -38,6 +38,7 @@ type Props = {
   cityDataUpdatedAt: string | null;
   live: boolean;
   datasetUrl: string;
+  filteredQueryUrl?: string;
   developmentMapUrl: string;
 };
 
@@ -103,7 +104,7 @@ function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
 
-export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, datasetUrl, developmentMapUrl }: Props) {
+export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, datasetUrl, filteredQueryUrl, developmentMapUrl }: Props) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
@@ -366,6 +367,28 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <article><span>01</span><h3>Open data is a lead</h3><p>It can surface newer status and date fields, but it is not a statutory notice and may still lag internal City systems.</p></article>
           <article><span>02</span><h3>Status needs context</h3><p>“Pending,” “approved,” and “released” are different milestones. Read the decision, release and appeal dates together.</p></article>
           <article><span>03</span><h3>Verify before acting</h3><p>For comments, appeals or deadlines, confirm the file with the assigned City planner or the official notice.</p></article>
+        </div>
+      </section>
+
+      <section className="data-scope-notice" aria-labelledby="data-scope-heading">
+        <div>
+          <p className="eyebrow">Community-filter disclaimer</p>
+          <h2 id="data-scope-heading">This dashboard is filtered for Varsity.</h2>
+        </div>
+        <div className="scope-copy">
+          <p>
+            This is not a citywide permit list. The Calgary Open Data query is restricted to records
+            where <code>communityname</code> is <code>VARSITY</code>, so every count, map, chart and
+            permit list on this page describes the Varsity community only.
+          </p>
+          <p>
+            To reuse this dashboard for another Calgary community, create the corresponding JSON query
+            by replacing <code>VARSITY</code> with the exact community name used in Calgary Open Data,
+            and change the dashboard&apos;s community filter to match.
+          </p>
+          <a href={filteredQueryUrl} target="_blank" rel="noreferrer">
+            Open the Varsity-filtered JSON query <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </section>
 
