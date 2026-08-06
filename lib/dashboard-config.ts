@@ -48,6 +48,10 @@ export type DashboardConfig = {
     issueUrl: string;
     minZoom: number;
     maxZoom: number;
+    overviewLabels: Array<{
+      text: string;
+      className: string;
+    }>;
     fallbackBounds: {
       minLatitude: number;
       maxLatitude: number;
@@ -145,6 +149,12 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   positiveInteger(value.map.maxZoom, "map.maxZoom");
   if (value.map.minZoom >= value.map.maxZoom || value.map.maxZoom > 22) {
     throw new Error("map zoom range must increase and cannot exceed 22");
+  }
+  for (const [index, label] of value.map.overviewLabels.entries()) {
+    if (!label.text.trim()) throw new Error(`map.overviewLabels[${index}].text is required`);
+    if (!/^road-(one|two|three)$/.test(label.className)) {
+      throw new Error(`map.overviewLabels[${index}].className is not supported`);
+    }
   }
   if (value.feed.order.direction !== "ASC" && value.feed.order.direction !== "DESC") {
     throw new Error("feed.order.direction must be ASC or DESC");
