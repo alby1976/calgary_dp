@@ -51,4 +51,8 @@ npm test
 
 ## Licence and attribution
 
-Application source is provided in this repository. Municipal data remains subject to the Open Government Licence — City of Calgary.
+This project is **source-available**, not OSI-approved open-source software.
+
+The code is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). Noncommercial use, modification and redistribution are permitted under its terms. Commercial use requires a separate written licence from the copyright holder.
+
+Municipal data is not covered by the software licence and remains subject to the Open Government Licence — City of Calgary.
