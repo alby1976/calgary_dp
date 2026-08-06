@@ -15,6 +15,25 @@ const METADATA_URL =
   `https://data.calgary.ca/api/views/metadata/v1/${DATASET_ID}`;
 const ACTIVE_APPEALS_URL =
   "https://www.calgary.ca/content/sdab/en/home/active-appeals.html";
+const VARSITY_QUERY_FIELDS = [
+  "point", "permitnum", "address", "applicant", "category", "description",
+  "proposedusecode", "proposedusedescription", "permitteddiscretionary",
+  "landusedistrict", "landusedistrictdescription", "concurrent_loc",
+  "statuscurrent", "applieddate", "decisiondate", "releasedate",
+  "mustcommencedate", "canceledrefuseddate", "decision", "decisionby",
+  "sdabnumber", "sdabhearingdate", "sdabdecision", "sdabdecisiondate",
+  "communitycode", "communityname", "ward", "quadrant", "latitude",
+  "longitude", "locationcount", "locationtypes", "locationaddresses",
+  "locationsgeojson", "locationswkt",
+];
+const VARSITY_JSON_QUERY_URL =
+  "https://data.calgary.ca/api/v3/views/m3bg-37bv/query.json?" +
+  new URLSearchParams({
+    query:
+      `SELECT\n  ${VARSITY_QUERY_FIELDS.map((field) => `\`${field}\``).join(",\n  ")}\n` +
+      'WHERE caseless_one_of(`communityname`, "VARSITY")\n' +
+      'ORDER BY `permitnum` DESC NULL FIRST',
+  }).toString();
 
 type GeoFeature = {
   geometry?: { coordinates?: [number, number] };
@@ -127,6 +146,7 @@ export default async function Home() {
     <Dashboard
       {...data}
       datasetUrl={OPEN_DATA_PAGE}
+      filteredQueryUrl={VARSITY_JSON_QUERY_URL}
       developmentMapUrl="https://developmentmap.calgary.ca/"
     />
   );
