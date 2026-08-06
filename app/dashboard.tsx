@@ -133,6 +133,16 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       group: groupFor(permit.statuscurrent),
     }))
     .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon));
+  const lats = plotted.map((item) => item.lat);
+  const lons = plotted.map((item) => item.lon);
+  const minLat = Math.min(...lats, config.map.fallbackBounds.minLatitude);
+  const maxLat = Math.max(...lats, config.map.fallbackBounds.maxLatitude);
+  const minLon = Math.min(...lons, config.map.fallbackBounds.minLongitude);
+  const maxLon = Math.max(...lons, config.map.fallbackBounds.maxLongitude);
+  const overviewPointStyle = (lat: number, lon: number) => ({
+    left: `${7 + ((lon - minLon) / Math.max(0.001, maxLon - minLon)) * 86}%`,
+    top: `${7 + (1 - (lat - minLat) / Math.max(0.001, maxLat - minLat)) * 86}%`,
+  });
 
   return (
     <main>
@@ -200,17 +210,28 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       <section className="story-grid">
         <article className="panel map-panel">
           <div className="panel-heading">
-            <div><p className="eyebrow">Where activity is concentrated</p><h2>Permit geography</h2></div>
+            <div><p className="eyebrow">Overview · 1 of 2</p><h2>Community activity pattern</h2></div>
             <p>{plotted.length} plotted</p>
           </div>
-          <PermitMap
-            points={plotted.slice(0, 500)}
-            selectedPermitNumber={selectedPermit?.permitnum}
-            communityName={config.site.communityDisplayName}
-            mapConfig={config.map}
-            onSelect={setSelected}
-          />
-          <p className="map-note">Permit points use City-provided coordinates on a real street basemap. Verify the address and official record before making parcel-level decisions.</p>
+          <div className="overview-plot" aria-label={`Simplified overview plot of filtered ${config.site.communityDisplayName} permits`}>
+            <span className="north">N ↑</span>
+            {config.map.overviewLabels.map((label) => (
+              <span key={`${label.className}-${label.text}`} className={`map-road ${label.className}`}>
+                {label.text}
+              </span>
+            ))}
+            {plotted.slice(0, 500).map(({ permit, lat, lon, group: permitGroup }, index) => (
+              <button
+                key={`${permit.permitnum}-${index}`}
+                className={`map-point status-${permitGroup} ${selectedPermit?.permitnum === permit.permitnum ? "selected" : ""}`}
+                style={overviewPointStyle(lat, lon)}
+                title={`${text(permit.permitnum)} · ${text(permit.address)}`}
+                aria-label={`Select ${text(permit.permitnum)} at ${text(permit.address)}`}
+                onClick={() => permit.permitnum && setSelected(permit.permitnum)}
+              />
+            ))}
+          </div>
+          <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
         </article>
 
         <article className="panel detail-panel">
@@ -256,6 +277,21 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             </>
           ) : <p className="empty-state">Choose a point or permit to inspect it.</p>}
         </article>
+      </section>
+
+      <section className="panel granular-map-panel">
+        <div className="panel-heading">
+          <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
+          <p>{plotted.length} plotted</p>
+        </div>
+        <PermitMap
+          points={plotted.slice(0, 500)}
+          selectedPermitNumber={selectedPermit?.permitnum}
+          communityName={config.site.communityDisplayName}
+          mapConfig={config.map}
+          onSelect={setSelected}
+        />
+        <p className="map-note">City-provided coordinates shown against Calgary streets. Use this view for location context, then verify the address and official record before making parcel-level decisions.</p>
       </section>
 
       <section className="panel activity-panel">
