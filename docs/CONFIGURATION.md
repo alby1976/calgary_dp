@@ -102,11 +102,12 @@ The first matching group wins. A status matching none of the lists appears under
 | `issueUrl` | HTTPS link for reporting a basemap problem |
 | `minZoom` | Furthest-out zoom allowed |
 | `maxZoom` | Closest-in zoom allowed; must be greater than `minZoom` and no more than 22 |
+| `overviewLabels` | Contextual road labels on the simplified overview; each uses `text` and a supported `className` from `road-one` through `road-three` |
 | `fallbackBounds` | Minimum and maximum latitude and longitude used when no visible permit has coordinates |
 
 The default uses the standard OpenStreetMap tile service. Keep its visible attribution, do not bulk-download or prefetch tiles, and review the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before operating a high-traffic or commercial deployment. A custom provider must allow browser use from the dashboard's public domain.
 
-Permit markers use the latitude and longitude published in the City feed. The street map supplies geographic context, but it is not a parcel or survey map. Addresses and official City records remain authoritative.
+Both geographic views use the latitude and longitude published in the City feed. The simplified overview helps reveal clusters; the street map supplies granular location context. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
 
 ## Change to another Calgary community
 
@@ -129,7 +130,7 @@ At minimum, update:
 }
 ```
 
-Then update the map fallback bounds. Use the exact `communityname` value published by Calgary Open Data; the display name may use normal capitalization.
+Then update the map fallback bounds and overview labels. Use the exact `communityname` value published by Calgary Open Data; the display name may use normal capitalization.
 
 The application automatically generates:
 
