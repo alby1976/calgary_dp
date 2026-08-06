@@ -103,6 +103,10 @@ Confirm that the configured latitude and longitude mappings are correct. Then ad
 
 Both the overview and street map only plot records with valid coordinates from the City feed. They do not geocode records with missing coordinates. The overview is intentionally simplified; use the street map for granular context. A marker position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
 
+## The two visualizations show different selections
+
+They are designed to share one selected permit. Selecting a point in either view should enlarge or outline the matching point in both views and update the permit-information panel below them. If a filter removes that permit, both views select the first remaining visible result. Refresh the page if an older cached script leaves the views out of sync.
+
 ## Status totals look wrong
 
 Compare the exact City status wording with the fragments under `statuses.active`, `statuses.approved` and `statuses.closed`.
