@@ -112,7 +112,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     [filtered],
   );
   const displayed = showAll ? recent : recent.slice(0, 12);
-  const selectedPermit = permits.find((permit) => permit.permitnum === selected) ?? displayed[0];
+  const selectedPermit = filtered.find((permit) => permit.permitnum === selected) ?? displayed[0];
   const selectedApplicationUrl = developmentMapApplicationUrl(
     selectedPermit?.permitnum,
     config.links.developmentApplicationUrlTemplate,
@@ -207,8 +207,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         ))}
       </section>
 
-      <section className="story-grid">
-        <article className="panel map-panel">
+      <section className="linked-map-grid" aria-label="Linked permit visualizations">
+        <article className="panel map-panel overview-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Overview · 1 of 2</p><h2>Community activity pattern</h2></div>
             <p>{plotted.length} plotted</p>
@@ -234,14 +234,30 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
         </article>
 
-        <article className="panel detail-panel">
-          <p className="eyebrow">Selected permit</p>
+        <article className="panel map-panel granular-map-panel">
+          <div className="panel-heading">
+            <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
+            <p>{plotted.length} plotted</p>
+          </div>
+          <PermitMap
+            points={plotted.slice(0, 500)}
+            selectedPermitNumber={selectedPermit?.permitnum}
+            communityName={config.site.communityDisplayName}
+            mapConfig={config.map}
+            onSelect={setSelected}
+          />
+          <p className="map-note">City-provided coordinates shown against Calgary streets. Selecting a point highlights the same permit in the overview.</p>
+        </article>
+
+        <article className="panel detail-panel linked-detail-panel" aria-live="polite" aria-atomic="true">
+          <p className="eyebrow">Linked selection · both views</p>
           {selectedPermit ? (
             <>
               <div className="permit-title-row">
                 <div><h2>{text(selectedPermit.permitnum)}</h2><p>{text(selectedPermit.address)}</p></div>
                 <span className={`status-pill status-${groupFor(selectedPermit.statuscurrent)}`}>{text(selectedPermit.statuscurrent)}</span>
               </div>
+              <p className="linked-selection-note">Highlighted in the community overview and the street-level map.</p>
               <p className="permit-description">{text(selectedPermit.description)}</p>
               <dl className="detail-list">
                 <div><dt>Applied</dt><dd>{formatDate(selectedPermit.applieddate)}</dd></div>
@@ -275,23 +291,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 </div>
               )}
             </>
-          ) : <p className="empty-state">Choose a point or permit to inspect it.</p>}
+          ) : <p className="empty-state">Choose a point in either visualization or select a permit below.</p>}
         </article>
-      </section>
-
-      <section className="panel granular-map-panel">
-        <div className="panel-heading">
-          <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
-          <p>{plotted.length} plotted</p>
-        </div>
-        <PermitMap
-          points={plotted.slice(0, 500)}
-          selectedPermitNumber={selectedPermit?.permitnum}
-          communityName={config.site.communityDisplayName}
-          mapConfig={config.map}
-          onSelect={setSelected}
-        />
-        <p className="map-note">City-provided coordinates shown against Calgary streets. Use this view for location context, then verify the address and official record before making parcel-level decisions.</p>
       </section>
 
       <section className="panel activity-panel">
@@ -341,7 +342,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         </div>
         <div className="permit-list">
           {displayed.map((permit, index) => (
-            <button className={selected === permit.permitnum ? "permit-row selected" : "permit-row"} key={`${permit.permitnum}-${index}`} onClick={() => setSelected(permit.permitnum ?? null)}>
+            <button className={selectedPermit?.permitnum === permit.permitnum ? "permit-row selected" : "permit-row"} key={`${permit.permitnum}-${index}`} onClick={() => setSelected(permit.permitnum ?? null)}>
               <span className="permit-id"><StatusDot group={groupFor(permit.statuscurrent)} /><strong>{text(permit.permitnum)}</strong><small>{formatDate(permit.applieddate)}</small></span>
               <span className="permit-address"><strong>{text(permit.address)}</strong><small>{text(permit.description)}</small></span>
               <span className={`status-pill status-${groupFor(permit.statuscurrent)}`}>{text(permit.statuscurrent)}</span>
