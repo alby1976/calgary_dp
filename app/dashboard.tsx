@@ -92,6 +92,12 @@ function permitYear(permit: Permit) {
   return match ? match[0].replace(/^DP/i, "") : yearOf(permit.applieddate);
 }
 
+function developmentMapApplicationUrl(permitNumber?: string) {
+  const normalized = permitNumber?.trim().toUpperCase();
+  if (!normalized || !/^DP\d{4}-\d+$/.test(normalized)) return null;
+  return `https://dmap.calgary.ca/?p=${encodeURIComponent(normalized)}`;
+}
+
 function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
@@ -133,6 +139,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   );
   const displayed = showAll ? recent : recent.slice(0, 12);
   const selectedPermit = permits.find((permit) => permit.permitnum === selected) ?? displayed[0];
+  const selectedApplicationUrl = developmentMapApplicationUrl(selectedPermit?.permitnum);
 
   const chartYears = years.slice(0, 8).reverse();
   const yearCounts = chartYears.map((value) => ({
@@ -267,6 +274,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 <div><dt>Decision by</dt><dd>{text(selectedPermit.decisionby)}</dd></div>
                 <div><dt>SDAB</dt><dd>{selectedPermit.sdabnumber ? `${selectedPermit.sdabnumber} · ${text(selectedPermit.sdabdecision)}` : "No appeal reported"}</dd></div>
               </dl>
+              {selectedApplicationUrl && (
+                <div className="plans-action">
+                  <a href={selectedApplicationUrl} target="_blank" rel="noreferrer">
+                    View City application &amp; plans <span aria-hidden="true">↗</span>
+                  </a>
+                  <p>Submitted plans appear on DMap only while The City makes them publicly available.</p>
+                </div>
+              )}
             </>
           ) : <p className="empty-state">Choose a point or permit to inspect it.</p>}
         </article>
