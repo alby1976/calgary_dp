@@ -35,4 +35,6 @@ test("renders development preview metadata", async () => {
   assert.match(html, /config\/dashboard\.json/i);
   assert.match(html, /Map data © OpenStreetMap contributors/i);
   assert.match(html, /Fit visible permits/i);
+  assert.match(html, /Community activity pattern/i);
+  assert.match(html, /Street-level permit map/i);
 });
