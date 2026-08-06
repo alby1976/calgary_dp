@@ -34,7 +34,7 @@ export type Permit = {
 type Props = {
   permits: Permit[];
   fetchedAt: string;
-  cityDataUpdatedAt?: string | null;
+  cityDataUpdatedAt: string | null;
   live: boolean;
   datasetUrl: string;
   developmentMapUrl: string;
