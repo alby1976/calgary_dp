@@ -1,6 +1,6 @@
 # Configuration guide
 
-The dashboard is configured through [`config/dashboard.json`](../config/dashboard.json). Community identity, City feed details, field mappings, refresh behaviour, external links, status categories and map labels can all be changed without editing the React components.
+The dashboard is configured through [`config/dashboard.json`](../config/dashboard.json). Community identity, City feed details, field mappings, refresh behaviour, external links, status categories and map settings can all be changed without editing the React components.
 
 Configuration is read and validated when the application starts or builds. It is not a live administration screen: after changing the JSON file, rebuild and restart or redeploy the application.
 
@@ -94,14 +94,19 @@ The first matching group wins. A status matching none of the lists appears under
 
 ### `map`
 
-`fallbackBounds` supplies the minimum and maximum latitude and longitude used when few or no permits have coordinates. Set these values around the selected community.
+| Setting | Purpose |
+| --- | --- |
+| `tileUrlTemplate` | HTTPS raster-tile template; it must contain `{z}`, `{x}` and `{y}` |
+| `attributionLabel` | Visible credit shown on the map |
+| `attributionUrl` | HTTPS link explaining the map-data attribution |
+| `issueUrl` | HTTPS link for reporting a basemap problem |
+| `minZoom` | Furthest-out zoom allowed |
+| `maxZoom` | Closest-in zoom allowed; must be greater than `minZoom` and no more than 22 |
+| `fallbackBounds` | Minimum and maximum latitude and longitude used when no visible permit has coordinates |
 
-`roadLabels` contains contextual labels drawn on the approximate plot. Each entry has:
+The default uses the standard OpenStreetMap tile service. Keep its visible attribution, do not bulk-download or prefetch tiles, and review the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before operating a high-traffic or commercial deployment. A custom provider must allow browser use from the dashboard's public domain.
 
-- `text`: visible road name
-- `className`: one of the CSS positions currently supported by the dashboard, such as `road-one`, `road-two` or `road-three`
-
-The map is a pattern-spotting visualization, not a parcel map. Addresses and official records remain authoritative.
+Permit markers use the latitude and longitude published in the City feed. The street map supplies geographic context, but it is not a parcel or survey map. Addresses and official City records remain authoritative.
 
 ## Change to another Calgary community
 
@@ -124,7 +129,7 @@ At minimum, update:
 }
 ```
 
-Then update the map bounds and road labels. Use the exact `communityname` value published by Calgary Open Data; the display name may use normal capitalization.
+Then update the map fallback bounds. Use the exact `communityname` value published by Calgary Open Data; the display name may use normal capitalization.
 
 The application automatically generates:
 
@@ -163,8 +168,10 @@ The application rejects configuration when:
 - a Socrata field name contains invalid characters;
 - a limit, refresh interval or timeout is not a positive integer;
 - sort direction is not `ASC` or `DESC`;
-- the DMap template lacks `{permitNumber}`; or
+- the DMap template lacks `{permitNumber}`;
+- the map tile template lacks `{z}`, `{x}` or `{y}`;
+- a map URL is not valid HTTPS;
+- map zoom values are invalid; or
 - a required field mapping is missing.
 
 Configuration validation catches structural errors. It cannot prove that Calgary still publishes a particular dataset, field, community value or public document. Those require a live-data check.
-
