@@ -45,7 +45,7 @@ The host must provide:
 - enough request time for the configured City and SDAB timeouts; and
 - HTTPS for the public dashboard address.
 
-Visitors also need browser access to `calgary.ca`, `dmap.calgary.ca` and `publicaccess.calgary.ca` to open official links.
+Visitors also need browser access to `tile.openstreetmap.org` for the default street basemap and to `calgary.ca`, `dmap.calgary.ca` and `publicaccess.calgary.ca` for official links. If you configure another tile provider, allow its hostname instead and follow its attribution, access and billing terms.
 
 No Calgary API key or application secret is currently required.
 
@@ -176,7 +176,9 @@ Before directing users to the third-party deployment, verify:
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
 - year and status filters work;
-- a plotted point can select a permit;
+- Calgary streets and the configured map attribution are visible;
+- **Fit visible permits** frames the filtered results;
+- a map point can select a permit;
 - the official dataset link opens the configured dataset;
 - a known `DPYYYY-number` record produces a DMap link;
 - an appeal-package button appears only for a known public exact match;
@@ -231,4 +233,3 @@ The dashboard's City timestamps help readers assess freshness, but they are not 
 - Do not send City data to an additional analytics or logging service without reviewing its privacy and retention settings.
 - The software uses the PolyForm Noncommercial License 1.0.0. Noncommercial hosting, modification and redistribution are permitted only under its terms; commercial use requires separate written permission.
 - City of Calgary data remains subject to the Open Government Licence – City of Calgary.
-
