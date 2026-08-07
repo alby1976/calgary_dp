@@ -104,6 +104,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
+  const [appealFilter, setAppealFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
@@ -125,13 +126,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     return permits.filter((permit) => {
       const matchesGroup = group === "all" || statusGroup(permit.statuscurrent, config.statuses) === group;
       const matchesYear = year === "all" || permitYear(permit) === year;
+      const matchesAppeal = appealFilter === "all" || Boolean(permit.sdabnumber?.trim());
       const haystack = [permit.permitnum, permit.address, permit.description, permit.applicant, permit.statuscurrent]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-      return matchesGroup && matchesYear && (!needle || haystack.includes(needle));
+      return matchesGroup && matchesYear && matchesAppeal && (!needle || haystack.includes(needle));
     });
-  }, [permits, query, group, year, config.statuses]);
+  }, [permits, query, group, year, appealFilter, config.statuses]);
 
   const recent = useMemo(
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
@@ -401,7 +403,26 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               <option value="other">Other</option>
             </select>
           </label>
-          {(query || year !== "all" || group !== "all") && <button className="clear-button" onClick={() => { setQuery(""); setYear("all"); setGroup("all"); }}>Clear</button>}
+          <label>
+            <span className="sr-only">Filter by appeal status</span>
+            <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
+              <option value="all">All appeal statuses</option>
+              <option value="appealed">Appealed to SDAB</option>
+            </select>
+          </label>
+          {(query || year !== "all" || group !== "all" || appealFilter !== "all") && (
+            <button
+              className="clear-button"
+              onClick={() => {
+                setQuery("");
+                setYear("all");
+                setGroup("all");
+                setAppealFilter("all");
+              }}
+            >
+              Clear
+            </button>
+          )}
         </div>
         <div className="permit-list">
           {displayed.map((permit, index) => (
