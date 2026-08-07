@@ -15,7 +15,7 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - Permit status summary, hover/focus plain-language colour guide, linked community overview and Calgary street map, shared point selection, and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal
-- Application, decision, release and SDAB appeal details, including readable Open Data decision cards and a plain-language field guide
+- Application, decision, release and SDAB appeal details, including always-readable appeal cards, a plain-language field guide and the original Calgary JSON verification link
 - Links to development plans and public SDAB appeal packages when the City publishes them, with official decision-record and SDAB-contact fallbacks after packages disappear
 - Configuration-driven community, feed, field mappings, refresh timing, status categories, overview labels and map provider
 - Clear data-freshness, community-scope and official-verification warnings
@@ -82,7 +82,7 @@ The `feed` section controls:
 
 If the City renames a source field, update the relevant value under `fieldMap` and make sure the source field is present in `selectFields`. The UI continues to use stable internal names.
 
-The `links` section controls the Calgary Development Map and SDAB sources, including the appeal-page refresh and request timeout. The development-application template must keep the `{permitNumber}` placeholder.
+The `links` section controls the Calgary Development Map and SDAB sources, including the appeal-page refresh and request timeout. The development-application template must keep the `{permitNumber}` placeholder, and both decision-record templates must keep `{appealNumber}`. The dashboard reformats the SDAB JSON into labelled fields but retains a direct link to the original JSON response.
 
 The `statuses` section controls which words place a City status into the active, approved or closed dashboard group.
 
