@@ -105,6 +105,17 @@ function decisionRecordUrl(appealNumber: string | null, template: string) {
   return template.replace("{appealNumber}", encodeURIComponent(appealNumber));
 }
 
+function canliiCitation(appealNumber: string | null) {
+  const match = appealNumber?.match(/^(20\d{2})-(\d{4})$/);
+  if (!match) return null;
+  return `${match[1]} CGYSDAB ${Number(match[2])}`;
+}
+
+function canliiDecisionSearchUrl(citation: string | null, template: string) {
+  if (!citation) return null;
+  return template.replace("{citation}", encodeURIComponent(citation));
+}
+
 function appealOutcomeMeaning(value?: string) {
   const outcome = value?.trim().toUpperCase() ?? "";
   if (outcome.includes("WITHDRAWN")) {
@@ -179,6 +190,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedDecisionJsonUrl = decisionRecordUrl(
     selectedAppealNumber,
     config.links.decisionRecordApiUrlTemplate,
+  );
+  const selectedCanliiCitation = canliiCitation(selectedAppealNumber);
+  const selectedCanliiUrl = canliiDecisionSearchUrl(
+    selectedCanliiCitation,
+    config.links.canliiDecisionSearchUrlTemplate,
   );
   const selectedAppealRecord: AppealDecisionRecord | null = selectedPermit && selectedAppealNumber
     ? selectedPermit.appealdecisionrecord ?? {
@@ -463,6 +479,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                         View original Calgary JSON source <span aria-hidden="true">↗</span>
                       </a>
                     )}
+                    {selectedCanliiUrl && selectedCanliiCitation && (
+                      <a className="secondary-appeal-link" href={selectedCanliiUrl} target="_blank" rel="noreferrer">
+                        Search CanLII: {selectedCanliiCitation} <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    <a className="secondary-appeal-link" href={config.links.canliiTribunalUrl} target="_blank" rel="noreferrer">
+                      Browse all Calgary SDAB decisions on CanLII <span aria-hidden="true">↗</span>
+                    </a>
                     {!selectedPermit.appealreporturl && (
                       <a className="secondary-appeal-link" href={config.links.appealContactUrl} target="_blank" rel="noreferrer">
                         Contact SDAB about archived documents <span aria-hidden="true">↗</span>
@@ -471,6 +495,9 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                   </div>
                   <p className="appeal-note">
                     A package link appears only while Calgary publishes an exact public match. A missing link does not mean the documents never existed.
+                  </p>
+                  <p className="appeal-note canlii-note">
+                    CanLII may publish the written decision after Calgary first reports the outcome. This dashboard links to CanLII but does not copy or scrape its decision documents.
                   </p>
                 </div>
               )}
