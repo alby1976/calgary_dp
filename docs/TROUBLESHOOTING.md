@@ -86,6 +86,10 @@ The package button requires all of the following:
 
 Calgary removes concluded appeals from the Active Appeals page, so an appeal can retain a decision and appeal number after its package link disappears. The dashboard always renders a readable card for a permit with an appeal number. It prefers Calgary's matching SDAB Decisions JSON record; if that lookup returns no match, it uses the appeal fields already present in the Development Permits feed. The source line above the card identifies which source was used. Use **View original Calgary JSON source** to inspect the unformatted response, and expand the plain-language guide to understand each label and the `Not reported` or `—` markers. The SDAB contact link remains available when the public package is missing. A missing package link does not prove that no document exists or ever existed.
 
+## A CanLII decision search returns no result
+
+CanLII publication can follow Calgary's initial outcome record. Confirm that the dashboard derived the expected citation—for example, appeal `2025-0118` becomes `2025 CGYSDAB 118`—then try **Browse all Calgary SDAB decisions on CanLII**. If the decision is still absent, use Calgary Open Data and contact SDAB. The dashboard deliberately does not scrape CanLII as a fallback because CanLII prohibits systematic downloading.
+
 ## The street map is blank but permit details load
 
 Check the browser developer console and network panel for failed tile requests. Confirm:
