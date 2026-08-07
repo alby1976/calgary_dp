@@ -97,7 +97,7 @@
     "developmentApplicationUrlTemplate": "https://dmap.calgary.ca/?p={permitNumber}",
     "activeAppealsUrl": "https://www.calgary.ca/content/sdab/en/home/active-appeals.html",
     "appealReportsHost": "publicaccess.calgary.ca",
-    "decisionRecordUrlTemplate": "https://data.calgary.ca/resource/m84u-n3rp.json?$where=sdab_no%3D%27{appealNumber}%27",
+    "decisionRecordUrlTemplate": "https://data.calgary.ca/Government/Subdivision-and-Development-Appeal-Board-SDAB-Deci/m84u-n3rp/data?q={appealNumber}",
     "appealContactUrl": "https://www.calgary.ca/content/sdab/en/home/contact.html",
     "appealRefreshSeconds": 3600,
     "appealRequestTimeoutMilliseconds": 3500
