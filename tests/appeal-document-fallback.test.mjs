@@ -6,11 +6,14 @@ const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.me
 
 test("recorded appeals retain official fallbacks when a package link is absent", () => {
   assert.match(dashboardSource, /Appeal package not currently linked/);
-  assert.match(dashboardSource, /View filtered Calgary Open Data decision page/);
+  assert.match(dashboardSource, /Calgary Open Data decision record/);
+  assert.match(dashboardSource, /Plain-language guide: what do these fields mean\?/);
+  assert.match(dashboardSource, /Original City decision/);
+  assert.match(dashboardSource, /Written decision issued/);
   assert.match(dashboardSource, /Contact SDAB about archived documents/);
 });
 
 test("decision record links normalize SDAB-prefixed appeal numbers", () => {
   assert.match(dashboardSource, /\(20\\d\{2\}-\\d\{4\}\)/);
-  assert.match(dashboardSource, /decisionRecordUrlTemplate/);
+  assert.match(dashboardSource, /decisionRecordPageUrlTemplate/);
 });
