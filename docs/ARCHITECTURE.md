@@ -98,7 +98,7 @@ A permit-specific DMap URL is created only for permit numbers matching the expec
 
 ### SDAB appeal packages
 
-The server looks for exact appeal numbers in Calgary's active-appeals page and accepts report links only from the configured HTTPS host. A package button is shown only when both the permit record and Calgary page supply a matching appeal number. Calgary may remove concluded appeals from that page. When an appeal number remains in the permit feed but the package link is absent, the dashboard explains the limitation, links to the exact official Open Data decision record and provides the official SDAB contact page for archived-document enquiries.
+The server looks for exact appeal numbers in Calgary's active-appeals page and accepts report links only from the configured HTTPS host. A package button is shown only when both the permit record and Calgary page supply a matching appeal number. Calgary may remove concluded appeals from that page. When an appeal number remains in the permit feed but the package link is absent, the dashboard explains the limitation, links to Calgary's human-readable Open Data decision page filtered to that appeal number, and provides the official SDAB contact page for archived-document enquiries.
 
 ## Data interpretation boundary
 
