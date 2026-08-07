@@ -14,7 +14,7 @@ test("recorded appeals retain official fallbacks when a package link is absent",
   assert.match(dashboardSource, /appealdecisionrecord \?\?/);
   assert.match(dashboardSource, /Development Permits feed/);
   assert.match(dashboardSource, /View original Calgary JSON source/);
-  assert.match(dashboardSource, /Search CanLII:/);
+  assert.match(dashboardSource, /Open CanLII decision:/);
   assert.match(dashboardSource, /Browse all Calgary SDAB decisions on CanLII/);
   assert.match(dashboardSource, /does not copy or scrape its decision documents/);
   assert.match(dashboardSource, /Official decision catalogue record/);

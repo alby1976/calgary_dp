@@ -80,7 +80,7 @@ Every configured mapping is automatically added to the actual GeoJSON and JSON q
 | `decisionRecordApiUrlTemplate` | Calgary JSON decision-record endpoint fetched and converted into the readable appeal card; must contain `{appealNumber}` |
 | `decisionRecordPageUrlTemplate` | Human-readable Calgary Open Data source-page template filtered by appeal number; must contain `{appealNumber}` |
 | `canliiTribunalUrl` | CanLII's Calgary SDAB decisions database used as the browse-all fallback |
-| `canliiDecisionSearchUrlTemplate` | CanLII tribunal-scoped search link; must contain `{citation}` |
+| `canliiDecisionSearchUrlTemplate` | CanLII tribunal decision-ID link; must contain `{citation}`. Keep stable decision parameters, but omit CanLII's temporary `searchId`. |
 | `appealContactUrl` | Official SDAB contact page used when a report package is not currently linked |
 | `appealRefreshSeconds` | Cache/revalidation interval for the appeals page |
 | `appealRequestTimeoutMilliseconds` | Maximum wait for the appeals page |

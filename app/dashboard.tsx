@@ -623,7 +623,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                     )}
                     {selectedCanliiUrl && selectedCanliiCitation && (
                       <a className="secondary-appeal-link" href={selectedCanliiUrl} target="_blank" rel="noreferrer">
-                        Search CanLII: {selectedCanliiCitation} <span aria-hidden="true">↗</span>
+                        Open CanLII decision: {selectedCanliiCitation} <span aria-hidden="true">↗</span>
                       </a>
                     )}
                     <a className="secondary-appeal-link" href={config.links.canliiTribunalUrl} target="_blank" rel="noreferrer">

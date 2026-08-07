@@ -27,6 +27,6 @@ test("CanLII requests use durable caching and global coordination", () => {
 test("dashboard requests metadata only for a selected appeal and preserves fallbacks", () => {
   assert.match(dashboardSource, /\/api\/canlii-metadata\?appeal=/);
   assert.match(dashboardSource, /selectedAppealNumber/);
-  assert.match(dashboardSource, /Search CanLII:/);
+  assert.match(dashboardSource, /Open CanLII decision:/);
   assert.match(dashboardSource, /Browse all Calgary SDAB decisions on CanLII/);
 });

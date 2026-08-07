@@ -100,7 +100,7 @@
     "decisionRecordApiUrlTemplate": "https://data.calgary.ca/resource/m84u-n3rp.json?$where=sdab_no%3D%27{appealNumber}%27",
     "decisionRecordPageUrlTemplate": "https://data.calgary.ca/Government/Subdivision-and-Development-Appeal-Board-SDAB-Deci/m84u-n3rp/data?q={appealNumber}",
     "canliiTribunalUrl": "https://www.canlii.org/ab/cgysdab",
-    "canliiDecisionSearchUrlTemplate": "https://www.canlii.org/en/ab/cgysdab/#search/type=decision&ccId=ab/cgysdab&text={citation}",
+    "canliiDecisionSearchUrlTemplate": "https://www.canlii.org/en/ab/cgysdab/#search/indexLang=en&type=decision&id={citation}&origType=decision&origCcId=absdab",
     "appealContactUrl": "https://www.calgary.ca/content/sdab/en/home/contact.html",
     "appealRefreshSeconds": 3600,
     "appealRequestTimeoutMilliseconds": 6500
