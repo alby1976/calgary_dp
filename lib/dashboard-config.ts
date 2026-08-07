@@ -255,6 +255,7 @@ export const publicDashboardConfig = {
   links: {
     developmentMapUrl: dashboardConfig.links.developmentMapUrl,
     developmentApplicationUrlTemplate: dashboardConfig.links.developmentApplicationUrlTemplate,
+    decisionRecordApiUrlTemplate: dashboardConfig.links.decisionRecordApiUrlTemplate,
     decisionRecordPageUrlTemplate: dashboardConfig.links.decisionRecordPageUrlTemplate,
     appealContactUrl: dashboardConfig.links.appealContactUrl,
   },
