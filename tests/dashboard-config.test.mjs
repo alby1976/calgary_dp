@@ -36,6 +36,9 @@ test("external application link remains configuration-driven", () => {
   assert.match(config.links.decisionRecordApiUrlTemplate, /m84u-n3rp\.json/);
   assert.match(config.links.decisionRecordPageUrlTemplate, /\{appealNumber\}/);
   assert.match(config.links.decisionRecordPageUrlTemplate, /\/m84u-n3rp\/data\?q=/);
+  assert.match(config.links.canliiDecisionSearchUrlTemplate, /\{citation\}/);
+  assert.match(config.links.canliiDecisionSearchUrlTemplate, /cgysdab/);
+  assert.equal(new URL(config.links.canliiTribunalUrl).protocol, "https:");
   assert.equal(new URL(config.links.appealContactUrl).protocol, "https:");
 });
 
