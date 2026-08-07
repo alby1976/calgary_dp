@@ -26,6 +26,7 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 ## Documentation
 
 - [Using the dashboard](docs/USING-THE-DASHBOARD.md) — plain-language guide to filters, status colours, linked selection, maps and appeal records
+- [HCI usability findings](docs/HCI-USABILITY-FINDINGS.md) — prioritized usability and accessibility issues, evidence and acceptance criteria
 - [Configuration guide](docs/CONFIGURATION.md) — change communities, dataset IDs, City fields, links, status rules and map settings
 - [Architecture and data flow](docs/ARCHITECTURE.md) — understand fetching, normalization, failure isolation and the server/client boundary
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnose empty feeds, missing timestamps or documents, map issues and self-hosting failures
