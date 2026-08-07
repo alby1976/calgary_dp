@@ -52,7 +52,7 @@ The requests use separate refresh and timeout settings from the configuration. `
 | --- | --- |
 | Permit feed fails | Shows the feed-unavailable notice and no permit records |
 | Metadata fails | Permit data remains available; City update time shows as unavailable |
-| Appeals page fails | Permit data remains available; public appeal-package buttons are omitted |
+| Appeals page fails or a concluded appeal is removed | Permit data remains available; exact decision-record and SDAB-contact fallbacks replace the package button |
 | A DMap permit URL cannot be formed | General permit details remain; the plans button is omitted |
 
 This distinction matters: missing optional links are not evidence that no plans or appeal documents exist. They mean the dashboard could not establish a valid public link.
@@ -98,7 +98,7 @@ A permit-specific DMap URL is created only for permit numbers matching the expec
 
 ### SDAB appeal packages
 
-The server looks for exact appeal numbers in Calgary's active-appeals page and accepts report links only from the configured HTTPS host. A package button is shown only when both the permit record and Calgary page supply a matching appeal number.
+The server looks for exact appeal numbers in Calgary's active-appeals page and accepts report links only from the configured HTTPS host. A package button is shown only when both the permit record and Calgary page supply a matching appeal number. Calgary may remove concluded appeals from that page. When an appeal number remains in the permit feed but the package link is absent, the dashboard explains the limitation, links to the exact official Open Data decision record and provides the official SDAB contact page for archived-document enquiries.
 
 ## Data interpretation boundary
 
