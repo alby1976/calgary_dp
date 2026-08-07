@@ -45,7 +45,7 @@ The host must provide:
 - enough request time for the configured City and SDAB timeouts; and
 - HTTPS for the public dashboard address.
 
-Visitors also need browser access to `tile.openstreetmap.org` for the default street basemap and to `calgary.ca`, `dmap.calgary.ca` and `publicaccess.calgary.ca` for official links. If you configure another tile provider, allow its hostname instead and follow its attribution, access and billing terms.
+Visitors also need browser access to `tile.openstreetmap.org` for the default street basemap and to `calgary.ca`, `dmap.calgary.ca`, `publicaccess.calgary.ca` and `canlii.org` for official links. If you configure another tile provider, allow its hostname instead and follow its attribution, access and billing terms.
 
 No Calgary API key or application secret is currently required.
 
