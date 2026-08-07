@@ -32,6 +32,8 @@ test("external application link remains configuration-driven", () => {
   assert.match(config.links.developmentApplicationUrlTemplate, /\{permitNumber\}/);
   assert.equal(new URL(config.links.activeAppealsUrl).protocol, "https:");
   assert.ok(config.links.appealReportsHost);
+  assert.match(config.links.decisionRecordUrlTemplate, /\{appealNumber\}/);
+  assert.equal(new URL(config.links.appealContactUrl).protocol, "https:");
 });
 
 test("street map provider remains valid and configuration-driven", () => {
