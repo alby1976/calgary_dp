@@ -75,7 +75,7 @@ The adapter also:
 External City requests run on the server. The client receives normalized permit records and a limited public configuration object. Browser-side code handles only presentation and local interactions:
 
 - text search;
-- year and status filters;
+- year, permit-status and recorded-SDAB-appeal filters;
 - selected permit state;
 - chart calculations and map selection; and
 - show-more behaviour.
