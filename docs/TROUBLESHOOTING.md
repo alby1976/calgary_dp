@@ -84,7 +84,7 @@ The package button requires all of the following:
 - that listing has a public report link; and
 - the report link uses HTTPS and the configured `appealReportsHost`.
 
-Calgary removes concluded appeals from the Active Appeals page, so an appeal can retain a decision and appeal number after its package link disappears. In that case, the dashboard converts Calgary's matching JSON decision record into a readable card, includes a plain-language field guide, and shows the SDAB contact link. If the card says that no matching decision record was returned, confirm the appeal number in the configured JSON endpoint; newly filed appeals may not have a decision record yet. A missing package link does not prove that no document exists or ever existed.
+Calgary removes concluded appeals from the Active Appeals page, so an appeal can retain a decision and appeal number after its package link disappears. The dashboard always renders a readable card for a permit with an appeal number. It prefers Calgary's matching SDAB Decisions JSON record; if that lookup returns no match, it uses the appeal fields already present in the Development Permits feed. The source line above the card identifies which source was used. Use **View original Calgary JSON source** to inspect the unformatted response, and expand the plain-language guide to understand each label and the `Not reported` or `—` markers. The SDAB contact link remains available when the public package is missing. A missing package link does not prove that no document exists or ever existed.
 
 ## The street map is blank but permit details load
 
