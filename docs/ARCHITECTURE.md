@@ -63,7 +63,7 @@ The requests use separate refresh and timeout settings from the configuration. `
 | Permit feed fails | Shows the feed-unavailable notice and no permit records |
 | Metadata fails | Permit data remains available; City update time shows as unavailable |
 | Appeals page fails or a concluded appeal is removed | Permit data remains available; exact decision-record and SDAB-contact fallbacks replace the package button |
-| A DMap permit URL cannot be formed | General permit details remain; the plans button is omitted |
+| A Calgary Development Map (DMap) permit URL cannot be formed | General permit details remain; the plans button is omitted |
 
 This distinction matters: missing optional links are not evidence that no plans or appeal documents exist. They mean the dashboard could not establish a valid public link.
 

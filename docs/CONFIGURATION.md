@@ -73,7 +73,7 @@ Every configured mapping is automatically added to the actual GeoJSON and JSON q
 
 | Setting | Purpose |
 | --- | --- |
-| `developmentMapUrl` | General Calgary Development Map link |
+| `developmentMapUrl` | General Calgary Development Map (DMap) link |
 | `developmentApplicationUrlTemplate` | Permit-specific DMap template; must contain `{permitNumber}` |
 | `activeAppealsUrl` | Calgary SDAB active-appeals page inspected for public packages |
 | `appealReportsHost` | Only this HTTPS host is accepted for public appeal-package links |

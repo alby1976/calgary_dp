@@ -4,7 +4,7 @@
 **Evaluated version:** Sites version 25  
 **Audience:** Varsity residents, friends and Varsity Community Association civic-committee members
 
-**Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch DMap even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists or predict when Calgary will publish it.
+**Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch Calgary's Development Map (DMap) even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists or predict when Calgary will publish it.
 
 ## Scope and limitations
 

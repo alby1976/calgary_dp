@@ -51,7 +51,7 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Street-level permit map/i);
   assert.match(html, /Linked selection · both views/i);
   assert.match(html, /Open data is an early signal/i);
-  assert.match(html, /before it appears in DMap/i);
+  assert.match(html, /Development Map \(DMap\)/i);
   const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
   assert.match(dashboardSource, /Highlighted in the community overview and the street-level map/i);
 });

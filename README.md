@@ -8,7 +8,7 @@ An interactive, community-first view of City of Calgary development permits in V
 
 The dashboard makes Calgary's development-permit open data easier for residents and community association members to explore. It brings status, location, timing, decisions, development-plan links and public appeal information into one searchable view.
 
-It is also a proactive early-warning tool. A development-permit application can appear in Calgary Open Data before its record or plans appear in DMap. Seeing a permit here is a prompt to keep watching DMap; it is not confirmation that a DMap page or public plans are already available, and it does not predict when Calgary will publish them.
+It is also a proactive early-warning tool. A development-permit application can appear in Calgary Open Data before its record or plans appear in Calgary's Development Map (DMap). Seeing a permit here is a prompt to keep watching DMap; it is not confirmation that a DMap page or public plans are already available, and it does not predict when Calgary will publish them.
 
 ## Features
 

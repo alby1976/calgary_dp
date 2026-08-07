@@ -30,7 +30,7 @@ Common causes:
 - invalid Socrata field name;
 - zero, negative or non-integer limit/timeout/refresh value;
 - sort direction other than `ASC` or `DESC`; or
-- missing `{permitNumber}` in the DMap template;
+- missing `{permitNumber}` in the Calgary Development Map (DMap) template;
 - missing `{z}`, `{x}` or `{y}` in the map tile template; or
 - an invalid map zoom range.
 

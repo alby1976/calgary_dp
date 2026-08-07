@@ -26,7 +26,7 @@ The project uses Vinext. Its primary production target is Cloudflare Workers. Vi
 For this dashboard, a Node host must be treated as a compatibility deployment:
 
 1. build and run the exact repository version;
-2. verify the home page, City feed, filters, DMap links and any public SDAB package link;
+2. verify the home page, City feed, filters, Calgary Development Map (DMap) links and any public SDAB package link;
 3. check server logs under normal traffic; and
 4. keep the previous working deployment available until the new host passes those checks.
 
