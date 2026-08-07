@@ -128,10 +128,16 @@ h1 em { color: var(--green); font-weight: 400; }
 .detail-list dt { color: var(--muted); }
 .detail-list dd { margin: 0; font-weight: 700; }
 .appeal-action { margin-top: 24px; padding: 18px; border-left: 4px solid var(--orange); background: var(--orange-soft); }
+.appeal-action.appeal-package-missing { border-left-color: #78858a; background: #e5e5e0; }
 .appeal-action .appeal-label { margin: 0; color: #94421f; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.appeal-action.appeal-package-missing .appeal-label { color: #536064; }
 .appeal-action .appeal-summary { margin: 7px 0 14px; color: var(--ink); font: 700 15px/1.4 Georgia, serif; }
+.appeal-missing-explanation { margin: 0 0 14px; color: #43545b; font-size: 12px; line-height: 1.55; }
+.appeal-links { display: grid; gap: 8px; }
 .appeal-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; padding: 12px 14px; border-radius: 3px; background: var(--ink); color: white; font-size: 12px; font-weight: 800; text-decoration: none; }
 .appeal-action a:hover { background: #273b48; }
+.appeal-action a.secondary-appeal-link { border: 1px solid rgba(23,36,45,.24); background: rgba(255,255,255,.66); color: var(--ink); }
+.appeal-action a.secondary-appeal-link:hover { background: white; }
 .appeal-action a:focus-visible { outline: 3px solid rgba(216,102,56,.45); outline-offset: 3px; }
 .appeal-action .appeal-note { margin: 9px 0 0; color: #70442e; font-size: 10px; line-height: 1.5; }
 .plans-action { margin-top: 24px; }
