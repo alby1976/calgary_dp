@@ -33,6 +33,8 @@ test("external application link remains configuration-driven", () => {
   assert.equal(new URL(config.links.activeAppealsUrl).protocol, "https:");
   assert.ok(config.links.appealReportsHost);
   assert.match(config.links.decisionRecordUrlTemplate, /\{appealNumber\}/);
+  assert.match(config.links.decisionRecordUrlTemplate, /\/m84u-n3rp\/data\?q=/);
+  assert.doesNotMatch(config.links.decisionRecordUrlTemplate, /\.json/);
   assert.equal(new URL(config.links.appealContactUrl).protocol, "https:");
 });
 
