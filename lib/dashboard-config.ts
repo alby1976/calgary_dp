@@ -33,7 +33,8 @@ export type DashboardConfig = {
     developmentApplicationUrlTemplate: string;
     activeAppealsUrl: string;
     appealReportsHost: string;
-    decisionRecordUrlTemplate: string;
+    decisionRecordApiUrlTemplate: string;
+    decisionRecordPageUrlTemplate: string;
     appealContactUrl: string;
     appealRefreshSeconds: number;
     appealRequestTimeoutMilliseconds: number;
@@ -120,8 +121,12 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   );
   requireUrl(value.links.activeAppealsUrl, "links.activeAppealsUrl");
   requireUrl(
-    value.links.decisionRecordUrlTemplate.replace("{appealNumber}", "2026-0001"),
-    "links.decisionRecordUrlTemplate",
+    value.links.decisionRecordApiUrlTemplate.replace("{appealNumber}", "2026-0001"),
+    "links.decisionRecordApiUrlTemplate",
+  );
+  requireUrl(
+    value.links.decisionRecordPageUrlTemplate.replace("{appealNumber}", "2026-0001"),
+    "links.decisionRecordPageUrlTemplate",
   );
   requireUrl(value.links.appealContactUrl, "links.appealContactUrl");
   requireUrl(
@@ -134,8 +139,11 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   if (!value.links.developmentApplicationUrlTemplate.includes("{permitNumber}")) {
     throw new Error("links.developmentApplicationUrlTemplate must contain {permitNumber}");
   }
-  if (!value.links.decisionRecordUrlTemplate.includes("{appealNumber}")) {
-    throw new Error("links.decisionRecordUrlTemplate must contain {appealNumber}");
+  if (!value.links.decisionRecordApiUrlTemplate.includes("{appealNumber}")) {
+    throw new Error("links.decisionRecordApiUrlTemplate must contain {appealNumber}");
+  }
+  if (!value.links.decisionRecordPageUrlTemplate.includes("{appealNumber}")) {
+    throw new Error("links.decisionRecordPageUrlTemplate must contain {appealNumber}");
   }
   for (const placeholder of ["{z}", "{x}", "{y}"]) {
     if (!value.map.tileUrlTemplate.includes(placeholder)) {
@@ -247,7 +255,7 @@ export const publicDashboardConfig = {
   links: {
     developmentMapUrl: dashboardConfig.links.developmentMapUrl,
     developmentApplicationUrlTemplate: dashboardConfig.links.developmentApplicationUrlTemplate,
-    decisionRecordUrlTemplate: dashboardConfig.links.decisionRecordUrlTemplate,
+    decisionRecordPageUrlTemplate: dashboardConfig.links.decisionRecordPageUrlTemplate,
     appealContactUrl: dashboardConfig.links.appealContactUrl,
   },
   statuses: dashboardConfig.statuses,
