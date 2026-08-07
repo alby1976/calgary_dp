@@ -12,7 +12,9 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 
 - Live City of Calgary open-data connection
 - City dataset update timestamp, when available
-- Permit status summary, hover/focus plain-language colour guide, linked community overview and Calgary street map, shared point selection, and applications-by-year chart
+- One coordinated desktop workspace with the permit explorer on the left, linked overview and street maps in the centre, and the selected permit on the right
+- Shared selection across the permit table and both maps, plus a responsive one-column layout on smaller screens
+- Permit status summary, hover/focus plain-language colour guide, and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal
 - Application, decision, release and SDAB appeal details, including always-readable appeal cards, a plain-language field guide and the original Calgary JSON verification link
@@ -23,6 +25,7 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 
 ## Documentation
 
+- [Using the dashboard](docs/USING-THE-DASHBOARD.md) — plain-language guide to filters, status colours, linked selection, maps and appeal records
 - [Configuration guide](docs/CONFIGURATION.md) — change communities, dataset IDs, City fields, links, status rules and map settings
 - [Architecture and data flow](docs/ARCHITECTURE.md) — understand fetching, normalization, failure isolation and the server/client boundary
 - [Troubleshooting](docs/TROUBLESHOOTING.md) — diagnose empty feeds, missing timestamps or documents, map issues and self-hosting failures
@@ -83,7 +86,7 @@ The `feed` section controls:
 
 If the City renames a source field, update the relevant value under `fieldMap` and make sure the source field is present in `selectFields`. The UI continues to use stable internal names.
 
-The `links` section controls the Calgary Development Map and SDAB sources, including the appeal-page refresh and request timeout. The development-application template must keep the `{permitNumber}` placeholder, both Calgary decision-record templates must keep `{appealNumber}`, and the CanLII search template must keep `{citation}`. The dashboard reformats Calgary's SDAB JSON into labelled fields, retains the original JSON link, and derives a CanLII citation such as `2025 CGYSDAB 118` from an appeal number such as `2025-0118`.
+The `links` section controls the Calgary Development Map and SDAB sources, including the appeal-page refresh and request timeout. The development-application template must keep the `{permitNumber}` placeholder, both Calgary decision-record templates must keep `{appealNumber}`, and the CanLII decision template must keep `{citation}`. The CanLII template uses the stable `id=` decision parameter and deliberately omits the temporary, session-specific `searchId`. The dashboard reformats Calgary's SDAB JSON into labelled fields, retains the original JSON link, and derives a CanLII citation such as `2025 CGYSDAB 118` from an appeal number such as `2025-0118`.
 
 The `statuses` section controls which words place a City status into the active, approved or closed dashboard group.
 

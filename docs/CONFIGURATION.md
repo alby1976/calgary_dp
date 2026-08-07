@@ -80,12 +80,20 @@ Every configured mapping is automatically added to the actual GeoJSON and JSON q
 | `decisionRecordApiUrlTemplate` | Calgary JSON decision-record endpoint fetched and converted into the readable appeal card; must contain `{appealNumber}` |
 | `decisionRecordPageUrlTemplate` | Human-readable Calgary Open Data source-page template filtered by appeal number; must contain `{appealNumber}` |
 | `canliiTribunalUrl` | CanLII's Calgary SDAB decisions database used as the browse-all fallback |
-| `canliiDecisionSearchUrlTemplate` | CanLII tribunal decision-ID link; must contain `{citation}`. Keep stable decision parameters, but omit CanLII's temporary `searchId`. |
+| `canliiDecisionSearchUrlTemplate` | CanLII tribunal decision-ID link; must contain `{citation}`. Use the stable `id=` parameter and omit CanLII's temporary `searchId`. |
 | `appealContactUrl` | Official SDAB contact page used when a report package is not currently linked |
 | `appealRefreshSeconds` | Cache/revalidation interval for the appeals page |
 | `appealRequestTimeoutMilliseconds` | Maximum wait for the appeals page |
 
-The allowed appeal host is deliberately configured separately. It prevents a changed or malformed City page from silently inserting an unrelated external link. The dashboard converts `YYYY-NNNN` appeal numbers into neutral-citation-style searches such as `YYYY CGYSDAB N`; it links to CanLII rather than fetching or storing CanLII documents.
+The allowed appeal host is deliberately configured separately. It prevents a changed or malformed City page from silently inserting an unrelated external link. The dashboard converts `YYYY-NNNN` appeal numbers into neutral citations such as `YYYY CGYSDAB N`; it links to CanLII rather than fetching or storing CanLII documents.
+
+Use this stable CanLII form:
+
+```text
+https://www.canlii.org/en/ab/cgysdab/#search/indexLang=en&type=decision&id={citation}&origType=decision&origCcId=absdab
+```
+
+At runtime, `{citation}` is URL-encoded and placed in `id=`. Keep `indexLang=en`, `type=decision`, `origType=decision` and `origCcId=absdab`. Do not copy `searchId` from a CanLII browser result: it is generated for an individual search session and is not a stable identifier. Do not replace `id={citation}` with the older free-text `text={citation}` form.
 
 ### `statuses`
 
@@ -113,6 +121,8 @@ The first matching group wins. A status matching none of the lists appears under
 The default uses the standard OpenStreetMap tile service. Keep its visible attribution, do not bulk-download or prefetch tiles, and review the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before operating a high-traffic or commercial deployment. A custom provider must allow browser use from the dashboard's public domain.
 
 Both geographic views use the latitude and longitude published in the City feed. The simplified overview helps reveal clusters; the street map supplies granular location context. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
+
+The three-pane desktop layout and its 960-pixel responsive breakpoint are presentation behaviour in `app/dashboard.tsx` and `app/globals.css`, not feed configuration. A third-party host does not need an additional setting to enable linked selection.
 
 ## Change to another Calgary community
 

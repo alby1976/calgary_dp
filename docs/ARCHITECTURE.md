@@ -18,7 +18,10 @@ validation + URL construction + field mapping
 normalized Permit records
         |
         v
-server-rendered page -> client-side search, filters, map and charts
+server-rendered page -> client-side coordinated workspace
+                         |       |             |
+                      explorer  two maps  selected details
+                         +------- shared selection -------+
                                       |
                                       +----> selected appeal -> server-only CanLII endpoint
                                                                   |
@@ -34,7 +37,7 @@ server-rendered page -> client-side search, filters, map and charts
 | `lib/permit.ts` | Stable internal permit type used by server and client code |
 | `lib/canlii.ts` | Appeal-to-case mapping and strict CanLII metadata normalization |
 | `app/page.tsx` | Server-side fetching, data freshness and appeal-package enrichment |
-| `app/dashboard.tsx` | Interactive search, filters, simplified coordinate overview, charts and record details |
+| `app/dashboard.tsx` | Coordinated explorer, simplified overview, shared selection, charts and record details |
 | `app/permit-map.tsx` | MapLibre street basemap, accessible DOM permit markers, fit-to-results and map interaction |
 | `app/layout.tsx` | Metadata derived from the site configuration |
 | `worker/index.ts` | Server-only CanLII endpoint, durable cache and global rate-limit coordination |
@@ -89,6 +92,12 @@ External City requests run on the server. The client receives normalized permit 
 
 No user search or filter state is currently stored on the server.
 
+## Coordinated workspace
+
+The desktop interface is a three-pane workspace: the permit explorer is on the left, both linked maps are in the centre, and selected-permit details are on the right. The list and details panes scroll independently. This keeps the comparison context visible and reduces full-page navigation.
+
+One client-side `selectedPermitNumber` state coordinates the permit row, community overview point, MapLibre marker and details panel. A selection event from any of the three entry points updates all four presentations. The same filtered array drives the explorer and both maps, preventing one visualization from silently showing a different subset. Below the 960-pixel breakpoint, CSS changes the workspace to a one-column document flow while preserving the same selection state and source order.
+
 ## Street map
 
 `app/permit-map.tsx` renders a client-side MapLibre map. The default configuration uses ordinary browser requests to OpenStreetMap raster tiles and displays the required attribution. It does not bulk-download or prefetch tiles.
@@ -107,7 +116,7 @@ A permit-specific DMap URL is created only for permit numbers matching the expec
 
 The server looks for exact appeal numbers in Calgary's active-appeals page and accepts report links only from the configured HTTPS host. It also fetches the matching Calgary Open Data JSON decision record, maps the municipal field names into a typed appeal record, and sends that normalized record to the dashboard. The dashboard renders a readable decision card for every permit with an appeal number. When the separate SDAB JSON record is unavailable, the card fails softly to the appeal fields already present in the Development Permits feed and identifies that source. The collapsible field guide explains every displayed value and missing-value marker. Links to both Calgary's human-readable dataset page and the original JSON response remain available for verification. Calgary may remove concluded appeals from the active page; the permit-feed fallback and SDAB contact link remain available.
 
-For past written reasons, the client converts an appeal number such as `2025-0118` into the CanLII citation search `2025 CGYSDAB 118`. It provides both the citation-specific search and Calgary SDAB database links. The application does not request, scrape, cache or reproduce CanLII decision documents: CanLII's terms prohibit systematic downloading and direct users seeking automated retrieval to originating bodies or authorized channels.
+For past written reasons, the client converts an appeal number such as `2025-0118` into the CanLII citation `2025 CGYSDAB 118`. The citation-specific link puts that value in CanLII's stable `id=` decision parameter, alongside `type=decision`, `origType=decision` and `origCcId=absdab`. It deliberately omits session-generated `searchId` values. The application also provides the Calgary SDAB database link. It does not request, scrape, cache or reproduce CanLII decision documents: CanLII's terms prohibit systematic downloading and direct users seeking automated retrieval to originating bodies or authorized channels.
 
 ## Data interpretation boundary
 

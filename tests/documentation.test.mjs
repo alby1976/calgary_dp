@@ -8,6 +8,7 @@ import config from "../config/dashboard.json" with { type: "json" };
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const documents = [
   "README.md",
+  "docs/USING-THE-DASHBOARD.md",
   "docs/CONFIGURATION.md",
   "docs/ARCHITECTURE.md",
   "docs/TROUBLESHOOTING.md",
@@ -33,4 +34,16 @@ test("configuration guide documents every top-level configuration section", () =
   for (const section of Object.keys(config)) {
     assert.match(guide, new RegExp(`\\b${section}\\b`), `missing documentation for ${section}`);
   }
+});
+
+test("documentation explains linked selection and the stable CanLII decision route", () => {
+  const readme = readFileSync(resolve(projectRoot, "README.md"), "utf8");
+  const userGuide = readFileSync(resolve(projectRoot, "docs/USING-THE-DASHBOARD.md"), "utf8");
+  const configurationGuide = readFileSync(resolve(projectRoot, "docs/CONFIGURATION.md"), "utf8");
+
+  assert.match(readme, /coordinated desktop workspace/i);
+  assert.match(userGuide, /same permit then becomes selected everywhere/i);
+  assert.match(configurationGuide, /id=\{citation\}/);
+  assert.match(configurationGuide, /Do not copy `searchId`/);
+  assert.match(configurationGuide, /Do not replace `id=\{citation\}` with the older free-text `text=\{citation\}` form/);
 });

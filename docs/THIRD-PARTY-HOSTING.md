@@ -178,16 +178,18 @@ Before directing users to the third-party deployment, verify:
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
 - year and status filters work;
+- at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the simplified overview and detailed street map show the same filtered permit set;
 - Calgary streets and the configured map attribution are visible;
 - **Fit visible permits** frames the filtered results;
 - a map point can select a permit;
+- selecting a permit row or either map point highlights the same permit in both maps and updates the right-hand details;
 - the official dataset link opens the configured dataset;
 - a known `DPYYYY-number` record produces a DMap link;
 - an appealed record either shows cached CanLII metadata or clearly reports that optional enrichment is unavailable while retaining the CanLII search link;
 - an appeal-package button appears only for a known public exact match;
 - the community-scope disclaimer names the configured community and filter; and
-- mobile-width content remains readable.
+- mobile-width content stacks into a readable one-column flow.
 
 An apparent success page with an empty feed is not a successful deployment.
 

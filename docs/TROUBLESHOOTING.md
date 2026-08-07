@@ -88,7 +88,9 @@ Calgary removes concluded appeals from the Active Appeals page, so an appeal can
 
 ## A CanLII decision search returns no result
 
-CanLII publication can follow Calgary's initial outcome record. Confirm that the dashboard derived the expected citation—for example, appeal `2025-0118` becomes `2025 CGYSDAB 118`—then try **Browse all Calgary SDAB decisions on CanLII**. If the decision is still absent, use Calgary Open Data and contact SDAB. The dashboard deliberately does not scrape CanLII as a fallback because CanLII prohibits systematic downloading.
+CanLII publication can follow Calgary's initial outcome record. Confirm that the dashboard derived the expected citation—for example, appeal `2025-0118` becomes `2025 CGYSDAB 118`—then inspect `links.canliiDecisionSearchUrlTemplate`.
+
+The template should contain `type=decision`, `id={citation}`, `origType=decision` and `origCcId=absdab`. Remove any copied `searchId`: it is session-specific and can expire or point to another browser's search context. Do not change the stable `id=` lookup back to a free-text `text=` search. Then try **Browse all Calgary SDAB decisions on CanLII**. If the decision is still absent, use Calgary Open Data and contact SDAB. The dashboard deliberately does not scrape CanLII as a fallback because CanLII prohibits systematic downloading.
 
 ## The CanLII metadata card says the key is not installed
 
@@ -123,7 +125,11 @@ Both the overview and street map only plot records with valid coordinates from t
 
 ## The two visualizations show different selections
 
-They are designed to share one selected permit. Selecting a point in either view should enlarge or outline the matching point in both views and update the permit-information panel below them. If a filter removes that permit, both views select the first remaining visible result. Refresh the page if an older cached script leaves the views out of sync.
+They are designed to share one selected permit. Selecting a permit row or a point in either view should enlarge or outline the matching point in both maps, centre the street map and update the right-hand details. If a filter removes that permit, all views select the first remaining visible result. Refresh the page if an older cached script leaves the views out of sync.
+
+## The workspace is stacked instead of three columns
+
+This is expected below the 960-pixel responsive breakpoint. The explorer, linked maps and selected details move into one column so controls and text remain usable on a narrow screen. On desktop, check the browser window width and zoom level before treating the stacked layout as a deployment problem. No hosting environment variable controls this behaviour.
 
 ## Status totals look wrong
 
