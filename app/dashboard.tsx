@@ -96,6 +96,15 @@ function developmentMapApplicationUrl(permitNumber: string | undefined, template
   return template.replace("{permitNumber}", encodeURIComponent(normalized));
 }
 
+function normalizedAppealNumber(value: string | undefined) {
+  return value?.match(/(?:^|\D)(20\d{2}-\d{4})(?:\D|$)/)?.[1] ?? null;
+}
+
+function decisionRecordUrl(appealNumber: string | null, template: string) {
+  if (!appealNumber) return null;
+  return template.replace("{appealNumber}", encodeURIComponent(appealNumber));
+}
+
 function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
@@ -144,6 +153,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedApplicationUrl = developmentMapApplicationUrl(
     selectedPermit?.permitnum,
     config.links.developmentApplicationUrlTemplate,
+  );
+  const selectedAppealNumber = normalizedAppealNumber(selectedPermit?.sdabnumber);
+  const selectedDecisionRecordUrl = decisionRecordUrl(
+    selectedAppealNumber,
+    config.links.decisionRecordUrlTemplate,
+  );
+  const selectedAppealIsDecided = Boolean(
+    selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
   );
 
   const chartYears = years.slice(0, 8).reverse();
@@ -334,17 +351,42 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 <div><dt>Decision by</dt><dd>{text(selectedPermit.decisionby)}</dd></div>
                 <div><dt>SDAB</dt><dd>{selectedPermit.sdabnumber ? `${selectedPermit.sdabnumber} · ${text(selectedPermit.sdabdecision)}` : "No appeal reported"}</dd></div>
               </dl>
-              {selectedPermit.sdabnumber && selectedPermit.appealreporturl && (
-                <div className="appeal-action">
-                  <p className="appeal-label">Public SDAB appeal package</p>
+              {selectedAppealNumber && (
+                <div className={`appeal-action ${selectedPermit.appealreporturl ? "" : "appeal-package-missing"}`}>
+                  <p className="appeal-label">
+                    {selectedPermit.appealreporturl ? "Public SDAB appeal package" : "Appeal package not currently linked"}
+                  </p>
                   <p className="appeal-summary">
-                    Appeal {selectedPermit.sdabnumber}
+                    Appeal {selectedAppealNumber}
                     {selectedPermit.sdabhearingdate ? ` · Hearing ${formatDate(selectedPermit.sdabhearingdate)}` : ""}
                   </p>
-                  <a href={selectedPermit.appealreporturl} target="_blank" rel="noreferrer">
-                    View appeal reports, submissions &amp; plans <span aria-hidden="true">↗</span>
-                  </a>
-                  <p className="appeal-note">Shown only when Calgary lists a public report package for this appeal.</p>
+                  {!selectedPermit.appealreporturl && (
+                    <p className="appeal-missing-explanation">
+                      {selectedAppealIsDecided
+                        ? "Calgary records a decision for this appeal, but its reports and plans are no longer linked from the Active Appeals page."
+                        : "Calgary does not currently list a public report package for this appeal. It may not have been posted yet."}
+                    </p>
+                  )}
+                  <div className="appeal-links">
+                    {selectedPermit.appealreporturl && (
+                      <a href={selectedPermit.appealreporturl} target="_blank" rel="noreferrer">
+                        View appeal reports, submissions &amp; plans <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    {selectedDecisionRecordUrl && (
+                      <a className="secondary-appeal-link" href={selectedDecisionRecordUrl} target="_blank" rel="noreferrer">
+                        View Calgary Open Data decision record <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    {!selectedPermit.appealreporturl && (
+                      <a className="secondary-appeal-link" href={config.links.appealContactUrl} target="_blank" rel="noreferrer">
+                        Contact SDAB about archived documents <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                  </div>
+                  <p className="appeal-note">
+                    A package link appears only while Calgary publishes an exact public match. A missing link does not mean the documents never existed.
+                  </p>
                 </div>
               )}
               {selectedApplicationUrl && (
