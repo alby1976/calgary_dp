@@ -1,3 +1,18 @@
+export type AppealDecisionRecord = {
+  year?: string;
+  appealNumber?: string;
+  permitNumber?: string;
+  address?: string;
+  propertyType?: string;
+  propertyUse?: string;
+  originalDecision?: string;
+  appealFiledDate?: string;
+  initialMeetingDate?: string;
+  finalSessionDate?: string;
+  decisionIssuedDate?: string;
+  appealDecision?: string;
+};
+
 export type Permit = {
   permitnum?: string;
   address?: string;
@@ -22,6 +37,7 @@ export type Permit = {
   sdabdecision?: string;
   sdabdecisiondate?: string;
   appealreporturl?: string;
+  appealdecisionrecord?: AppealDecisionRecord;
   communityname?: string;
   ward?: string;
   latitude?: string;
