@@ -156,6 +156,7 @@ h1 em { color: var(--green); font-weight: 400; }
 .appeal-action a.secondary-appeal-link:hover { background: white; }
 .appeal-action a:focus-visible { outline: 3px solid rgba(216,102,56,.45); outline-offset: 3px; }
 .appeal-action .appeal-note { margin: 9px 0 0; color: #70442e; font-size: 10px; line-height: 1.5; }
+.appeal-action .appeal-note.canlii-note { color: #536064; }
 .plans-action { margin-top: 24px; }
 .plans-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; width: 100%; padding: 14px 16px; border-radius: 3px; background: var(--green); color: white; font-size: 13px; font-weight: 800; text-decoration: none; }
 .plans-action a:hover { background: #145540; }
