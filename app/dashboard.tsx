@@ -105,6 +105,23 @@ function decisionRecordUrl(appealNumber: string | null, template: string) {
   return template.replace("{appealNumber}", encodeURIComponent(appealNumber));
 }
 
+function appealOutcomeMeaning(value?: string) {
+  const outcome = value?.trim().toUpperCase() ?? "";
+  if (outcome.includes("WITHDRAWN")) {
+    return "The appeal was ended before the Board made a final ruling on it. Check the official file to confirm what decision remains in effect.";
+  }
+  if (outcome.includes("ALLOWED IN PART")) {
+    return "The Board accepted part of the appeal and changed only part of the original decision. The written decision explains exactly what changed.";
+  }
+  if (outcome.includes("ALLOWED")) {
+    return "The Board granted the appeal and changed or replaced the original decision. Conditions may still apply.";
+  }
+  if (outcome.includes("DENIED") || outcome.includes("DISMISSED")) {
+    return "The Board did not grant the appeal. The original decision generally remains, but the official written decision controls.";
+  }
+  return "This is the outcome wording published by Calgary. Read the official decision before relying on it for deadlines, conditions or legal meaning.";
+}
+
 function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
@@ -157,7 +174,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedAppealNumber = normalizedAppealNumber(selectedPermit?.sdabnumber);
   const selectedDecisionRecordUrl = decisionRecordUrl(
     selectedAppealNumber,
-    config.links.decisionRecordUrlTemplate,
+    config.links.decisionRecordPageUrlTemplate,
   );
   const selectedAppealIsDecided = Boolean(
     selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
@@ -367,6 +384,44 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                         : "Calgary does not currently list a public report package for this appeal. It may not have been posted yet."}
                     </p>
                   )}
+                  {selectedPermit.appealdecisionrecord ? (
+                    <section className="appeal-decision-card" aria-labelledby="appeal-decision-heading">
+                      <p className="decision-source">Calgary Open Data decision record</p>
+                      <h3 id="appeal-decision-heading">{text(selectedPermit.appealdecisionrecord.appealDecision)}</h3>
+                      <p className="decision-meaning">{appealOutcomeMeaning(selectedPermit.appealdecisionrecord.appealDecision)}</p>
+                      <dl className="appeal-decision-grid">
+                        <div><dt>Appeal number</dt><dd>{text(selectedPermit.appealdecisionrecord.appealNumber)}</dd></div>
+                        <div><dt>Related permit</dt><dd>{text(selectedPermit.appealdecisionrecord.permitNumber)}</dd></div>
+                        <div><dt>Property address</dt><dd>{text(selectedPermit.appealdecisionrecord.address)}</dd></div>
+                        <div><dt>Development type</dt><dd>{text(selectedPermit.appealdecisionrecord.propertyType)}</dd></div>
+                        <div className="wide"><dt>Proposed use</dt><dd>{text(selectedPermit.appealdecisionrecord.propertyUse)}</dd></div>
+                        <div><dt>Original City decision</dt><dd>{text(selectedPermit.appealdecisionrecord.originalDecision)}</dd></div>
+                        <div><dt>Appeal filed</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.appealFiledDate)}</dd></div>
+                        <div><dt>First Board meeting</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.initialMeetingDate)}</dd></div>
+                        <div><dt>Final Board session</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.finalSessionDate)}</dd></div>
+                        <div><dt>Written decision issued</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.decisionIssuedDate)}</dd></div>
+                      </dl>
+                      <details className="appeal-dummies-guide">
+                        <summary>Plain-language guide: what do these fields mean?</summary>
+                        <dl>
+                          <div><dt>Appeal number</dt><dd>The Board’s tracking number for this appeal—not the development-permit number.</dd></div>
+                          <div><dt>Related permit</dt><dd>The original City application that someone appealed.</dd></div>
+                          <div><dt>Property address</dt><dd>The location Calgary associates with the appealed application.</dd></div>
+                          <div><dt>Development type</dt><dd>Calgary’s broad category for the kind of property or project involved.</dd></div>
+                          <div><dt>Proposed use</dt><dd>What the development application asked permission to build or operate.</dd></div>
+                          <div><dt>Original City decision</dt><dd>What the City decided before the appeal was heard.</dd></div>
+                          <div><dt>Appeal filed</dt><dd>When the appeal was submitted to SDAB.</dd></div>
+                          <div><dt>First Board meeting</dt><dd>The first scheduled SDAB session. It is not necessarily the final hearing date.</dd></div>
+                          <div><dt>Final Board session</dt><dd>The last listed session before the Board completed its hearing process.</dd></div>
+                          <div><dt>Written decision issued</dt><dd>When the Board’s written decision was released. This can be later than the hearing.</dd></div>
+                          <div><dt>Outcome</dt><dd>The Board’s result. Conditions and exact legal effects come from the official written decision, not this summary.</dd></div>
+                          <div><dt>Not reported or —</dt><dd>The JSON source did not provide that value. It does not automatically mean “none,” “no” or “not applicable.”</dd></div>
+                        </dl>
+                      </details>
+                    </section>
+                  ) : (
+                    <p className="appeal-record-unavailable">Calgary has not returned a matching readable decision record for this appeal yet.</p>
+                  )}
                   <div className="appeal-links">
                     {selectedPermit.appealreporturl && (
                       <a href={selectedPermit.appealreporturl} target="_blank" rel="noreferrer">
@@ -375,7 +430,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                     )}
                     {selectedDecisionRecordUrl && (
                       <a className="secondary-appeal-link" href={selectedDecisionRecordUrl} target="_blank" rel="noreferrer">
-                        View filtered Calgary Open Data decision page <span aria-hidden="true">↗</span>
+                        Open this record in Calgary Open Data <span aria-hidden="true">↗</span>
                       </a>
                     )}
                     {!selectedPermit.appealreporturl && (
