@@ -5,7 +5,7 @@ import {
   mapSourceRecord,
   publicDashboardConfig,
 } from "../lib/dashboard-config";
-import type { Permit } from "../lib/permit";
+import type { AppealDecisionRecord, Permit } from "../lib/permit";
 
 type GeoFeature = {
   geometry?: { coordinates?: [number, number] };
@@ -74,6 +74,60 @@ async function fetchAppealReportLinks(): Promise<Map<string, string>> {
   return reports;
 }
 
+function sourceText(record: Record<string, unknown>, field: string) {
+  const value = record[field];
+  if (value === undefined || value === null) return undefined;
+  return typeof value === "string" ? value : String(value);
+}
+
+function mapAppealDecisionRecord(record: Record<string, unknown>): AppealDecisionRecord {
+  return {
+    year: sourceText(record, "year"),
+    appealNumber: sourceText(record, "sdab_no"),
+    permitNumber: sourceText(record, "dp_sb_co_no"),
+    address: sourceText(record, "address"),
+    propertyType: sourceText(record, "property_type"),
+    propertyUse: sourceText(record, "property_use"),
+    originalDecision: sourceText(record, "da_sa_decision"),
+    appealFiledDate: sourceText(record, "date_appeal_filed"),
+    initialMeetingDate: sourceText(record, "initial_meeting"),
+    finalSessionDate: sourceText(record, "final_session"),
+    decisionIssuedDate: sourceText(record, "decision_issued"),
+    appealDecision: sourceText(record, "sdab_decision"),
+  };
+}
+
+async function fetchAppealDecisionRecord(appealNumber: string): Promise<AppealDecisionRecord | null> {
+  const url = dashboardConfig.links.decisionRecordApiUrlTemplate.replace(
+    "{appealNumber}",
+    encodeURIComponent(appealNumber),
+  );
+  const response = await fetch(url, {
+    headers: { accept: "application/json" },
+    next: { revalidate: dashboardConfig.links.appealRefreshSeconds },
+    signal: AbortSignal.timeout(dashboardConfig.links.appealRequestTimeoutMilliseconds),
+  });
+
+  if (!response.ok) return null;
+  const records = (await response.json()) as unknown;
+  if (!Array.isArray(records) || !records[0] || typeof records[0] !== "object") return null;
+  return mapAppealDecisionRecord(records[0] as Record<string, unknown>);
+}
+
+async function fetchAppealDecisionRecords(permits: Permit[]): Promise<Map<string, AppealDecisionRecord>> {
+  const appealNumbers = [...new Set(
+    permits.map((permit) => normalizeAppealNumber(permit.sdabnumber)).filter(Boolean),
+  )] as string[];
+  const records = await Promise.allSettled(
+    appealNumbers.map(async (appealNumber) => [appealNumber, await fetchAppealDecisionRecord(appealNumber)] as const),
+  );
+  const result = new Map<string, AppealDecisionRecord>();
+  for (const record of records) {
+    if (record.status === "fulfilled" && record.value[1]) result.set(record.value[0], record.value[1]);
+  }
+  return result;
+}
+
 async function getOpenData(): Promise<{
   permits: Permit[];
   fetchedAt: string;
@@ -86,14 +140,17 @@ async function getOpenData(): Promise<{
     fetchAppealReportLinks(),
   ]);
 
+  const rawPermits = permitsResult.status === "fulfilled" ? permitsResult.value : [];
+  const appealDecisions = rawPermits.length ? await fetchAppealDecisionRecords(rawPermits) : new Map();
   const appealReports =
     appealReportsResult.status === "fulfilled" ? appealReportsResult.value : new Map<string, string>();
   const permits = permitsResult.status === "fulfilled"
-    ? permitsResult.value.map((permit) => {
+    ? rawPermits.map((permit) => {
         const appealNumber = normalizeAppealNumber(permit.sdabnumber);
         return {
           ...permit,
           appealreporturl: appealNumber ? appealReports.get(appealNumber) : undefined,
+          appealdecisionrecord: appealNumber ? appealDecisions.get(appealNumber) : undefined,
         };
       })
     : [];
