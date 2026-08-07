@@ -84,7 +84,7 @@ The package button requires all of the following:
 - that listing has a public report link; and
 - the report link uses HTTPS and the configured `appealReportsHost`.
 
-An omitted button does not prove that no appeal or document exists. Verify the file with SDAB when the information matters.
+Calgary removes concluded appeals from the Active Appeals page, so an appeal can retain a decision and appeal number after its package link disappears. In that case, the dashboard shows the exact Calgary Open Data decision record and an SDAB contact link instead of silently omitting the appeal area. A missing package link does not prove that no document exists or ever existed.
 
 ## The street map is blank but permit details load
 
