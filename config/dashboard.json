@@ -8,7 +8,7 @@
     "cityName": "Calgary",
     "heroHeading": "See what is changing.",
     "heroEmphasis": "Before it disappears in the paperwork.",
-    "description": "A community-first view of City of Calgary development permits: current status, location, timing, decisions and appeals in one place."
+    "description": "An early-warning view of Varsity development permits. Calgary Open Data can list an application before it appears in DMap, helping residents know which files to watch."
   },
   "feed": {
     "baseUrl": "https://data.calgary.ca",

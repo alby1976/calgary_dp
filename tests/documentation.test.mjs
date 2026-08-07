@@ -57,3 +57,13 @@ test("HCI findings preserve priorities and measurable acceptance criteria", () =
   assert.match(findings, /Acceptance criterion/);
   assert.match(findings, /moderated test with five Varsity residents or civic-committee members/i);
 });
+
+test("documentation explains the proactive Open Data to DMap workflow", () => {
+  const readme = readFileSync(resolve(projectRoot, "README.md"), "utf8");
+  const userGuide = readFileSync(resolve(projectRoot, "docs/USING-THE-DASHBOARD.md"), "utf8");
+  const findings = readFileSync(resolve(projectRoot, "docs/HCI-USABILITY-FINDINGS.md"), "utf8");
+
+  assert.match(readme, /proactive early-warning tool/i);
+  assert.match(userGuide, /before its application page or plans appear in DMap/i);
+  assert.match(findings, /must not imply that a DMap record already exists/i);
+});

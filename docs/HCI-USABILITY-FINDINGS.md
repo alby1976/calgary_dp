@@ -4,6 +4,8 @@
 **Evaluated version:** Sites version 25  
 **Audience:** Varsity residents, friends and Varsity Community Association civic-committee members
 
+**Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch DMap even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists or predict when Calgary will publish it.
+
 ## Scope and limitations
 
 This report preserves the prioritized findings from an expert heuristic evaluation and cognitive walkthrough of the rendered dashboard, interaction code, responsive rules and automated checks. It is not a moderated usability study with community participants. The internal interactive-browser preview was unavailable during the evaluation, so findings that depend on live clicking were verified from application state and tests rather than observed participant behaviour.

@@ -110,7 +110,7 @@ The City permit feed remains the source of marker positions. The basemap is cont
 
 ### Development plans
 
-A permit-specific DMap URL is created only for permit numbers matching the expected `DPYYYY-number` form. DMap controls whether submitted plans remain publicly visible.
+A permit-specific DMap URL is created only for permit numbers matching the expected `DPYYYY-number` form. The Open Data record can precede publication of the corresponding DMap page or plans, so the link is intentionally presented as a place to check rather than proof that material is already available. DMap controls whether submitted plans become or remain publicly visible.
 
 ### SDAB appeal packages
 

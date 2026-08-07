@@ -8,6 +8,8 @@ An interactive, community-first view of City of Calgary development permits in V
 
 The dashboard makes Calgary's development-permit open data easier for residents and community association members to explore. It brings status, location, timing, decisions, development-plan links and public appeal information into one searchable view.
 
+It is also a proactive early-warning tool. A development-permit application can appear in Calgary Open Data before its record or plans appear in DMap. Seeing a permit here is a prompt to keep watching DMap; it is not confirmation that a DMap page or public plans are already available, and it does not predict when Calgary will publish them.
+
 ## Features
 
 - Live City of Calgary open-data connection
@@ -18,7 +20,8 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal
 - Application, decision, release and SDAB appeal details, including always-readable appeal cards, a plain-language field guide and the original Calgary JSON verification link
-- Links to development plans and public SDAB appeal packages when the City publishes them, with Calgary Open Data, CanLII decision-search and SDAB-contact fallbacks after packages disappear
+- A proactive signal when an Open Data permit may not have appeared in DMap yet, plus links to development plans when Calgary publishes them
+- Public SDAB appeal packages when the City publishes them, with Calgary Open Data, CanLII decision-search and SDAB-contact fallbacks after packages disappear
 - Optional server-side CanLII metadata enrichment with a one-at-a-time queue, a two-per-second ceiling, a rolling 5,000-query daily limit and durable caching
 - Configuration-driven community, feed, field mappings, refresh timing, status categories, overview labels and map provider
 - Clear data-freshness, community-scope and official-verification warnings

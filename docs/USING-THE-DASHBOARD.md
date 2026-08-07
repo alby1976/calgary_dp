@@ -42,7 +42,9 @@ Hover over or focus a map point or legend colour to see its plain-language expla
 
 ## Development plans and appeals
 
-When available, **View development application and plans** opens Calgary's DMap record. Calgary controls whether plans are public and how long they remain available.
+The dashboard is designed as an early-warning signal. A permit may appear in Calgary Open Data before its application page or plans appear in DMap. In that situation, the permit tells you which file to watch; it does not mean DMap is ready or guarantee when Calgary will publish the page or plans.
+
+Use **Check DMap for application and plans** to look for the corresponding City record. If DMap has not published it yet, check again later. Calgary controls whether plans are public and how long they remain available.
 
 For a permit with an SDAB appeal number, the details panel may include:
 

@@ -646,9 +646,9 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               {selectedApplicationUrl && (
                 <div className="plans-action">
                   <a href={selectedApplicationUrl} target="_blank" rel="noreferrer">
-                    View City application &amp; plans <span aria-hidden="true">↗</span>
+                    Check DMap for application &amp; plans <span aria-hidden="true">↗</span>
                   </a>
-                  <p>Submitted plans appear on DMap only while The City makes them publicly available.</p>
+                  <p>This permit may appear in Open Data before its DMap page or plans are available. If DMap is not ready, check again later; Calgary controls what is published and for how long.</p>
                 </div>
               )}
             </>
@@ -675,7 +675,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       <section className="reading-guide">
         <div><p className="eyebrow">Read the signal carefully</p><h2>What this dashboard can—and cannot—tell you</h2></div>
         <div className="guide-cards">
-          <article><span>01</span><h3>Open data is a lead</h3><p>It can surface newer status and date fields, but it is not a statutory notice and may still lag internal City systems.</p></article>
+          <article><span>01</span><h3>Open data is an early signal</h3><p>A permit can appear here before it appears in DMap. Treat it as a prompt to watch DMap for the application record and any public plans—not as confirmation that DMap is ready.</p></article>
           <article><span>02</span><h3>Status needs context</h3><p>“Pending,” “approved,” and “released” are different milestones. Read the decision, release and appeal dates together.</p></article>
           <article><span>03</span><h3>Verify before acting</h3><p>For comments, appeals or deadlines, confirm the file with the assigned City planner or the official notice.</p></article>
         </div>
