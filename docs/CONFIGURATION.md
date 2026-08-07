@@ -77,6 +77,8 @@ Every configured mapping is automatically added to the actual GeoJSON and JSON q
 | `developmentApplicationUrlTemplate` | Permit-specific DMap template; must contain `{permitNumber}` |
 | `activeAppealsUrl` | Calgary SDAB active-appeals page inspected for public packages |
 | `appealReportsHost` | Only this HTTPS host is accepted for public appeal-package links |
+| `decisionRecordUrlTemplate` | Exact Calgary Open Data decision-record template; must contain `{appealNumber}` |
+| `appealContactUrl` | Official SDAB contact page used when a report package is not currently linked |
 | `appealRefreshSeconds` | Cache/revalidation interval for the appeals page |
 | `appealRequestTimeoutMilliseconds` | Maximum wait for the appeals page |
 
