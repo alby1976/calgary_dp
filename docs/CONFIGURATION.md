@@ -79,11 +79,13 @@ Every configured mapping is automatically added to the actual GeoJSON and JSON q
 | `appealReportsHost` | Only this HTTPS host is accepted for public appeal-package links |
 | `decisionRecordApiUrlTemplate` | Calgary JSON decision-record endpoint fetched and converted into the readable appeal card; must contain `{appealNumber}` |
 | `decisionRecordPageUrlTemplate` | Human-readable Calgary Open Data source-page template filtered by appeal number; must contain `{appealNumber}` |
+| `canliiTribunalUrl` | CanLII's Calgary SDAB decisions database used as the browse-all fallback |
+| `canliiDecisionSearchUrlTemplate` | CanLII tribunal-scoped search link; must contain `{citation}` |
 | `appealContactUrl` | Official SDAB contact page used when a report package is not currently linked |
 | `appealRefreshSeconds` | Cache/revalidation interval for the appeals page |
 | `appealRequestTimeoutMilliseconds` | Maximum wait for the appeals page |
 
-The allowed appeal host is deliberately configured separately. It prevents a changed or malformed City page from silently inserting an unrelated external link.
+The allowed appeal host is deliberately configured separately. It prevents a changed or malformed City page from silently inserting an unrelated external link. The dashboard converts `YYYY-NNNN` appeal numbers into neutral-citation-style searches such as `YYYY CGYSDAB N`; it links to CanLII rather than fetching or storing CanLII documents.
 
 ### `statuses`
 
