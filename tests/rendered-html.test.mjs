@@ -41,6 +41,8 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Approved \/ released/i);
   assert.match(html, /Refused \/ cancelled/i);
   assert.match(html, /Other status/i);
+  assert.match(html, /All appeal statuses/i);
+  assert.match(html, /Appealed to SDAB/i);
   assert.match(html, /Still moving through the City process/i);
   assert.match(html, /The City said yes—check which stage/i);
   assert.match(html, /Stopped in its current form/i);
