@@ -33,6 +33,8 @@ export type DashboardConfig = {
     developmentApplicationUrlTemplate: string;
     activeAppealsUrl: string;
     appealReportsHost: string;
+    decisionRecordUrlTemplate: string;
+    appealContactUrl: string;
     appealRefreshSeconds: number;
     appealRequestTimeoutMilliseconds: number;
   };
@@ -118,6 +120,11 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   );
   requireUrl(value.links.activeAppealsUrl, "links.activeAppealsUrl");
   requireUrl(
+    value.links.decisionRecordUrlTemplate.replace("{appealNumber}", "2026-0001"),
+    "links.decisionRecordUrlTemplate",
+  );
+  requireUrl(value.links.appealContactUrl, "links.appealContactUrl");
+  requireUrl(
     value.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "700").replace("{y}", "1300"),
     "map.tileUrlTemplate",
   );
@@ -126,6 +133,9 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
 
   if (!value.links.developmentApplicationUrlTemplate.includes("{permitNumber}")) {
     throw new Error("links.developmentApplicationUrlTemplate must contain {permitNumber}");
+  }
+  if (!value.links.decisionRecordUrlTemplate.includes("{appealNumber}")) {
+    throw new Error("links.decisionRecordUrlTemplate must contain {appealNumber}");
   }
   for (const placeholder of ["{z}", "{x}", "{y}"]) {
     if (!value.map.tileUrlTemplate.includes(placeholder)) {
@@ -237,6 +247,8 @@ export const publicDashboardConfig = {
   links: {
     developmentMapUrl: dashboardConfig.links.developmentMapUrl,
     developmentApplicationUrlTemplate: dashboardConfig.links.developmentApplicationUrlTemplate,
+    decisionRecordUrlTemplate: dashboardConfig.links.decisionRecordUrlTemplate,
+    appealContactUrl: dashboardConfig.links.appealContactUrl,
   },
   statuses: dashboardConfig.statuses,
   map: dashboardConfig.map,
