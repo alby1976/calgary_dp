@@ -6,7 +6,7 @@ const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.me
 
 test("recorded appeals retain official fallbacks when a package link is absent", () => {
   assert.match(dashboardSource, /Appeal package not currently linked/);
-  assert.match(dashboardSource, /View Calgary Open Data decision record/);
+  assert.match(dashboardSource, /View filtered Calgary Open Data decision page/);
   assert.match(dashboardSource, /Contact SDAB about archived documents/);
 });
 
