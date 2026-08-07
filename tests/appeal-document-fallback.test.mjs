@@ -17,6 +17,10 @@ test("recorded appeals retain official fallbacks when a package link is absent",
   assert.match(dashboardSource, /Search CanLII:/);
   assert.match(dashboardSource, /Browse all Calgary SDAB decisions on CanLII/);
   assert.match(dashboardSource, /does not copy or scrape its decision documents/);
+  assert.match(dashboardSource, /Official decision catalogue record/);
+  assert.match(dashboardSource, /Read the complete decision on CanLII/);
+  assert.match(dashboardSource, /Plain-language guide: what is CanLII metadata\?/);
+  assert.match(dashboardSource, /API key has not been installed/);
 });
 
 test("decision record links normalize SDAB-prefixed appeal numbers", () => {

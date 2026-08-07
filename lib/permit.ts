@@ -13,6 +13,34 @@ export type AppealDecisionRecord = {
   appealDecision?: string;
 };
 
+export type CanliiMetadata = {
+  databaseId: string;
+  caseId: string;
+  url: string;
+  title: string;
+  citation: string;
+  language?: string;
+  docketNumber?: string;
+  decisionDate?: string;
+  keywords?: string;
+  concatenatedId?: string;
+};
+
+export type CanliiLookupResponse =
+  | {
+      status: "available";
+      metadata: CanliiMetadata;
+      cachedAt: string;
+      expiresAt: string;
+      cached: boolean;
+    }
+  | {
+      status: "not_found" | "not_configured" | "rate_limited" | "unavailable";
+      cachedAt?: string;
+      expiresAt?: string;
+      cached?: boolean;
+    };
+
 export type Permit = {
   permitnum?: string;
   address?: string;

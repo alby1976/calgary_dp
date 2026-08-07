@@ -41,6 +41,18 @@ export type DashboardConfig = {
     appealRefreshSeconds: number;
     appealRequestTimeoutMilliseconds: number;
   };
+  canlii: {
+    apiBaseUrl: string;
+    language: "en" | "fr";
+    databaseId: string;
+    dailyQueryLimit: number;
+    requestsPerSecond: number;
+    maxConcurrentRequests: number;
+    requestTimeoutMilliseconds: number;
+    successCacheSeconds: number;
+    notFoundCacheSeconds: number;
+    errorCacheSeconds: number;
+  };
   statuses: {
     active: string[];
     approved: string[];
@@ -136,6 +148,7 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
     "links.canliiDecisionSearchUrlTemplate",
   );
   requireUrl(value.links.appealContactUrl, "links.appealContactUrl");
+  requireUrl(value.canlii.apiBaseUrl, "canlii.apiBaseUrl");
   requireUrl(
     value.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "700").replace("{y}", "1300"),
     "map.tileUrlTemplate",
@@ -173,6 +186,28 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
     value.links.appealRequestTimeoutMilliseconds,
     "links.appealRequestTimeoutMilliseconds",
   );
+  positiveInteger(value.canlii.dailyQueryLimit, "canlii.dailyQueryLimit");
+  positiveInteger(value.canlii.requestsPerSecond, "canlii.requestsPerSecond");
+  positiveInteger(value.canlii.maxConcurrentRequests, "canlii.maxConcurrentRequests");
+  positiveInteger(value.canlii.requestTimeoutMilliseconds, "canlii.requestTimeoutMilliseconds");
+  positiveInteger(value.canlii.successCacheSeconds, "canlii.successCacheSeconds");
+  positiveInteger(value.canlii.notFoundCacheSeconds, "canlii.notFoundCacheSeconds");
+  positiveInteger(value.canlii.errorCacheSeconds, "canlii.errorCacheSeconds");
+  if (!/^[a-z0-9-]+$/i.test(value.canlii.databaseId)) {
+    throw new Error("canlii.databaseId is invalid");
+  }
+  if (value.canlii.language !== "en" && value.canlii.language !== "fr") {
+    throw new Error("canlii.language must be en or fr");
+  }
+  if (value.canlii.requestsPerSecond > 2) {
+    throw new Error("canlii.requestsPerSecond cannot exceed the approved limit of 2");
+  }
+  if (value.canlii.maxConcurrentRequests !== 1) {
+    throw new Error("canlii.maxConcurrentRequests must remain 1");
+  }
+  if (value.canlii.dailyQueryLimit > 5000) {
+    throw new Error("canlii.dailyQueryLimit cannot exceed the approved limit of 5000");
+  }
   positiveInteger(value.map.minZoom, "map.minZoom");
   positiveInteger(value.map.maxZoom, "map.maxZoom");
   if (value.map.minZoom >= value.map.maxZoom || value.map.maxZoom > 22) {

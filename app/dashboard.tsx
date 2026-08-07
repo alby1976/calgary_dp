@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
-import type { AppealDecisionRecord, Permit } from "../lib/permit";
+import type { AppealDecisionRecord, CanliiLookupResponse, Permit } from "../lib/permit";
 import PermitMap from "./permit-map";
 
 type Props = {
@@ -14,6 +14,8 @@ type Props = {
   datasetUrl: string;
   filteredQueryUrl: string;
 };
+
+type CanliiUiState = CanliiLookupResponse | { status: "loading" };
 
 function text(value?: string) {
   return value?.trim() || "Not reported";
@@ -145,6 +147,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
+  const [canliiLookups, setCanliiLookups] = useState<Record<string, CanliiUiState>>({});
+  const requestedCanliiAppeals = useRef(new Set<string>());
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
@@ -196,6 +200,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     selectedCanliiCitation,
     config.links.canliiDecisionSearchUrlTemplate,
   );
+  const selectedCanliiLookup = selectedAppealNumber ? canliiLookups[selectedAppealNumber] : undefined;
   const selectedAppealRecord: AppealDecisionRecord | null = selectedPermit && selectedAppealNumber
     ? selectedPermit.appealdecisionrecord ?? {
         appealNumber: selectedAppealNumber,
@@ -213,6 +218,29 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedAppealIsDecided = Boolean(
     selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
   );
+
+  useEffect(() => {
+    if (!selectedAppealNumber || requestedCanliiAppeals.current.has(selectedAppealNumber)) return;
+
+    const appealNumber = selectedAppealNumber;
+    requestedCanliiAppeals.current.add(appealNumber);
+    setCanliiLookups((current) => ({ ...current, [appealNumber]: { status: "loading" } }));
+
+    fetch(`/api/canlii-metadata?appeal=${encodeURIComponent(appealNumber)}`, {
+      headers: { accept: "application/json" },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("CanLII metadata endpoint failed");
+        return response.json() as Promise<CanliiLookupResponse>;
+      })
+      .then((result) => {
+        setCanliiLookups((current) => ({ ...current, [appealNumber]: result }));
+      })
+      .catch((error: unknown) => {
+        void error;
+        setCanliiLookups((current) => ({ ...current, [appealNumber]: { status: "unavailable" } }));
+      });
+  }, [selectedAppealNumber]);
 
   const chartYears = years.slice(0, 8).reverse();
   const yearCounts = chartYears.map((value) => ({
@@ -463,6 +491,51 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                       </details>
                     </section>
                   )}
+                  <section className="canlii-metadata-card" aria-live="polite" aria-labelledby="canlii-metadata-heading">
+                    <p className="decision-source">CanLII decision metadata</p>
+                    <h3 id="canlii-metadata-heading">Official decision catalogue record</h3>
+                    {!selectedCanliiLookup || selectedCanliiLookup.status === "loading" ? (
+                      <p className="canlii-state">Checking the cached CanLII catalogue…</p>
+                    ) : selectedCanliiLookup.status === "available" ? (
+                      <>
+                        <p className="canlii-title">{selectedCanliiLookup.metadata.title}</p>
+                        <dl className="appeal-decision-grid canlii-metadata-grid">
+                          <div><dt>Citation</dt><dd>{selectedCanliiLookup.metadata.citation}</dd></div>
+                          <div><dt>Docket / appeal number</dt><dd>{text(selectedCanliiLookup.metadata.docketNumber)}</dd></div>
+                          <div><dt>Decision date</dt><dd>{formatDate(selectedCanliiLookup.metadata.decisionDate)}</dd></div>
+                          <div><dt>Language</dt><dd>{text(selectedCanliiLookup.metadata.language)}</dd></div>
+                          <div className="wide"><dt>Keywords</dt><dd>{text(selectedCanliiLookup.metadata.keywords)}</dd></div>
+                        </dl>
+                        <a className="canlii-decision-link" href={selectedCanliiLookup.metadata.url} target="_blank" rel="noreferrer">
+                          Read the complete decision on CanLII <span aria-hidden="true">↗</span>
+                        </a>
+                        <p className="appeal-record-note">
+                          Metadata checked {formatDateTime(selectedCanliiLookup.cachedAt)}. The written decision remains on CanLII and is not copied into this dashboard.
+                        </p>
+                      </>
+                    ) : (
+                      <p className="canlii-state">
+                        {selectedCanliiLookup.status === "not_configured"
+                          ? "The secure CanLII connection is ready, but its API key has not been installed. The search links below still work."
+                          : selectedCanliiLookup.status === "not_found"
+                            ? "CanLII has not returned a matching decision record yet. Publication can follow Calgary’s initial appeal result."
+                            : selectedCanliiLookup.status === "rate_limited"
+                              ? "The approved CanLII lookup allowance has been reached. Cached records and the search links remain available."
+                              : "CanLII could not be checked right now. Cached Calgary information and the search links remain available."}
+                      </p>
+                    )}
+                    <details className="appeal-dummies-guide canlii-guide">
+                      <summary>Plain-language guide: what is CanLII metadata?</summary>
+                      <dl>
+                        <div><dt>Title</dt><dd>The official name attached to the published decision.</dd></div>
+                        <div><dt>Citation</dt><dd>The standard legal reference used to identify the decision.</dd></div>
+                        <div><dt>Docket / appeal number</dt><dd>The tribunal’s tracking number, used to match the decision to Calgary’s appeal record.</dd></div>
+                        <div><dt>Decision date</dt><dd>The date associated with the Board’s written decision.</dd></div>
+                        <div><dt>Keywords</dt><dd>Descriptive topics supplied with the catalogue record. They are not the complete decision text.</dd></div>
+                        <div><dt>Decision link</dt><dd>Opens the complete public decision on CanLII. The API supplies the link, not the document itself.</dd></div>
+                      </dl>
+                    </details>
+                  </section>
                   <div className="appeal-links">
                     {selectedPermit.appealreporturl && (
                       <a href={selectedPermit.appealreporturl} target="_blank" rel="noreferrer">

@@ -1,6 +1,6 @@
 # Architecture and data flow
 
-Varsity Development Watch is a server-rendered dashboard with a small client-side exploration layer. It has no application database and currently requires no API key.
+Varsity Development Watch is a server-rendered dashboard with a small client-side exploration layer. Calgary data needs no key. Optional authorized CanLII metadata uses a server-side key and a small D1 database for caching and rate-limit coordination.
 
 ## Data flow
 
@@ -19,6 +19,10 @@ normalized Permit records
         |
         v
 server-rendered page -> client-side search, filters, map and charts
+                                      |
+                                      +----> selected appeal -> server-only CanLII endpoint
+                                                                  |
+                                                                  +----> D1 cache and request queue
 ```
 
 ## Responsibilities by file
@@ -28,10 +32,13 @@ server-rendered page -> client-side search, filters, map and charts
 | `config/dashboard.json` | Community, feed, links, statuses and map configuration |
 | `lib/dashboard-config.ts` | Runtime validation, Socrata URL construction and City-field normalization |
 | `lib/permit.ts` | Stable internal permit type used by server and client code |
+| `lib/canlii.ts` | Appeal-to-case mapping and strict CanLII metadata normalization |
 | `app/page.tsx` | Server-side fetching, data freshness and appeal-package enrichment |
 | `app/dashboard.tsx` | Interactive search, filters, simplified coordinate overview, charts and record details |
 | `app/permit-map.tsx` | MapLibre street basemap, accessible DOM permit markers, fit-to-results and map interaction |
 | `app/layout.tsx` | Metadata derived from the site configuration |
+| `worker/index.ts` | Server-only CanLII endpoint, durable cache and global rate-limit coordination |
+| `db/schema.ts` | D1 cache, lease and rolling request-log tables |
 | `tests/dashboard-config.test.mjs` | Configuration structure and integration-template checks |
 | `tests/rendered-html.test.mjs` | Production worker and rendered-page checks |
 | `docs/THIRD-PARTY-HOSTING.md` | Provider-neutral hosting, verification, monitoring and rollback guidance |
@@ -123,3 +130,16 @@ The project can run as:
 Cloudflare Workers are Vinext's primary production target. The `vinext start` Node server is less complete and should be treated as a compatibility deployment, not an automatic equivalent.
 
 All deployment modes read the same build-time JSON configuration. Configuration changes require a new build and deployment or a service restart using a newly built artifact. See the [third-party hosting guide](THIRD-PARTY-HOSTING.md) for requirements and acceptance checks.
+## CanLII metadata flow
+
+CanLII enrichment is deliberately separate from the Calgary feed:
+
+1. The browser detects that the selected permit has a normalized `YYYY-NNNN` SDAB number.
+2. It calls the same-origin `/api/canlii-metadata` endpoint; the API key never enters browser code.
+3. The Worker checks the durable D1 cache before considering an outbound request.
+4. A shared D1 lease allows only one CanLII request at a time and enforces at least 500 milliseconds between request starts.
+5. A rolling 24-hour request log stops new calls at 5,000 queries.
+6. Successful metadata is cached for 24 hours, a missing decision for 6 hours, and temporary failures for 5 minutes.
+7. The dashboard renders the catalogue fields and the official CanLII URL. It never downloads, stores or republishes the written decision.
+
+The cache and rate-state tables contain only decision metadata, appeal identifiers, timestamps and request counts. They do not contain the CanLII API key or decision text. When the key is absent, the endpoint reports `not_configured` and the existing citation-search link remains available.

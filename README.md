@@ -17,6 +17,7 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - Filters by year, permit status and recorded SDAB appeal
 - Application, decision, release and SDAB appeal details, including always-readable appeal cards, a plain-language field guide and the original Calgary JSON verification link
 - Links to development plans and public SDAB appeal packages when the City publishes them, with Calgary Open Data, CanLII decision-search and SDAB-contact fallbacks after packages disappear
+- Optional server-side CanLII metadata enrichment with a one-at-a-time queue, a two-per-second ceiling, a rolling 5,000-query daily limit and durable caching
 - Configuration-driven community, feed, field mappings, refresh timing, status categories, overview labels and map provider
 - Clear data-freshness, community-scope and official-verification warnings
 
@@ -113,6 +114,7 @@ For past written decisions, the dashboard links to the Calgary SDAB database on 
 - Tailwind CSS
 - MapLibre GL JS with OpenStreetMap raster tiles
 - Cloudflare-compatible worker deployment
+- Cloudflare D1 cache and rate-limit coordination for optional CanLII metadata
 - Node.js compatibility deployment for tested third-party hosts
 
 ## Local development
@@ -123,6 +125,8 @@ Requirements: Node.js 22.13 or newer, Linux, curl, flock and GNU timeout.
 npm ci
 npm run dev
 ```
+
+The dashboard works without a CanLII API key and retains its public CanLII search links. To test authorized metadata enrichment, copy `.env.example` to an untracked `.env` file and set `CANLII_API_KEY` there. Never commit or expose the key in browser code.
 
 Production validation:
 
@@ -261,7 +265,7 @@ Check the public page after every update. If validation fails, do not restart th
 
 ### Hosting notes
 
-- No API key or secret is currently required.
+- No key is required for Calgary data or the existing CanLII search links. Authorized CanLII metadata enrichment requires the server-side `CANLII_API_KEY` secret and the D1 cache/coordination tables.
 - `PORT` defaults to `3000`; the example overrides `HOST` to keep the app private behind the reverse proxy.
 - Set `VINEXT_TRUSTED_HOSTS` to the public dashboard hostname when forwarding host and protocol headers.
 - The City can change its APIs or public document systems. Monitor the dashboard and logs, and verify important records against official City sources.

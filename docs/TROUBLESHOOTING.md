@@ -90,6 +90,20 @@ Calgary removes concluded appeals from the Active Appeals page, so an appeal can
 
 CanLII publication can follow Calgary's initial outcome record. Confirm that the dashboard derived the expected citation—for example, appeal `2025-0118` becomes `2025 CGYSDAB 118`—then try **Browse all Calgary SDAB decisions on CanLII**. If the decision is still absent, use Calgary Open Data and contact SDAB. The dashboard deliberately does not scrape CanLII as a fallback because CanLII prohibits systematic downloading.
 
+## The CanLII metadata card says the key is not installed
+
+The authorized metadata flow is optional. Add `CANLII_API_KEY` through the host's protected production-secret control and redeploy. Do not place it in `config/dashboard.json`, GitHub, a public environment variable or browser JavaScript.
+
+If the key is installed but metadata remains unavailable, check:
+
+- the production deployment received the secret after the most recent redeploy;
+- the `DB` D1 binding and migration are active;
+- outbound HTTPS to `api.canlii.org` is allowed;
+- the appeal number matches `YYYY-NNNN`; and
+- the configured database remains `cgysdab`.
+
+`Not found` means the API returned no exact case at the expected identifier; it does not prove that no decision exists. `Rate limited` means the dashboard stopped before exceeding the configured rolling allowance. Existing cached metadata and public search links remain available in either case.
+
 ## The street map is blank but permit details load
 
 Check the browser developer console and network panel for failed tile requests. Confirm:

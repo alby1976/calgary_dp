@@ -42,6 +42,16 @@ test("external application link remains configuration-driven", () => {
   assert.equal(new URL(config.links.appealContactUrl).protocol, "https:");
 });
 
+test("CanLII limits and cache durations are configuration-driven and conservative", () => {
+  assert.equal(new URL(config.canlii.apiBaseUrl).protocol, "https:");
+  assert.equal(config.canlii.databaseId, "cgysdab");
+  assert.ok(config.canlii.dailyQueryLimit <= 5000);
+  assert.ok(config.canlii.requestsPerSecond <= 2);
+  assert.equal(config.canlii.maxConcurrentRequests, 1);
+  assert.ok(config.canlii.successCacheSeconds >= 86400);
+  assert.ok(config.canlii.notFoundCacheSeconds >= 21600);
+});
+
 test("street map provider remains valid and configuration-driven", () => {
   assert.equal(new URL(config.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "1000").replace("{y}", "1000")).protocol, "https:");
   assert.match(config.map.tileUrlTemplate, /\{z\}/);

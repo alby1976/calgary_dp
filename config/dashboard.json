@@ -105,6 +105,18 @@
     "appealRefreshSeconds": 3600,
     "appealRequestTimeoutMilliseconds": 6500
   },
+  "canlii": {
+    "apiBaseUrl": "https://api.canlii.org/v1/",
+    "language": "en",
+    "databaseId": "cgysdab",
+    "dailyQueryLimit": 5000,
+    "requestsPerSecond": 2,
+    "maxConcurrentRequests": 1,
+    "requestTimeoutMilliseconds": 8000,
+    "successCacheSeconds": 86400,
+    "notFoundCacheSeconds": 21600,
+    "errorCacheSeconds": 300
+  },
   "statuses": {
     "active": ["pending", "review", "circulation", "application", "appeal"],
     "approved": ["approved", "released"],

@@ -177,7 +177,25 @@ The application rejects configuration when:
 - the DMap template lacks `{permitNumber}`;
 - the map tile template lacks `{z}`, `{x}` or `{y}`;
 - a map URL is not valid HTTPS;
-- map zoom values are invalid; or
+- map zoom values are invalid;
+- CanLII limits exceed 5,000 queries per day, 2 requests per second or 1 concurrent request; or
 - a required field mapping is missing.
 
 Configuration validation catches structural errors. It cannot prove that Calgary still publishes a particular dataset, field, community value or public document. Those require a live-data check.
+
+## `canlii`
+
+The `canlii` section controls the optional authorized metadata connection:
+
+- `apiBaseUrl`: official HTTPS API root;
+- `language`: `en` or `fr`;
+- `databaseId`: Calgary SDAB collection identifier, currently `cgysdab`;
+- `dailyQueryLimit`: may not exceed the approved 5,000-query allowance;
+- `requestsPerSecond`: may not exceed 2;
+- `maxConcurrentRequests`: must remain 1;
+- `requestTimeoutMilliseconds`: maximum wait for CanLII;
+- `successCacheSeconds`: cache duration for found metadata;
+- `notFoundCacheSeconds`: cache duration when no decision is published; and
+- `errorCacheSeconds`: short pause after a temporary failure.
+
+The API key is not configuration. Store it only as the production secret `CANLII_API_KEY`. The application rejects configuration that exceeds the approved request limits.

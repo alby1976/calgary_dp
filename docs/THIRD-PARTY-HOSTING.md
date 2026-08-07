@@ -47,7 +47,7 @@ The host must provide:
 
 Visitors also need browser access to `tile.openstreetmap.org` for the default street basemap and to `calgary.ca`, `dmap.calgary.ca`, `publicaccess.calgary.ca` and `canlii.org` for official links. If you configure another tile provider, allow its hostname instead and follow its attribution, access and billing terms.
 
-No Calgary API key or application secret is currently required.
+No Calgary API key is required. The optional CanLII metadata card uses the server-side `CANLII_API_KEY` secret plus a shared cache and rate-limit store. A third-party deployment without an equivalent D1-compatible implementation keeps the public CanLII search links but cannot provide API-enriched metadata.
 
 ## Option 1: managed Node.js application host
 
@@ -81,6 +81,8 @@ NODE_ENV=production
 HOST=0.0.0.0
 VINEXT_TRUSTED_HOSTS=dashboard.example.ca
 ```
+
+If the provider supports the dashboard's durable CanLII cache and coordination layer, also add `CANLII_API_KEY` as a protected server-side secret. Never use a public/browser-exposed environment-variable prefix. Ordinary Node hosting without the D1-compatible layer should leave the key unset; the dashboard will continue using its search-link fallback.
 
 Replace `dashboard.example.ca` with the exact public hostname. For multiple public hostnames, use the comma-separated format supported by the runtime.
 
@@ -182,6 +184,7 @@ Before directing users to the third-party deployment, verify:
 - a map point can select a permit;
 - the official dataset link opens the configured dataset;
 - a known `DPYYYY-number` record produces a DMap link;
+- an appealed record either shows cached CanLII metadata or clearly reports that optional enrichment is unavailable while retaining the CanLII search link;
 - an appeal-package button appears only for a known public exact match;
 - the community-scope disclaimer names the configured community and filter; and
 - mobile-width content remains readable.
