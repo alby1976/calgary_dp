@@ -16,7 +16,7 @@ The dashboard makes Calgary's development-permit open data easier for residents 
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal
 - Application, decision, release and SDAB appeal details
-- Links to development plans and public SDAB appeal packages when the City publishes them
+- Links to development plans and public SDAB appeal packages when the City publishes them, with official decision-record and SDAB-contact fallbacks after packages disappear
 - Configuration-driven community, feed, field mappings, refresh timing, status categories, overview labels and map provider
 - Clear data-freshness, community-scope and official-verification warnings
 
