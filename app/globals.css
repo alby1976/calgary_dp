@@ -142,13 +142,13 @@ h1 em { color: var(--green); font-weight: 400; }
 .appeal-decision-grid > div.wide { grid-column: 1 / -1; }
 .appeal-decision-grid dt { color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
 .appeal-decision-grid dd { margin: 4px 0 0; overflow-wrap: anywhere; color: var(--ink); font-size: 11px; font-weight: 700; line-height: 1.45; }
+.appeal-record-note { margin: 12px 0 0; color: #4f6067; font-size: 10px; line-height: 1.5; }
 .appeal-dummies-guide { margin-top: 14px; border-top: 1px solid rgba(23,36,45,.14); }
 .appeal-dummies-guide summary { padding: 13px 0 2px; cursor: pointer; color: var(--ink); font-size: 11px; font-weight: 800; }
 .appeal-dummies-guide dl { margin: 10px 0 0; }
 .appeal-dummies-guide dl > div { padding: 8px 0; border-top: 1px solid rgba(23,36,45,.1); }
 .appeal-dummies-guide dt { color: var(--ink); font-size: 10px; font-weight: 800; }
 .appeal-dummies-guide dd { margin: 3px 0 0; color: #4f6067; font-size: 10px; line-height: 1.5; }
-.appeal-record-unavailable { margin: 12px 0; color: #536064; font-size: 11px; line-height: 1.5; }
 .appeal-links { display: grid; gap: 8px; }
 .appeal-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; padding: 12px 14px; border-radius: 3px; background: var(--ink); color: white; font-size: 12px; font-weight: 800; text-decoration: none; }
 .appeal-action a:hover { background: #273b48; }
