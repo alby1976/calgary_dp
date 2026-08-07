@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
-import type { Permit } from "../lib/permit";
+import type { AppealDecisionRecord, Permit } from "../lib/permit";
 import PermitMap from "./permit-map";
 
 type Props = {
@@ -176,6 +176,24 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     selectedAppealNumber,
     config.links.decisionRecordPageUrlTemplate,
   );
+  const selectedDecisionJsonUrl = decisionRecordUrl(
+    selectedAppealNumber,
+    config.links.decisionRecordApiUrlTemplate,
+  );
+  const selectedAppealRecord: AppealDecisionRecord | null = selectedPermit && selectedAppealNumber
+    ? selectedPermit.appealdecisionrecord ?? {
+        appealNumber: selectedAppealNumber,
+        permitNumber: selectedPermit.permitnum,
+        address: selectedPermit.address,
+        propertyType: selectedPermit.category,
+        propertyUse: selectedPermit.proposedusedescription ?? selectedPermit.description,
+        originalDecision: selectedPermit.decision,
+        initialMeetingDate: selectedPermit.sdabhearingdate,
+        decisionIssuedDate: selectedPermit.sdabdecisiondate,
+        appealDecision: selectedPermit.sdabdecision,
+      }
+    : null;
+  const selectedAppealRecordIsSdab = Boolean(selectedPermit?.appealdecisionrecord);
   const selectedAppealIsDecided = Boolean(
     selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
   );
@@ -384,23 +402,32 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                         : "Calgary does not currently list a public report package for this appeal. It may not have been posted yet."}
                     </p>
                   )}
-                  {selectedPermit.appealdecisionrecord ? (
+                  {selectedAppealRecord && (
                     <section className="appeal-decision-card" aria-labelledby="appeal-decision-heading">
-                      <p className="decision-source">Calgary Open Data decision record</p>
-                      <h3 id="appeal-decision-heading">{text(selectedPermit.appealdecisionrecord.appealDecision)}</h3>
-                      <p className="decision-meaning">{appealOutcomeMeaning(selectedPermit.appealdecisionrecord.appealDecision)}</p>
+                      <p className="decision-source">
+                        {selectedAppealRecordIsSdab
+                          ? "Formatted from Calgary’s SDAB Decisions JSON"
+                          : "Formatted from appeal fields in Calgary’s Development Permits feed"}
+                      </p>
+                      <h3 id="appeal-decision-heading">{text(selectedAppealRecord.appealDecision)}</h3>
+                      <p className="decision-meaning">{appealOutcomeMeaning(selectedAppealRecord.appealDecision)}</p>
                       <dl className="appeal-decision-grid">
-                        <div><dt>Appeal number</dt><dd>{text(selectedPermit.appealdecisionrecord.appealNumber)}</dd></div>
-                        <div><dt>Related permit</dt><dd>{text(selectedPermit.appealdecisionrecord.permitNumber)}</dd></div>
-                        <div><dt>Property address</dt><dd>{text(selectedPermit.appealdecisionrecord.address)}</dd></div>
-                        <div><dt>Development type</dt><dd>{text(selectedPermit.appealdecisionrecord.propertyType)}</dd></div>
-                        <div className="wide"><dt>Proposed use</dt><dd>{text(selectedPermit.appealdecisionrecord.propertyUse)}</dd></div>
-                        <div><dt>Original City decision</dt><dd>{text(selectedPermit.appealdecisionrecord.originalDecision)}</dd></div>
-                        <div><dt>Appeal filed</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.appealFiledDate)}</dd></div>
-                        <div><dt>First Board meeting</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.initialMeetingDate)}</dd></div>
-                        <div><dt>Final Board session</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.finalSessionDate)}</dd></div>
-                        <div><dt>Written decision issued</dt><dd>{formatDate(selectedPermit.appealdecisionrecord.decisionIssuedDate)}</dd></div>
+                        <div><dt>Appeal number</dt><dd>{text(selectedAppealRecord.appealNumber)}</dd></div>
+                        <div><dt>Related permit</dt><dd>{text(selectedAppealRecord.permitNumber)}</dd></div>
+                        <div><dt>Property address</dt><dd>{text(selectedAppealRecord.address)}</dd></div>
+                        <div><dt>Development type</dt><dd>{text(selectedAppealRecord.propertyType)}</dd></div>
+                        <div className="wide"><dt>Proposed use</dt><dd>{text(selectedAppealRecord.propertyUse)}</dd></div>
+                        <div><dt>Original City decision</dt><dd>{text(selectedAppealRecord.originalDecision)}</dd></div>
+                        <div><dt>Appeal filed</dt><dd>{formatDate(selectedAppealRecord.appealFiledDate)}</dd></div>
+                        <div><dt>First Board meeting</dt><dd>{formatDate(selectedAppealRecord.initialMeetingDate)}</dd></div>
+                        <div><dt>Final Board session</dt><dd>{formatDate(selectedAppealRecord.finalSessionDate)}</dd></div>
+                        <div><dt>Written decision issued</dt><dd>{formatDate(selectedAppealRecord.decisionIssuedDate)}</dd></div>
                       </dl>
+                      <p className="appeal-record-note">
+                        {selectedAppealRecordIsSdab
+                          ? "The dashboard reformats Calgary’s JSON fields for readability; it does not change the City’s values."
+                          : "Calgary’s separate SDAB decision JSON did not return a match, so this card uses the appeal fields already published in the Development Permits feed."}
+                      </p>
                       <details className="appeal-dummies-guide">
                         <summary>Plain-language guide: what do these fields mean?</summary>
                         <dl>
@@ -415,12 +442,10 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                           <div><dt>Final Board session</dt><dd>The last listed session before the Board completed its hearing process.</dd></div>
                           <div><dt>Written decision issued</dt><dd>When the Board’s written decision was released. This can be later than the hearing.</dd></div>
                           <div><dt>Outcome</dt><dd>The Board’s result. Conditions and exact legal effects come from the official written decision, not this summary.</dd></div>
-                          <div><dt>Not reported or —</dt><dd>The JSON source did not provide that value. It does not automatically mean “none,” “no” or “not applicable.”</dd></div>
+                          <div><dt>Not reported or —</dt><dd>The City source used for this card did not provide that value. It does not automatically mean “none,” “no” or “not applicable.”</dd></div>
                         </dl>
                       </details>
                     </section>
-                  ) : (
-                    <p className="appeal-record-unavailable">Calgary has not returned a matching readable decision record for this appeal yet.</p>
                   )}
                   <div className="appeal-links">
                     {selectedPermit.appealreporturl && (
@@ -431,6 +456,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                     {selectedDecisionRecordUrl && (
                       <a className="secondary-appeal-link" href={selectedDecisionRecordUrl} target="_blank" rel="noreferrer">
                         Open this record in Calgary Open Data <span aria-hidden="true">↗</span>
+                      </a>
+                    )}
+                    {selectedDecisionJsonUrl && (
+                      <a className="secondary-appeal-link" href={selectedDecisionJsonUrl} target="_blank" rel="noreferrer">
+                        View original Calgary JSON source <span aria-hidden="true">↗</span>
                       </a>
                     )}
                     {!selectedPermit.appealreporturl && (
