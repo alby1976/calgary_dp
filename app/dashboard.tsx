@@ -375,7 +375,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                     )}
                     {selectedDecisionRecordUrl && (
                       <a className="secondary-appeal-link" href={selectedDecisionRecordUrl} target="_blank" rel="noreferrer">
-                        View Calgary Open Data decision record <span aria-hidden="true">↗</span>
+                        View filtered Calgary Open Data decision page <span aria-hidden="true">↗</span>
                       </a>
                     )}
                     {!selectedPermit.appealreporturl && (
