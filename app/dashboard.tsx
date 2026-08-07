@@ -331,7 +331,74 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         ))}
       </section>
 
-      <section className="linked-map-grid" aria-label="Linked permit visualizations">
+      <section className="linked-map-grid" aria-label="Linked permit exploration workspace">
+        <aside id="permit-explorer" className="explorer workspace-explorer" aria-label="Permit explorer and filters">
+          <div className="explorer-heading">
+            <div><p className="eyebrow">Find and select</p><h2>Permit explorer</h2></div>
+            <p>{filtered.length.toLocaleString("en-CA")} matches</p>
+          </div>
+          <div className="filters">
+            <label className="search-field">
+              <span className="sr-only">Search permits</span>
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search permits or addresses…" />
+            </label>
+            <label>
+              <span className="sr-only">Filter by year</span>
+              <select value={year} onChange={(event) => setYear(event.target.value)}>
+                <option value="all">All years</option>
+                {years.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Filter by status</span>
+              <select value={group} onChange={(event) => setGroup(event.target.value)}>
+                <option value="all">All statuses</option>
+                <option value="active">Active / under review</option>
+                <option value="approved">Approved / released</option>
+                <option value="closed">Refused / cancelled</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label>
+              <span className="sr-only">Filter by appeal status</span>
+              <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
+                <option value="all">All appeal statuses</option>
+                <option value="appealed">Appealed to SDAB</option>
+              </select>
+            </label>
+            {(query || year !== "all" || group !== "all" || appealFilter !== "all") && (
+              <button
+                className="clear-button"
+                onClick={() => {
+                  setQuery("");
+                  setYear("all");
+                  setGroup("all");
+                  setAppealFilter("all");
+                }}
+              >
+                Clear filters
+              </button>
+            )}
+          </div>
+          <div className="permit-list" aria-label="Matching permits">
+            {displayed.map((permit, index) => (
+              <button
+                className={selectedPermit?.permitnum === permit.permitnum ? "permit-row selected" : "permit-row"}
+                key={`${permit.permitnum}-${index}`}
+                aria-pressed={selectedPermit?.permitnum === permit.permitnum}
+                onClick={() => setSelected(permit.permitnum ?? null)}
+              >
+                <span className="permit-id"><StatusDot group={groupFor(permit.statuscurrent)} /><strong>{text(permit.permitnum)}</strong><small>{formatDate(permit.applieddate)}</small></span>
+                <span className="permit-address"><strong>{text(permit.address)}</strong><small>{text(permit.description)}</small></span>
+                <span className={`status-pill status-${groupFor(permit.statuscurrent)}`}>{text(permit.statuscurrent)}</span>
+                <span className="row-arrow" aria-hidden="true">→</span>
+              </button>
+            ))}
+            {!displayed.length && <p className="empty-state">No permits match those filters.</p>}
+          </div>
+          {recent.length > 12 && <button className="load-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show latest 12" : `Show all ${recent.length.toLocaleString("en-CA")}`}</button>}
+        </aside>
+
         <div className="linked-map-stack" aria-label="Community overview and street-level permit maps">
           <article className="panel map-panel overview-panel">
           <div className="panel-heading">
@@ -603,68 +670,6 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             </button>
           ))}
         </div>
-      </section>
-
-      <section id="permit-explorer" className="explorer">
-        <div className="explorer-heading">
-          <div><p className="eyebrow">Find the record, then ask better questions</p><h2>Permit explorer</h2></div>
-          <p>{filtered.length.toLocaleString("en-CA")} matching permits</p>
-        </div>
-        <div className="filters">
-          <label className="search-field">
-            <span className="sr-only">Search permits</span>
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search address, permit, applicant or description…" />
-          </label>
-          <label>
-            <span className="sr-only">Filter by year</span>
-            <select value={year} onChange={(event) => setYear(event.target.value)}>
-              <option value="all">All years</option>
-              {years.map((value) => <option key={value} value={value}>{value}</option>)}
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Filter by status</span>
-            <select value={group} onChange={(event) => setGroup(event.target.value)}>
-              <option value="all">All statuses</option>
-              <option value="active">Active / under review</option>
-              <option value="approved">Approved / released</option>
-              <option value="closed">Refused / cancelled</option>
-              <option value="other">Other</option>
-            </select>
-          </label>
-          <label>
-            <span className="sr-only">Filter by appeal status</span>
-            <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
-              <option value="all">All appeal statuses</option>
-              <option value="appealed">Appealed to SDAB</option>
-            </select>
-          </label>
-          {(query || year !== "all" || group !== "all" || appealFilter !== "all") && (
-            <button
-              className="clear-button"
-              onClick={() => {
-                setQuery("");
-                setYear("all");
-                setGroup("all");
-                setAppealFilter("all");
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-        <div className="permit-list">
-          {displayed.map((permit, index) => (
-            <button className={selectedPermit?.permitnum === permit.permitnum ? "permit-row selected" : "permit-row"} key={`${permit.permitnum}-${index}`} onClick={() => setSelected(permit.permitnum ?? null)}>
-              <span className="permit-id"><StatusDot group={groupFor(permit.statuscurrent)} /><strong>{text(permit.permitnum)}</strong><small>{formatDate(permit.applieddate)}</small></span>
-              <span className="permit-address"><strong>{text(permit.address)}</strong><small>{text(permit.description)}</small></span>
-              <span className={`status-pill status-${groupFor(permit.statuscurrent)}`}>{text(permit.statuscurrent)}</span>
-              <span className="row-arrow">→</span>
-            </button>
-          ))}
-          {!displayed.length && <p className="empty-state">No permits match those filters.</p>}
-        </div>
-        {recent.length > 12 && <button className="load-more" onClick={() => setShowAll(!showAll)}>{showAll ? "Show latest 12" : `Show all ${recent.length.toLocaleString("en-CA")}`}</button>}
       </section>
 
       <section className="reading-guide">
