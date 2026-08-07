@@ -35,6 +35,8 @@ export type DashboardConfig = {
     appealReportsHost: string;
     decisionRecordApiUrlTemplate: string;
     decisionRecordPageUrlTemplate: string;
+    canliiTribunalUrl: string;
+    canliiDecisionSearchUrlTemplate: string;
     appealContactUrl: string;
     appealRefreshSeconds: number;
     appealRequestTimeoutMilliseconds: number;
@@ -128,6 +130,11 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
     value.links.decisionRecordPageUrlTemplate.replace("{appealNumber}", "2026-0001"),
     "links.decisionRecordPageUrlTemplate",
   );
+  requireUrl(value.links.canliiTribunalUrl, "links.canliiTribunalUrl");
+  requireUrl(
+    value.links.canliiDecisionSearchUrlTemplate.replace("{citation}", "2026%20CGYSDAB%201"),
+    "links.canliiDecisionSearchUrlTemplate",
+  );
   requireUrl(value.links.appealContactUrl, "links.appealContactUrl");
   requireUrl(
     value.map.tileUrlTemplate.replace("{z}", "12").replace("{x}", "700").replace("{y}", "1300"),
@@ -144,6 +151,9 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   }
   if (!value.links.decisionRecordPageUrlTemplate.includes("{appealNumber}")) {
     throw new Error("links.decisionRecordPageUrlTemplate must contain {appealNumber}");
+  }
+  if (!value.links.canliiDecisionSearchUrlTemplate.includes("{citation}")) {
+    throw new Error("links.canliiDecisionSearchUrlTemplate must contain {citation}");
   }
   for (const placeholder of ["{z}", "{x}", "{y}"]) {
     if (!value.map.tileUrlTemplate.includes(placeholder)) {
@@ -257,6 +267,8 @@ export const publicDashboardConfig = {
     developmentApplicationUrlTemplate: dashboardConfig.links.developmentApplicationUrlTemplate,
     decisionRecordApiUrlTemplate: dashboardConfig.links.decisionRecordApiUrlTemplate,
     decisionRecordPageUrlTemplate: dashboardConfig.links.decisionRecordPageUrlTemplate,
+    canliiTribunalUrl: dashboardConfig.links.canliiTribunalUrl,
+    canliiDecisionSearchUrlTemplate: dashboardConfig.links.canliiDecisionSearchUrlTemplate,
     appealContactUrl: dashboardConfig.links.appealContactUrl,
   },
   statuses: dashboardConfig.statuses,
