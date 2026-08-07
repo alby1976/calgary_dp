@@ -332,7 +332,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       </section>
 
       <section className="linked-map-grid" aria-label="Linked permit visualizations">
-        <article className="panel map-panel overview-panel">
+        <div className="linked-map-stack" aria-label="Community overview and street-level permit maps">
+          <article className="panel map-panel overview-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Overview · 1 of 2</p><h2>Community activity pattern</h2></div>
             <p>{plotted.length} plotted</p>
@@ -392,9 +393,9 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             ))}
           </div>
           <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
-        </article>
+          </article>
 
-        <article className="panel map-panel granular-map-panel">
+          <article className="panel map-panel granular-map-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
             <p>{plotted.length} plotted</p>
@@ -408,7 +409,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             onSelect={setSelected}
           />
           <p className="map-note">City-provided coordinates shown against Calgary streets. Selecting a point highlights the same permit in the overview.</p>
-        </article>
+          </article>
+        </div>
 
         <article className="panel detail-panel linked-detail-panel" aria-live="polite" aria-atomic="true">
           <p className="eyebrow">Linked selection · both views</p>

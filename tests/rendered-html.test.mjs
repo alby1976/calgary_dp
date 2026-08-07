@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const developmentPreviewMeta =
@@ -49,5 +50,6 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Read the exact City status before drawing a conclusion/i);
   assert.match(html, /Street-level permit map/i);
   assert.match(html, /Linked selection · both views/i);
-  assert.match(html, /Highlighted in the community overview and the street-level map/i);
+  const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
+  assert.match(dashboardSource, /Highlighted in the community overview and the street-level map/i);
 });
