@@ -64,6 +64,8 @@ test("documentation explains the proactive Open Data to DMap workflow", () => {
   const findings = readFileSync(resolve(projectRoot, "docs/HCI-USABILITY-FINDINGS.md"), "utf8");
 
   assert.match(readme, /proactive early-warning tool/i);
+  assert.match(readme, /Always double-check the permit number/i);
   assert.match(userGuide, /Development Map \(DMap\)/i);
+  assert.match(userGuide, /developmentmap\.calgary\.ca/i);
   assert.match(findings, /must not imply that a DMap record already exists/i);
 });

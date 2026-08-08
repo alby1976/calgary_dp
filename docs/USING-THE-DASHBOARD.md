@@ -44,7 +44,9 @@ Hover over or focus a map point or legend colour to see its plain-language expla
 
 The dashboard is designed as an early-warning signal. A permit may appear in Calgary Open Data before its application page or plans appear in Calgary's Development Map (DMap). In that situation, the permit tells you which file to watch; it does not mean DMap is ready or guarantee when Calgary will publish the page or plans.
 
-Use **Check DMap for application and plans** to look for the corresponding City record. If DMap has not published it yet, check again later. Calgary controls whether plans are public and how long they remain available.
+Use **Try permit-specific DMap link** as a shortcut, then use **Double-check Calgary's official Development Map** to verify the permit number at [developmentmap.calgary.ca](https://developmentmap.calgary.ca/). The shortcut is only a convenience and may not resolve correctly. If DMap has not published the record yet, check again later. Calgary controls whether plans are public and how long they remain available.
+
+Before relying on a record for comments, appeals, plans or deadlines, verify it on Calgary's official Development Map and, where necessary, with the assigned City planner or official notice.
 
 For a permit with an SDAB appeal number, the details panel may include:
 

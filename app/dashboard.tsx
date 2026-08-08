@@ -646,9 +646,12 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               {selectedApplicationUrl && (
                 <div className="plans-action">
                   <a href={selectedApplicationUrl} target="_blank" rel="noreferrer">
-                    Check DMap for application &amp; plans <span aria-hidden="true">↗</span>
+                    Try permit-specific DMap link <span aria-hidden="true">↗</span>
                   </a>
-                  <p>This permit may appear in Open Data before its DMap page or plans are available. If DMap is not ready, check again later; Calgary controls what is published and for how long.</p>
+                  <a className="official-dmap-link" href={config.links.developmentMapUrl} target="_blank" rel="noreferrer">
+                    Double-check Calgary&apos;s official Development Map <span aria-hidden="true">↗</span>
+                  </a>
+                  <p><strong>Always verify the permit number on Calgary&apos;s official Development Map.</strong> The permit-specific link above is only a convenience and may not resolve correctly. A permit may also appear in Open Data before its DMap page or plans are available.</p>
                 </div>
               )}
             </>
@@ -677,7 +680,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         <div className="guide-cards">
           <article><span>01</span><h3>Open data is an early signal</h3><p>A permit can appear here before it appears in DMap. Treat it as a prompt to watch DMap for the application record and any public plans—not as confirmation that DMap is ready.</p></article>
           <article><span>02</span><h3>Status needs context</h3><p>“Pending,” “approved,” and “released” are different milestones. Read the decision, release and appeal dates together.</p></article>
-          <article><span>03</span><h3>Verify before acting</h3><p>For comments, appeals or deadlines, confirm the file with the assigned City planner or the official notice.</p></article>
+          <article><span>03</span><h3>Verify before acting</h3><p>Double-check the permit number on Calgary&apos;s official Development Map. For comments, appeals or deadlines, also confirm the file with the assigned City planner or official notice.</p></article>
         </div>
       </section>
 

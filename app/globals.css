@@ -175,6 +175,8 @@ h1 em { color: var(--green); font-weight: 400; }
 .plans-action a { display: inline-flex; align-items: center; justify-content: space-between; gap: 22px; width: 100%; padding: 14px 16px; border-radius: 3px; background: var(--green); color: white; font-size: 13px; font-weight: 800; text-decoration: none; }
 .plans-action a:hover { background: #145540; }
 .plans-action a:focus-visible { outline: 3px solid rgba(216,102,56,.45); outline-offset: 3px; }
+.plans-action a.official-dmap-link { margin-top: 8px; border: 1px solid rgba(23,36,45,.24); background: rgba(255,255,255,.78); color: var(--ink); }
+.plans-action a.official-dmap-link:hover { background: white; }
 .plans-action p { margin: 9px 2px 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
 
 .activity-panel { border-bottom: 1px solid var(--line); }
