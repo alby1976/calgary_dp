@@ -1,7 +1,7 @@
 # HCI usability findings
 
 **Evaluation date:** August 7, 2026  
-**Evaluated version:** Sites version 25  
+**Evaluated version:** Sites version 25; implementation status updated August 8, 2026
 **Audience:** Varsity residents, friends and Varsity Community Association civic-committee members
 
 **Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch Calgary's Development Map (DMap) even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists or predict when Calgary will publish it.
@@ -23,8 +23,8 @@ The assessment focused on these tasks:
 
 | Priority | Finding | User impact | Recommended correction | Acceptance criterion |
 | --- | --- | --- | --- | --- |
-| Critical | Both map components receive only `plotted.slice(0, 500)`, while the headings display the full `plotted.length`. | A reader may believe every filtered permit is mapped and draw an incorrect conclusion about the community activity pattern. | Render every filtered point using clustering or another performant method. Until then, label the exact number shown, such as “500 of 1,241 shown.” | The number claimed as plotted equals the number represented, or the interface clearly distinguishes total valid coordinates from displayed markers. |
-| High | Each map can expose up to 500 marker buttons, creating roughly 1,000 map-marker stops in the keyboard sequence. | Keyboard and switch users may have to traverse hundreds of controls before reaching the selected details and source links. | Use clustering and roving keyboard focus, or remove individual markers from the normal tab order and make the permit explorer the documented keyboard-selection path. | A keyboard user can move from filters to a permit, its details and source links without traversing the complete marker collection. |
+| Critical | **Resolved August 8:** both maps now represent every filtered record with valid coordinates through clustering; the former 500-record truncation was removed. | The previous limit could make the activity pattern look complete when it was not. | Preserve full-record clustering and an honest represented-total label. | The number claimed as represented equals the full valid-coordinate result set. |
+| High | **Resolved August 8:** clustering replaced the large collection of individual street-map buttons, and the permit explorer is the documented complete keyboard-selection path. | The former marker approach could create roughly 1,000 map stops in the keyboard sequence. | Preserve cluster expansion for pointer users and the explorer path for keyboard and switch users. | A keyboard user can move from filters to any permit, its details and source links without traversing the complete marker collection. |
 | High | Overview points are 9×9 pixels, street markers are 16×16 pixels and legend controls are also small. | The controls are difficult to acquire with touch, tremor, low vision or an imprecise pointer. | Give markers and legend entries at least a 24×24 CSS-pixel target, preferably a 44×44 touch area with a smaller visual dot inside it. | Target-size checks pass and the visual design still distinguishes nearby points. |
 | High | Explanatory, legend, map and appeal text frequently uses 9–12 pixel type. | Dense small text raises reading effort and makes already complex appeal material harder to scan. | Raise ordinary explanatory text to 14–16 pixels and reserve smaller text for short secondary metadata. | Core instructions, status explanations and appeal guidance remain readable at 100% zoom without relying on 9–12 pixel body copy. |
 | Medium | Year, status and appeal filter labels are visually hidden. | After choosing a value such as “2025,” a sighted reader must remember which filter the value belongs to. | Add persistent visible labels: **Search**, **Year**, **Permit status** and **Appeal status**. | Every input retains a visible name before and after its value changes. |
@@ -47,8 +47,8 @@ The assessment focused on these tasks:
 
 ## Recommended implementation order
 
-1. Correct the 500-point map discrepancy.
-2. Reduce keyboard tab stops and enlarge marker targets.
+1. ~~Correct the 500-point map discrepancy.~~ Completed August 8, 2026.
+2. ~~Reduce keyboard tab stops through clustering.~~ Completed August 8, 2026; target-size review remains open.
 3. Add visible filter labels and increase explanatory text size.
 4. Correct selection synchronisation after filtering.
 5. Refine live-region and chart accessibility.

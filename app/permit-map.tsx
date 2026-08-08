@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
-  Marker,
   NavigationControl,
 } from "maplibre-gl";
+import type { FeatureCollection, Point } from "geojson";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
 import type { Permit } from "../lib/permit";
 
@@ -14,6 +15,12 @@ type MapPoint = {
   permit: Permit;
   lat: number;
   lon: number;
+  group: string;
+};
+
+type PermitFeatureProperties = {
+  permitNumber: string;
+  address: string;
   group: string;
 };
 
@@ -26,11 +33,26 @@ type Props = {
   onSelect: (permitNumber: string) => void;
 };
 
-type MarkerEntry = {
-  marker: Marker;
-  element: HTMLButtonElement;
-  permitNumber: string;
-};
+const SOURCE_ID = "filtered-permits";
+const CLUSTER_LAYER_ID = "permit-clusters";
+const CLUSTER_COUNT_LAYER_ID = "permit-cluster-count";
+const POINT_LAYER_ID = "permit-points";
+const SELECTED_LAYER_ID = "selected-permit";
+
+function featureCollection(points: MapPoint[]): FeatureCollection<Point, PermitFeatureProperties> {
+  return {
+    type: "FeatureCollection",
+    features: points.map(({ permit, lat, lon, group }) => ({
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [lon, lat] },
+      properties: {
+        permitNumber: permit.permitnum?.trim() ?? "",
+        address: permit.address?.trim() || "Address not reported",
+        group,
+      },
+    })),
+  };
+}
 
 function fitPoints(
   map: MapLibreMap,
@@ -53,6 +75,11 @@ function fitPoints(
   });
 }
 
+function pointsInsideViewport(map: MapLibreMap, points: MapPoint[]) {
+  const bounds = map.getBounds();
+  return points.filter(({ lon, lat }) => bounds.contains([lon, lat])).length;
+}
+
 export default function PermitMap({
   points,
   selectedPermitNumber,
@@ -66,10 +93,10 @@ export default function PermitMap({
   const pointsRef = useRef(points);
   const onSelectRef = useRef(onSelect);
   const selectedPermitRef = useRef(selectedPermitNumber);
-  const markerEntriesRef = useRef<MarkerEntry[]>([]);
   const mapReadyRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
+  const [visiblePointCount, setVisiblePointCount] = useState(points.length);
 
   useEffect(() => {
     pointsRef.current = points;
@@ -110,8 +137,102 @@ export default function PermitMap({
     mapRef.current = map;
     map.addControl(new NavigationControl({ showCompass: false }), "top-right");
 
+    const updateVisibleCount = () => {
+      setVisiblePointCount(pointsInsideViewport(map, pointsRef.current));
+    };
+
     map.on("load", () => {
+      map.addSource(SOURCE_ID, {
+        type: "geojson",
+        data: featureCollection(pointsRef.current),
+        cluster: true,
+        clusterMaxZoom: 14,
+        clusterRadius: 46,
+      });
+
+      map.addLayer({
+        id: CLUSTER_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "#17242d",
+          "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 50, 27, 200, 32],
+          "circle-stroke-color": "#fffdf8",
+          "circle-stroke-width": 3,
+          "circle-opacity": 0.9,
+        },
+      });
+
+      map.addLayer({
+        id: CLUSTER_COUNT_LAYER_ID,
+        type: "symbol",
+        source: SOURCE_ID,
+        filter: ["has", "point_count"],
+        layout: {
+          "text-field": ["get", "point_count_abbreviated"],
+          "text-size": 12,
+        },
+        paint: { "text-color": "#ffffff" },
+      });
+
+      map.addLayer({
+        id: POINT_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": [
+            "match",
+            ["get", "group"],
+            "active", "#d86638",
+            "approved", "#1b6b55",
+            "closed", "#a94840",
+            "#8b9497",
+          ],
+          "circle-radius": 7,
+          "circle-stroke-color": "#fffdf8",
+          "circle-stroke-width": 2,
+        },
+      });
+
+      map.addLayer({
+        id: SELECTED_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        filter: ["==", ["get", "permitNumber"], selectedPermitRef.current ?? "__none__"],
+        paint: {
+          "circle-color": "rgba(255,253,248,0.72)",
+          "circle-radius": 15,
+          "circle-stroke-color": "#17242d",
+          "circle-stroke-width": 4,
+        },
+      });
+
+      map.on("click", CLUSTER_LAYER_ID, async (event) => {
+        const feature = map.queryRenderedFeatures(event.point, { layers: [CLUSTER_LAYER_ID] })[0];
+        const clusterId = Number(feature?.properties?.cluster_id);
+        if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
+
+        const source = map.getSource(SOURCE_ID) as GeoJSONSource;
+        const zoom = await source.getClusterExpansionZoom(clusterId);
+        map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom, duration: 350 });
+      });
+
+      map.on("click", POINT_LAYER_ID, (event) => {
+        const feature = event.features?.[0];
+        const permitNumber = String(feature?.properties?.permitNumber ?? "").trim();
+        if (permitNumber) onSelectRef.current(permitNumber);
+      });
+
+      [CLUSTER_LAYER_ID, POINT_LAYER_ID].forEach((layerId) => {
+        map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
+      });
+
+      map.on("moveend", updateVisibleCount);
       fitPoints(map, pointsRef.current, mapConfig.fallbackBounds);
+      updateVisibleCount();
       mapReadyRef.current = true;
       setMapError(false);
       setMapReady(true);
@@ -122,8 +243,6 @@ export default function PermitMap({
     });
 
     return () => {
-      markerEntriesRef.current.forEach(({ marker }) => marker.remove());
-      markerEntriesRef.current = [];
       mapReadyRef.current = false;
       map.remove();
       mapRef.current = null;
@@ -134,43 +253,20 @@ export default function PermitMap({
     const map = mapRef.current;
     if (!mapReady || !map) return;
 
-    markerEntriesRef.current.forEach(({ marker }) => marker.remove());
-    markerEntriesRef.current = points.flatMap(({ permit, lat, lon, group }) => {
-      const permitNumber = permit.permitnum?.trim();
-      if (!permitNumber) return [];
-
-      const element = document.createElement("button");
-      element.type = "button";
-      element.className = `granular-map-point status-${group}`;
-      element.title = `${permitNumber} · ${permit.address?.trim() || "Address not reported"}`;
-      element.setAttribute(
-        "aria-label",
-        `Select ${permitNumber} at ${permit.address?.trim() || "address not reported"}`,
-      );
-      element.setAttribute("aria-pressed", String(permitNumber === selectedPermitRef.current));
-      element.classList.toggle("selected", permitNumber === selectedPermitRef.current);
-      element.addEventListener("click", (event) => {
-        event.stopPropagation();
-        onSelectRef.current(permitNumber);
-      });
-
-      const marker = new Marker({ element, anchor: "center" })
-        .setLngLat([lon, lat])
-        .addTo(map);
-
-      return [{ marker, element, permitNumber }];
-    });
+    const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
+    source?.setData(featureCollection(points));
+    setVisiblePointCount(pointsInsideViewport(map, points));
   }, [mapReady, points]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!mapReady || !map) return;
 
-    markerEntriesRef.current.forEach(({ element, permitNumber }) => {
-      const isSelected = permitNumber === selectedPermitNumber;
-      element.classList.toggle("selected", isSelected);
-      element.setAttribute("aria-pressed", String(isSelected));
-    });
+    map.setFilter(SELECTED_LAYER_ID, [
+      "==",
+      ["get", "permitNumber"],
+      selectedPermitNumber ?? "__none__",
+    ]);
 
     const selected = points.find(
       (point) => point.permit.permitnum?.trim() === focusPermitNumber,
@@ -190,15 +286,18 @@ export default function PermitMap({
         ref={containerRef}
         className="permit-map"
         role="region"
-        aria-label={`Interactive street map of filtered ${communityName} development permits`}
+        aria-label={`Interactive clustered street map of filtered ${communityName} development permits`}
       />
       <button
         type="button"
         className="fit-map-button"
         onClick={() => mapRef.current && fitPoints(mapRef.current, points, mapConfig.fallbackBounds)}
       >
-        Fit visible permits
+        Fit filtered permits
       </button>
+      <p className="map-visible-count" role="status" aria-live="polite">
+        <strong>{visiblePointCount.toLocaleString("en-CA")}</strong> of {points.length.toLocaleString("en-CA")} filtered permits in view
+      </p>
       {!mapReady && !mapError && <p className="map-status">Loading Calgary street map…</p>}
       {mapError && (
         <p className="map-status map-error" role="status">
@@ -212,7 +311,7 @@ export default function PermitMap({
         <a href={mapConfig.issueUrl} target="_blank" rel="noreferrer">Report a map issue</a>
       </div>
       <p className="sr-only">
-        Select the accessible permit list below to inspect a record without using the map.
+        Numbered circles combine nearby permits. Zoom in to separate them, or use the accessible permit list to select any record.
       </p>
     </div>
   );

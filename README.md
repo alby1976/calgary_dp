@@ -18,6 +18,7 @@ The dashboard's permit-specific DMap link is a convenience, not an authoritative
 - City dataset update timestamp, when available
 - One coordinated desktop workspace with the permit explorer on the left, linked overview and street maps in the centre, and the selected permit on the right
 - Shared selection across the permit table and both maps, plus a responsive one-column layout on smaller screens
+- Every filtered record with valid coordinates represented through clustering in both maps, with a live street-map count showing permits in view out of the filtered total
 - Permit status summary, hover/focus plain-language colour guide, and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal

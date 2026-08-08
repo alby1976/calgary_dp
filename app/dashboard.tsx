@@ -139,6 +139,57 @@ function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
 
+type PlottedPermit = {
+  permit: Permit;
+  lat: number;
+  lon: number;
+  group: StatusGuideGroup;
+};
+
+type OverviewCluster = {
+  id: string;
+  x: number;
+  y: number;
+  group: StatusGuideGroup;
+  points: PlottedPermit[];
+};
+
+function clusterOverviewPoints(
+  points: PlottedPermit[],
+  minLat: number,
+  maxLat: number,
+  minLon: number,
+  maxLon: number,
+): OverviewCluster[] {
+  const cells = new Map<string, OverviewCluster>();
+
+  points.forEach((point) => {
+    const x = 7 + ((point.lon - minLon) / Math.max(0.001, maxLon - minLon)) * 86;
+    const y = 7 + (1 - (point.lat - minLat) / Math.max(0.001, maxLat - minLat)) * 86;
+    const cellX = Math.floor(x / 8);
+    const cellY = Math.floor(y / 10);
+    const id = `${cellX}-${cellY}`;
+    const existing = cells.get(id);
+
+    if (existing) {
+      existing.points.push(point);
+      existing.x = (existing.x * (existing.points.length - 1) + x) / existing.points.length;
+      existing.y = (existing.y * (existing.points.length - 1) + y) / existing.points.length;
+      return;
+    }
+
+    cells.set(id, { id, x, y, group: point.group, points: [point] });
+  });
+
+  return [...cells.values()].map((cluster) => {
+    const counts: Record<StatusGuideGroup, number> = { active: 0, approved: 0, closed: 0, other: 0 };
+    cluster.points.forEach((point) => counts[point.group]++);
+    cluster.group = (Object.entries(counts) as Array<[StatusGuideGroup, number]>)
+      .sort((left, right) => right[1] - left[1])[0][0];
+    return cluster;
+  });
+}
+
 export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, config, datasetUrl, filteredQueryUrl }: Props) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
@@ -249,24 +300,21 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   }));
   const maxYearCount = Math.max(1, ...yearCounts.map((item) => item.count));
 
-  const plotted = filtered
+  const plotted = useMemo<PlottedPermit[]>(() => filtered
     .map((permit) => ({
       permit,
       lat: Number(permit.latitude),
       lon: Number(permit.longitude),
-      group: groupFor(permit.statuscurrent),
+      group: statusGroup(permit.statuscurrent, config.statuses),
     }))
-    .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon));
+    .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon)), [filtered, config.statuses]);
   const lats = plotted.map((item) => item.lat);
   const lons = plotted.map((item) => item.lon);
   const minLat = Math.min(...lats, config.map.fallbackBounds.minLatitude);
   const maxLat = Math.max(...lats, config.map.fallbackBounds.maxLatitude);
   const minLon = Math.min(...lons, config.map.fallbackBounds.minLongitude);
   const maxLon = Math.max(...lons, config.map.fallbackBounds.maxLongitude);
-  const overviewPointStyle = (lat: number, lon: number) => ({
-    left: `${7 + ((lon - minLon) / Math.max(0.001, maxLon - minLon)) * 86}%`,
-    top: `${7 + (1 - (lat - minLat) / Math.max(0.001, maxLat - minLat)) * 86}%`,
-  });
+  const overviewClusters = clusterOverviewPoints(plotted, minLat, maxLat, minLon, maxLon);
 
   return (
     <main>
@@ -403,7 +451,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <article className="panel map-panel overview-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Overview · 1 of 2</p><h2>Community activity pattern</h2></div>
-            <p>{plotted.length} plotted</p>
+            <p>{plotted.length.toLocaleString("en-CA")} permits represented</p>
           </div>
           <div className="overview-plot" aria-label={`Simplified overview plot of filtered ${config.site.communityDisplayName} permits`}>
             <span className="north">N ↑</span>
@@ -412,21 +460,33 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 {label.text}
               </span>
             ))}
-            {plotted.slice(0, 500).map(({ permit, lat, lon, group: permitGroup }, index) => (
-              <button
-                key={`${permit.permitnum}-${index}`}
-                className={`map-point status-${permitGroup} ${selectedPermit?.permitnum === permit.permitnum ? "selected" : ""}`}
-                style={overviewPointStyle(lat, lon)}
-                title={`${text(permit.permitnum)} · ${text(permit.address)}`}
-                aria-label={`Select ${text(permit.permitnum)} at ${text(permit.address)}`}
-                aria-describedby={`status-help-${permitGroup}`}
-                onMouseEnter={() => setHoveredGuide(permitGroup)}
-                onMouseLeave={() => setHoveredGuide(null)}
-                onFocus={() => setHoveredGuide(permitGroup)}
-                onBlur={() => setHoveredGuide(null)}
-                onClick={() => permit.permitnum && setSelected(permit.permitnum)}
-              />
-            ))}
+            {overviewClusters.map((cluster) => {
+              const selectable = cluster.points.find(({ permit }) => permit.permitnum?.trim());
+              const containsSelected = cluster.points.some(({ permit }) => permit.permitnum === selectedPermit?.permitnum);
+              const single = cluster.points.length === 1;
+              return (
+                <button
+                  key={cluster.id}
+                  className={`${single ? "map-point" : "map-cluster"} status-${cluster.group} ${containsSelected ? "selected" : ""}`}
+                  style={{ left: `${cluster.x}%`, top: `${cluster.y}%` }}
+                  title={single
+                    ? `${text(cluster.points[0].permit.permitnum)} · ${text(cluster.points[0].permit.address)}`
+                    : `${cluster.points.length.toLocaleString("en-CA")} nearby permits · select one and inspect the street map`}
+                  aria-label={single
+                    ? `Select ${text(cluster.points[0].permit.permitnum)} at ${text(cluster.points[0].permit.address)}`
+                    : `Cluster of ${cluster.points.length.toLocaleString("en-CA")} permits; select a permit and zoom the street map`}
+                  aria-describedby={`status-help-${cluster.group}`}
+                  disabled={!selectable}
+                  onMouseEnter={() => setHoveredGuide(cluster.group)}
+                  onMouseLeave={() => setHoveredGuide(null)}
+                  onFocus={() => setHoveredGuide(cluster.group)}
+                  onBlur={() => setHoveredGuide(null)}
+                  onClick={() => selectable?.permit.permitnum && setSelected(selectable.permit.permitnum)}
+                >
+                  {!single && <span>{cluster.points.length.toLocaleString("en-CA")}</span>}
+                </button>
+              );
+            })}
             {hoveredGuide && (
               <aside className={`status-guide-popover status-${hoveredGuide}`} role="status">
                 <p className="status-guide-label">{STATUS_GUIDES[hoveredGuide].label}</p>
@@ -459,23 +519,23 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               <p id={`status-help-${guideGroup}`} key={guideGroup}>{guide.meaning} {guide.detail}</p>
             ))}
           </div>
-          <p className="map-note">A simplified coordinate overview for spotting clusters and broad patterns. Select a point to inspect the same permit in the detailed view.</p>
+          <p className="map-note">Every filtered permit with valid coordinates is represented. Numbered circles combine nearby permits; their colour shows the most common status in that cluster. Select one to inspect it in the street view.</p>
           </article>
 
           <article className="panel map-panel granular-map-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
-            <p>{plotted.length} plotted</p>
+            <p>{plotted.length.toLocaleString("en-CA")} filtered permits</p>
           </div>
           <PermitMap
-            points={plotted.slice(0, 500)}
+            points={plotted}
             selectedPermitNumber={selectedPermit?.permitnum}
             focusPermitNumber={selected ?? undefined}
             communityName={config.site.communityDisplayName}
             mapConfig={config.map}
             onSelect={setSelected}
           />
-          <p className="map-note">City-provided coordinates shown against Calgary streets. Selecting a point highlights the same permit in the overview.</p>
+          <p className="map-note">Every filtered permit with valid coordinates is represented. Numbered circles combine nearby permits; zoom in to separate them. Pan or zoom to update the in-view count.</p>
           </article>
         </div>
 

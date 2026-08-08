@@ -22,7 +22,9 @@ Choose a permit in any of these ways:
 
 The same permit then becomes selected everywhere: its row is selected, both map points are highlighted, the street map centres on it, and the right-hand details update. Changing a filter may remove that permit; when this happens, the first visible result becomes the new shared selection.
 
-Use **Fit visible permits** to return the street map to all currently filtered records. Map points use City-published coordinates and are not survey or parcel boundaries.
+Both maps represent every filtered record that has valid City-published coordinates. Numbered circles are clusters: they combine nearby permits so dense locations remain readable. In the overview, a cluster uses the colour of its most common permit-status group. In the street map, select a numbered cluster to zoom in until its permits separate.
+
+The street-map counter reads **X of Y filtered permits in view**. **Y** is the total number of filtered permits with valid coordinates. **X** changes when you pan or zoom because it counts the underlying permits inside the current map window—not the smaller number of cluster symbols drawn on the screen. Use **Fit filtered permits** to return the street map to the full filtered result set. Map locations are not survey or parcel boundaries.
 
 ## Search and filters
 

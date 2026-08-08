@@ -35,7 +35,7 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Varsity Development Watch/i);
   assert.match(html, /config\/dashboard\.json/i);
   assert.match(html, /Map data © OpenStreetMap contributors/i);
-  assert.match(html, /Fit visible permits/i);
+  assert.match(html, /Fit filtered permits/i);
   assert.match(html, /Community activity pattern/i);
   assert.match(html, /Community activity pattern colour legend/i);
   assert.match(html, /Active \/ under review/i);
@@ -49,11 +49,13 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Stopped in its current form/i);
   assert.match(html, /Read the exact City status before drawing a conclusion/i);
   assert.match(html, /Street-level permit map/i);
+  assert.match(html, /filtered permits in view/i);
+  assert.match(html, /Every filtered permit with valid coordinates is represented/i);
   assert.match(html, /Linked selection · both views/i);
   assert.match(html, /Open data is an early signal/i);
   assert.match(html, /Development Map \(DMap\)/i);
-  assert.match(html, /Double-check Calgary(?:&#x27;|&apos;|')s official Development Map/i);
-  assert.match(html, /permit-specific link above is only a convenience/i);
   const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
   assert.match(dashboardSource, /Highlighted in the community overview and the street-level map/i);
+  assert.match(dashboardSource, /Double-check Calgary(?:&apos;|')s official Development Map/i);
+  assert.match(dashboardSource, /permit-specific link above is only a convenience/i);
 });
