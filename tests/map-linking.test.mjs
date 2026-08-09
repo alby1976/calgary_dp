@@ -13,6 +13,9 @@ test("renders every street-map permit through a clustered GeoJSON source", () =>
 
 test("linked selection visibly highlights and centres the street map", () => {
   assert.match(mapSource, /map\.setFilter\(SELECTED_LAYER_ID/);
+  assert.match(mapSource, /new Marker\(\{ element: markerButton, anchor: "center" \}\)/);
+  assert.match(mapSource, /selectedMarkerRef\.current\?\.remove\(\)/);
+  assert.match(mapSource, /granular-map-point selected/);
   assert.match(mapSource, /map\.easeTo\(\{/);
   assert.match(mapSource, /zoom: Math\.max\(map\.getZoom\(\), 15\)/);
 });

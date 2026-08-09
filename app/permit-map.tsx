@@ -5,6 +5,7 @@ import {
   GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
+  Marker,
   NavigationControl,
 } from "maplibre-gl";
 import type { FeatureCollection, Point } from "geojson";
@@ -93,6 +94,7 @@ export default function PermitMap({
   const pointsRef = useRef(points);
   const onSelectRef = useRef(onSelect);
   const selectedPermitRef = useRef(selectedPermitNumber);
+  const selectedMarkerRef = useRef<Marker | null>(null);
   const mapReadyRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
@@ -244,6 +246,8 @@ export default function PermitMap({
 
     return () => {
       mapReadyRef.current = false;
+      selectedMarkerRef.current?.remove();
+      selectedMarkerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
@@ -267,6 +271,25 @@ export default function PermitMap({
       ["get", "permitNumber"],
       selectedPermitNumber ?? "__none__",
     ]);
+
+    selectedMarkerRef.current?.remove();
+    selectedMarkerRef.current = null;
+
+    const selectedPoint = points.find(
+      (point) => point.permit.permitnum?.trim() === selectedPermitNumber,
+    );
+    if (selectedPoint) {
+      const markerButton = document.createElement("button");
+      markerButton.type = "button";
+      markerButton.className = `granular-map-point selected status-${selectedPoint.group}`;
+      markerButton.setAttribute("aria-label", `Selected permit ${selectedPermitNumber} at ${selectedPoint.permit.address?.trim() || "address not reported"}`);
+      markerButton.setAttribute("aria-pressed", "true");
+      markerButton.title = `${selectedPermitNumber} · ${selectedPoint.permit.address?.trim() || "Address not reported"}`;
+      markerButton.addEventListener("click", () => onSelectRef.current(selectedPermitNumber));
+      selectedMarkerRef.current = new Marker({ element: markerButton, anchor: "center" })
+        .setLngLat([selectedPoint.lon, selectedPoint.lat])
+        .addTo(map);
+    }
 
     const selected = points.find(
       (point) => point.permit.permitnum?.trim() === focusPermitNumber,
@@ -296,7 +319,7 @@ export default function PermitMap({
         Fit filtered permits
       </button>
       <p className="map-visible-count" role="status" aria-live="polite">
-        <strong>{visiblePointCount.toLocaleString("en-CA")}</strong> of {points.length.toLocaleString("en-CA")} filtered permits in view
+        <strong>{visiblePointCount.toLocaleString("en-CA")}</strong> of {points.length.toLocaleString("en-CA")} filtered datapoints displayed in this map view
       </p>
       {!mapReady && !mapError && <p className="map-status">Loading Calgary street map…</p>}
       {mapError && (

@@ -49,7 +49,7 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Stopped in its current form/i);
   assert.match(html, /Read the exact City status before drawing a conclusion/i);
   assert.match(html, /Street-level permit map/i);
-  assert.match(html, /filtered permits in view/i);
+  assert.match(html, /filtered datapoints displayed in this map view/i);
   assert.match(html, /Every filtered permit with valid coordinates is represented/i);
   assert.match(html, /Linked selection · both views/i);
   assert.match(html, /Open data is an early signal/i);

@@ -24,7 +24,7 @@ The same permit then becomes selected everywhere: its row is selected, both map 
 
 Both maps represent every filtered record that has valid City-published coordinates. Numbered circles are clusters: they combine nearby permits so dense locations remain readable. In the overview, a cluster uses the colour of its most common permit-status group. In the street map, select a numbered cluster to zoom in until its permits separate.
 
-The street-map counter reads **X of Y filtered permits in view**. **Y** is the total number of filtered permits with valid coordinates. **X** changes when you pan or zoom because it counts the underlying permits inside the current map window—not the smaller number of cluster symbols drawn on the screen. Use **Fit filtered permits** to return the street map to the full filtered result set. Map locations are not survey or parcel boundaries.
+Both maps report **X of Y filtered datapoints displayed**. In the overview, all filtered records with valid coordinates are represented, so X normally equals Y; the same label also states how many clustered map symbols represent those records. On the street map, **Y** is the total number of filtered records with valid coordinates and **X** changes when you pan or zoom because it counts the underlying records inside the current map window—not the smaller number of cluster symbols drawn on the screen. The selected permit is drawn as a persistent marker above the clusters so its exact location remains visible. Use **Fit filtered permits** to return the street map to the full filtered result set. Map locations are not survey or parcel boundaries.
 
 ## Search and filters
 

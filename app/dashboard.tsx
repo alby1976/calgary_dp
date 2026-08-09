@@ -451,10 +451,13 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <article className="panel map-panel overview-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Overview · 1 of 2</p><h2>Community activity pattern</h2></div>
-            <p>{plotted.length.toLocaleString("en-CA")} permits represented</p>
+            <p>{plotted.length.toLocaleString("en-CA")} of {plotted.length.toLocaleString("en-CA")} datapoints displayed</p>
           </div>
           <div className="overview-plot" aria-label={`Simplified overview plot of filtered ${config.site.communityDisplayName} permits`}>
             <span className="north">N ↑</span>
+            <p className="map-visible-count overview-visible-count" role="status">
+              <strong>{plotted.length.toLocaleString("en-CA")}</strong> of {plotted.length.toLocaleString("en-CA")} filtered datapoints displayed in {overviewClusters.length.toLocaleString("en-CA")} map symbols
+            </p>
             {config.map.overviewLabels.map((label) => (
               <span key={`${label.className}-${label.text}`} className={`map-road ${label.className}`}>
                 {label.text}
@@ -525,7 +528,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <article className="panel map-panel granular-map-panel">
           <div className="panel-heading">
             <div><p className="eyebrow">Granular view · 2 of 2</p><h2>Street-level permit map</h2></div>
-            <p>{plotted.length.toLocaleString("en-CA")} filtered permits</p>
+            <p>Viewport count shown on map</p>
           </div>
           <PermitMap
             points={plotted}
@@ -535,7 +538,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             mapConfig={config.map}
             onSelect={setSelected}
           />
-          <p className="map-note">Every filtered permit with valid coordinates is represented. Numbered circles combine nearby permits; zoom in to separate them. Pan or zoom to update the in-view count.</p>
+          <p className="map-note">Every filtered permit with valid coordinates is represented. Numbered circles combine nearby permits; zoom in to separate them. The selected permit stays visible above its cluster. Pan or zoom to update the in-view count.</p>
           </article>
         </div>
 

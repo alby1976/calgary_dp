@@ -9,7 +9,7 @@ test("both maps represent every filtered coordinate without a fixed record cap",
   assert.doesNotMatch(dashboardSource, /plotted\.slice\(/);
   assert.match(dashboardSource, /clusterOverviewPoints\(plotted/);
   assert.match(dashboardSource, /points=\{plotted\}/);
-  assert.match(dashboardSource, /permits represented/);
+  assert.match(dashboardSource, /filtered datapoints displayed in \{overviewClusters\.length\.toLocaleString\("en-CA"\)\} map symbols/);
 });
 
 test("street map clusters points and expands clusters on selection", () => {
@@ -22,5 +22,5 @@ test("street map clusters points and expands clusters on selection", () => {
 test("street map reports viewport permits out of the filtered total", () => {
   assert.match(streetMapSource, /map\.on\("moveend", updateVisibleCount\)/);
   assert.match(streetMapSource, /pointsInsideViewport\(map, points/);
-  assert.match(streetMapSource, /of \{points\.length\.toLocaleString\("en-CA"\)\} filtered permits in view/);
+  assert.match(streetMapSource, /of \{points\.length\.toLocaleString\("en-CA"\)\} filtered datapoints displayed in this map view/);
 });
