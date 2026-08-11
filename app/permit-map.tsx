@@ -35,6 +35,7 @@ type Props = {
 };
 
 const SOURCE_ID = "filtered-permits";
+const HIT_LAYER_ID = "permit-point-hit-targets";
 const POINT_LAYER_ID = "permit-points";
 const SELECTED_LAYER_ID = "selected-permit";
 
@@ -147,6 +148,19 @@ export default function PermitMap({
         data: featureCollection(pointsRef.current),
       });
 
+      // Keep the visual dots compact while giving every record a 44 CSS-pixel
+      // pointer/touch target. This layer is transparent but remains interactive.
+      map.addLayer({
+        id: HIT_LAYER_ID,
+        type: "circle",
+        source: SOURCE_ID,
+        paint: {
+          "circle-color": "rgba(0,0,0,0)",
+          "circle-radius": 22,
+          "circle-stroke-width": 0,
+        },
+      });
+
       map.addLayer({
         id: POINT_LAYER_ID,
         type: "circle",
@@ -180,14 +194,14 @@ export default function PermitMap({
         },
       });
 
-      map.on("click", POINT_LAYER_ID, (event) => {
+      map.on("click", HIT_LAYER_ID, (event) => {
         const feature = event.features?.[0];
         const permitNumber = String(feature?.properties?.permitNumber ?? "").trim();
         if (permitNumber) onSelectRef.current(permitNumber);
       });
 
-      map.on("mouseenter", POINT_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
-      map.on("mouseleave", POINT_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
+      map.on("mouseenter", HIT_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", HIT_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
 
       map.on("moveend", updateVisibleCount);
       fitPoints(map, pointsRef.current, mapConfig.fallbackBounds);
