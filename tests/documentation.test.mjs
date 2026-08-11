@@ -57,6 +57,8 @@ test("HCI findings preserve priorities and measurable acceptance criteria", () =
   assert.match(findings, /one GeoJSON point per filtered record/i);
   assert.match(findings, /Acceptance criterion/);
   assert.match(findings, /moderated test with five Varsity residents or civic-committee members/i);
+  assert.match(findings, /44×44 CSS-pixel/i);
+  assert.match(findings, /ordinary explanatory text now uses 14–16 pixels/i);
 });
 
 test("documentation explains the proactive Open Data to DMap workflow", () => {
