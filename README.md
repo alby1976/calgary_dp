@@ -19,6 +19,8 @@ The dashboard's permit-specific DMap link is a convenience, not an authoritative
 - One coordinated desktop workspace with the permit explorer on the left, linked overview and street maps in the centre, and the selected permit on the right
 - Shared selection across the permit table and both maps, plus a responsive one-column layout on smaller screens
 - One map point per filtered permit record with valid coordinates in both maps, with live **points in view / total points** counts that update after every pan or zoom
+- Compact map dots with 44×44 CSS-pixel pointer and touch targets, plus 44-pixel legend and map controls
+- Core instructions and explanatory guidance at 14–16 pixels, with smaller type reserved for short secondary metadata
 - Permit status summary, hover/focus plain-language colour guide, and applications-by-year chart
 - Search by address, permit number, applicant or description
 - Filters by year, permit status and recorded SDAB appeal
