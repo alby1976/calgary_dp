@@ -16,6 +16,9 @@ test("both maps receive every filtered coordinate without clustering or a record
 
 test("each GeoJSON feature and rendered point corresponds to one permit record", () => {
   assert.match(streetMapSource, /features: points\.map/);
+  assert.match(streetMapSource, /id: HIT_LAYER_ID/);
+  assert.match(streetMapSource, /"circle-radius": 22/);
+  assert.match(streetMapSource, /map\.on\("click", HIT_LAYER_ID/);
   assert.match(streetMapSource, /id: POINT_LAYER_ID/);
   assert.doesNotMatch(streetMapSource, /point_count/);
   assert.match(streetMapSource, /onSelectRef\.current\(permitNumber\)/);
