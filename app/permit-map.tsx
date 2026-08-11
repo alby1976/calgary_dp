@@ -5,7 +5,6 @@ import {
   GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
-  Marker,
   NavigationControl,
 } from "maplibre-gl";
 import type { FeatureCollection, Point } from "geojson";
@@ -31,12 +30,11 @@ type Props = {
   focusPermitNumber?: string;
   communityName: string;
   mapConfig: PublicDashboardConfig["map"];
+  view: "overview" | "street";
   onSelect: (permitNumber: string) => void;
 };
 
 const SOURCE_ID = "filtered-permits";
-const CLUSTER_LAYER_ID = "permit-clusters";
-const CLUSTER_COUNT_LAYER_ID = "permit-cluster-count";
 const POINT_LAYER_ID = "permit-points";
 const SELECTED_LAYER_ID = "selected-permit";
 
@@ -87,6 +85,7 @@ export default function PermitMap({
   focusPermitNumber,
   communityName,
   mapConfig,
+  view,
   onSelect,
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -94,7 +93,6 @@ export default function PermitMap({
   const pointsRef = useRef(points);
   const onSelectRef = useRef(onSelect);
   const selectedPermitRef = useRef(selectedPermitNumber);
-  const selectedMarkerRef = useRef<Marker | null>(null);
   const mapReadyRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState(false);
@@ -147,42 +145,12 @@ export default function PermitMap({
       map.addSource(SOURCE_ID, {
         type: "geojson",
         data: featureCollection(pointsRef.current),
-        cluster: true,
-        clusterMaxZoom: 14,
-        clusterRadius: 46,
-      });
-
-      map.addLayer({
-        id: CLUSTER_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "#17242d",
-          "circle-radius": ["step", ["get", "point_count"], 18, 10, 22, 50, 27, 200, 32],
-          "circle-stroke-color": "#fffdf8",
-          "circle-stroke-width": 3,
-          "circle-opacity": 0.9,
-        },
-      });
-
-      map.addLayer({
-        id: CLUSTER_COUNT_LAYER_ID,
-        type: "symbol",
-        source: SOURCE_ID,
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": ["get", "point_count_abbreviated"],
-          "text-size": 12,
-        },
-        paint: { "text-color": "#ffffff" },
       });
 
       map.addLayer({
         id: POINT_LAYER_ID,
         type: "circle",
         source: SOURCE_ID,
-        filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-color": [
             "match",
@@ -192,9 +160,10 @@ export default function PermitMap({
             "closed", "#a94840",
             "#8b9497",
           ],
-          "circle-radius": 7,
+          "circle-radius": view === "overview" ? 5 : 7,
           "circle-stroke-color": "#fffdf8",
-          "circle-stroke-width": 2,
+          "circle-stroke-width": view === "overview" ? 1.5 : 2,
+          "circle-opacity": 0.82,
         },
       });
 
@@ -204,21 +173,11 @@ export default function PermitMap({
         source: SOURCE_ID,
         filter: ["==", ["get", "permitNumber"], selectedPermitRef.current ?? "__none__"],
         paint: {
-          "circle-color": "rgba(255,253,248,0.72)",
-          "circle-radius": 15,
+          "circle-color": "rgba(255,253,248,0)",
+          "circle-radius": view === "overview" ? 11 : 15,
           "circle-stroke-color": "#17242d",
           "circle-stroke-width": 4,
         },
-      });
-
-      map.on("click", CLUSTER_LAYER_ID, async (event) => {
-        const feature = map.queryRenderedFeatures(event.point, { layers: [CLUSTER_LAYER_ID] })[0];
-        const clusterId = Number(feature?.properties?.cluster_id);
-        if (!feature || !Number.isFinite(clusterId) || feature.geometry.type !== "Point") return;
-
-        const source = map.getSource(SOURCE_ID) as GeoJSONSource;
-        const zoom = await source.getClusterExpansionZoom(clusterId);
-        map.easeTo({ center: feature.geometry.coordinates as [number, number], zoom, duration: 350 });
       });
 
       map.on("click", POINT_LAYER_ID, (event) => {
@@ -227,10 +186,8 @@ export default function PermitMap({
         if (permitNumber) onSelectRef.current(permitNumber);
       });
 
-      [CLUSTER_LAYER_ID, POINT_LAYER_ID].forEach((layerId) => {
-        map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
-        map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
-      });
+      map.on("mouseenter", POINT_LAYER_ID, () => { map.getCanvas().style.cursor = "pointer"; });
+      map.on("mouseleave", POINT_LAYER_ID, () => { map.getCanvas().style.cursor = ""; });
 
       map.on("moveend", updateVisibleCount);
       fitPoints(map, pointsRef.current, mapConfig.fallbackBounds);
@@ -246,12 +203,10 @@ export default function PermitMap({
 
     return () => {
       mapReadyRef.current = false;
-      selectedMarkerRef.current?.remove();
-      selectedMarkerRef.current = null;
       map.remove();
       mapRef.current = null;
     };
-  }, [mapConfig]);
+  }, [mapConfig, view]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -272,44 +227,25 @@ export default function PermitMap({
       selectedPermitNumber ?? "__none__",
     ]);
 
-    selectedMarkerRef.current?.remove();
-    selectedMarkerRef.current = null;
-
-    const selectedPoint = points.find(
-      (point) => point.permit.permitnum?.trim() === selectedPermitNumber,
-    );
-    if (selectedPoint) {
-      const markerButton = document.createElement("button");
-      markerButton.type = "button";
-      markerButton.className = `granular-map-point selected status-${selectedPoint.group}`;
-      markerButton.setAttribute("aria-label", `Selected permit ${selectedPermitNumber} at ${selectedPoint.permit.address?.trim() || "address not reported"}`);
-      markerButton.setAttribute("aria-pressed", "true");
-      markerButton.title = `${selectedPermitNumber} · ${selectedPoint.permit.address?.trim() || "Address not reported"}`;
-      markerButton.addEventListener("click", () => onSelectRef.current(selectedPermitNumber));
-      selectedMarkerRef.current = new Marker({ element: markerButton, anchor: "center" })
-        .setLngLat([selectedPoint.lon, selectedPoint.lat])
-        .addTo(map);
-    }
-
     const selected = points.find(
       (point) => point.permit.permitnum?.trim() === focusPermitNumber,
     );
     if (selected) {
       map.easeTo({
         center: [selected.lon, selected.lat],
-        zoom: Math.max(map.getZoom(), 15),
+        zoom: Math.max(map.getZoom(), view === "overview" ? 13 : 15),
         duration: 450,
       });
     }
-  }, [focusPermitNumber, mapReady, points, selectedPermitNumber]);
+  }, [focusPermitNumber, mapReady, points, selectedPermitNumber, view]);
 
   return (
     <div className="street-map-shell">
       <div
         ref={containerRef}
-        className="permit-map"
+        className={`permit-map ${view === "overview" ? "overview-map" : "street-level-map"}`}
         role="region"
-        aria-label={`Interactive clustered street map of filtered ${communityName} development permits`}
+        aria-label={`Interactive ${view === "overview" ? "community overview" : "street-level"} map of filtered ${communityName} development permits; one point per permit record`}
       />
       <button
         type="button"
@@ -319,7 +255,7 @@ export default function PermitMap({
         Fit filtered permits
       </button>
       <p className="map-visible-count" role="status" aria-live="polite">
-        <strong>{visiblePointCount.toLocaleString("en-CA")}</strong> of {points.length.toLocaleString("en-CA")} filtered datapoints displayed in this map view
+        <strong>{visiblePointCount.toLocaleString("en-CA")}</strong> of {points.length.toLocaleString("en-CA")} permit points in this view
       </p>
       {!mapReady && !mapError && <p className="map-status">Loading Calgary street map…</p>}
       {mapError && (
@@ -334,7 +270,7 @@ export default function PermitMap({
         <a href={mapConfig.issueUrl} target="_blank" rel="noreferrer">Report a map issue</a>
       </div>
       <p className="sr-only">
-        Numbered circles combine nearby permits. Zoom in to separate them, or use the accessible permit list to select any record.
+        Each map point represents one permit record. Pan or zoom to change which records are in view, or use the accessible permit list to select any record.
       </p>
     </div>
   );
