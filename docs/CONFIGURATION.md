@@ -115,12 +115,12 @@ The first matching group wins. A status matching none of the lists appears under
 | `issueUrl` | HTTPS link for reporting a basemap problem |
 | `minZoom` | Furthest-out zoom allowed |
 | `maxZoom` | Closest-in zoom allowed; must be greater than `minZoom` and no more than 22 |
-| `overviewLabels` | Contextual road labels on the simplified overview; each uses `text` and a supported `className` from `road-one` through `road-three` |
+| `overviewLabels` | Legacy simplified-overview labels retained for configuration compatibility; the current interactive overview uses basemap labels instead |
 | `fallbackBounds` | Minimum and maximum latitude and longitude used when no visible permit has coordinates |
 
 The default uses the standard OpenStreetMap tile service. Keep its visible attribution, do not bulk-download or prefetch tiles, and review the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before operating a high-traffic or commercial deployment. A custom provider must allow browser use from the dashboard's public domain.
 
-Both geographic views use the latitude and longitude published in the City feed. The simplified overview helps reveal clusters; the street map supplies granular location context. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
+Both geographic views use the latitude and longitude published in the City feed. The community overview begins at a broad scale and the street map supplies granular location context. Each GeoJSON point corresponds to one permit record, and each view reports its current in-view count out of the filtered total. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
 
 The three-pane desktop layout and its 960-pixel responsive breakpoint are presentation behaviour in `app/dashboard.tsx` and `app/globals.css`, not feed configuration. A third-party host does not need an additional setting to enable linked selection.
 

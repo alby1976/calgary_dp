@@ -53,7 +53,8 @@ test("HCI findings preserve priorities and measurable acceptance criteria", () =
   const findings = readFileSync(resolve(projectRoot, "docs/HCI-USABILITY-FINDINGS.md"), "utf8");
 
   assert.match(findings, /\| Critical \|/);
-  assert.match(findings, /former 500-record truncation was removed/i);
+  assert.match(findings, /former 500-record truncation/i);
+  assert.match(findings, /one GeoJSON point per filtered record/i);
   assert.match(findings, /Acceptance criterion/);
   assert.match(findings, /moderated test with five Varsity residents or civic-committee members/i);
 });

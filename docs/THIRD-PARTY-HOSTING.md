@@ -179,9 +179,9 @@ Before directing users to the third-party deployment, verify:
 - address and permit search work;
 - year and status filters work;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
-- the simplified overview and detailed street map represent every filtered permit with valid coordinates through clustering;
+- the community overview and detailed street map each render one point per filtered permit with valid coordinates;
 - Calgary streets and the configured map attribution are visible;
-- the street-map in-view count changes after panning or zooming and never exceeds the filtered total;
+- both maps' in-view counts change independently after panning or zooming and never exceed the filtered total;
 - **Fit filtered permits** frames the filtered results;
 - a map point can select a permit;
 - selecting a permit row or either map point highlights the same permit in both maps and updates the right-hand details;

@@ -4,18 +4,17 @@ import test from "node:test";
 
 const mapSource = await readFile(new URL("../app/permit-map.tsx", import.meta.url), "utf8");
 
-test("renders every street-map permit through a clustered GeoJSON source", () => {
-  assert.match(mapSource, /cluster:\s*true/);
+test("renders every permit as its own GeoJSON point in both map views", () => {
   assert.match(mapSource, /data: featureCollection\(pointsRef\.current\)/);
-  assert.match(mapSource, /Numbered circles combine nearby permits/);
+  assert.match(mapSource, /one point per permit record/);
+  assert.match(mapSource, /Each map point represents one permit record/);
   assert.match(mapSource, /onSelectRef\.current\(permitNumber\)/);
 });
 
 test("linked selection visibly highlights and centres the street map", () => {
   assert.match(mapSource, /map\.setFilter\(SELECTED_LAYER_ID/);
-  assert.match(mapSource, /new Marker\(\{ element: markerButton, anchor: "center" \}\)/);
-  assert.match(mapSource, /selectedMarkerRef\.current\?\.remove\(\)/);
-  assert.match(mapSource, /granular-map-point selected/);
+  assert.match(mapSource, /id: SELECTED_LAYER_ID/);
+  assert.match(mapSource, /"circle-stroke-width": 4/);
   assert.match(mapSource, /map\.easeTo\(\{/);
-  assert.match(mapSource, /zoom: Math\.max\(map\.getZoom\(\), 15\)/);
+  assert.match(mapSource, /view === "overview" \? 13 : 15/);
 });

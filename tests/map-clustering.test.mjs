@@ -5,22 +5,24 @@ import test from "node:test";
 const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
 const streetMapSource = await readFile(new URL("../app/permit-map.tsx", import.meta.url), "utf8");
 
-test("both maps represent every filtered coordinate without a fixed record cap", () => {
+test("both maps receive every filtered coordinate without clustering or a record cap", () => {
   assert.doesNotMatch(dashboardSource, /plotted\.slice\(/);
-  assert.match(dashboardSource, /clusterOverviewPoints\(plotted/);
-  assert.match(dashboardSource, /points=\{plotted\}/);
-  assert.match(dashboardSource, /filtered datapoints displayed in \{overviewClusters\.length\.toLocaleString\("en-CA"\)\} map symbols/);
+  assert.equal((dashboardSource.match(/points=\{plotted\}/g) ?? []).length, 2);
+  assert.match(dashboardSource, /view="overview"/);
+  assert.match(dashboardSource, /view="street"/);
+  assert.doesNotMatch(dashboardSource, /clusterOverviewPoints/);
+  assert.doesNotMatch(streetMapSource, /cluster:\s*true/);
 });
 
-test("street map clusters points and expands clusters on selection", () => {
-  assert.match(streetMapSource, /cluster:\s*true/);
-  assert.match(streetMapSource, /point_count_abbreviated/);
-  assert.match(streetMapSource, /getClusterExpansionZoom/);
+test("each GeoJSON feature and rendered point corresponds to one permit record", () => {
+  assert.match(streetMapSource, /features: points\.map/);
+  assert.match(streetMapSource, /id: POINT_LAYER_ID/);
+  assert.doesNotMatch(streetMapSource, /point_count/);
   assert.match(streetMapSource, /onSelectRef\.current\(permitNumber\)/);
 });
 
-test("street map reports viewport permits out of the filtered total", () => {
+test("both map instances report viewport permit points out of the filtered total", () => {
   assert.match(streetMapSource, /map\.on\("moveend", updateVisibleCount\)/);
   assert.match(streetMapSource, /pointsInsideViewport\(map, points/);
-  assert.match(streetMapSource, /of \{points\.length\.toLocaleString\("en-CA"\)\} filtered datapoints displayed in this map view/);
+  assert.match(streetMapSource, /of \{points\.length\.toLocaleString\("en-CA"\)\} permit points in this view/);
 });

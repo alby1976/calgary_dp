@@ -22,9 +22,9 @@ Choose a permit in any of these ways:
 
 The same permit then becomes selected everywhere: its row is selected, both map points are highlighted, the street map centres on it, and the right-hand details update. Changing a filter may remove that permit; when this happens, the first visible result becomes the new shared selection.
 
-Both maps represent every filtered record that has valid City-published coordinates. Numbered circles are clusters: they combine nearby permits so dense locations remain readable. In the overview, a cluster uses the colour of its most common permit-status group. In the street map, select a numbered cluster to zoom in until its permits separate.
+Both maps represent every filtered record that has valid City-published coordinates. Each point corresponds to one permit record; the dashboard does not use numbered clusters. Points at the same or very close coordinates can overlap visually, so zoom in to separate nearby locations and use the permit explorer when records share an address.
 
-Both maps report **X of Y filtered datapoints displayed**. In the overview, all filtered records with valid coordinates are represented, so X normally equals Y; the same label also states how many clustered map symbols represent those records. On the street map, **Y** is the total number of filtered records with valid coordinates and **X** changes when you pan or zoom because it counts the underlying records inside the current map window—not the smaller number of cluster symbols drawn on the screen. The selected permit is drawn as a persistent marker above the clusters so its exact location remains visible. Use **Fit filtered permits** to return the street map to the full filtered result set. Map locations are not survey or parcel boundaries.
+Both maps report **X of Y permit points in this view**. **Y** is the total number of filtered permit records with valid coordinates. **X** is the number whose coordinates fall inside that map's current window. The count recalculates independently after you pan or zoom either map: zooming in normally reduces X and zooming out normally increases it. Use **Fit filtered permits** on either map to return to the full filtered result set. Map locations are not survey or parcel boundaries.
 
 ## Search and filters
 
@@ -35,7 +35,7 @@ Both maps report **X of Y filtered datapoints displayed**. In the overview, all 
 
 ## Status colour guide
 
-Hover over or focus a map point or legend colour to see its plain-language explanation. On a touch device, tap a legend colour.
+Hover over, focus or tap a legend colour to see its plain-language explanation. Select map points to open their permit records; use the permit explorer as the complete keyboard-selection path.
 
 - **Active / under review:** the City record indicates that review or processing is still underway.
 - **Green — approved / released:** the City record indicates approval or release. This does not replace the permit conditions or official file.
