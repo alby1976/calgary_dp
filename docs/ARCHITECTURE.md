@@ -37,8 +37,8 @@ server-rendered page -> client-side coordinated workspace
 | `lib/permit.ts` | Stable internal permit type used by server and client code |
 | `lib/canlii.ts` | Appeal-to-case mapping and strict CanLII metadata normalization |
 | `app/page.tsx` | Server-side fetching, data freshness and appeal-package enrichment |
-| `app/dashboard.tsx` | Coordinated explorer, simplified overview, shared selection, charts and record details |
-| `app/permit-map.tsx` | MapLibre street basemap, accessible DOM permit markers, fit-to-results and map interaction |
+| `app/dashboard.tsx` | Coordinated explorer, linked map pair, shared selection, charts and record details |
+| `app/permit-map.tsx` | MapLibre overview and street views, individual canvas point and hit layers, fit-to-results and map interaction |
 | `app/layout.tsx` | Metadata derived from the site configuration |
 | `worker/index.ts` | Server-only CanLII endpoint, durable cache and global rate-limit coordination |
 | `db/schema.ts` | D1 cache, lease and rolling request-log tables |
@@ -103,6 +103,8 @@ One client-side `selectedPermitNumber` state coordinates the permit row, both Ma
 `app/permit-map.tsx` renders a client-side MapLibre map. The default configuration uses ordinary browser requests to OpenStreetMap raster tiles and displays the required attribution. It does not bulk-download or prefetch tiles.
 
 Every filtered permit with valid City coordinates is supplied to both MapLibre visualizations; neither view truncates or clusters the data. `featureCollection()` creates exactly one GeoJSON point feature for each permit record. Both maps render that same collection as individual status-coloured circles, while a separate outline layer identifies the shared selected permit.
+
+Each record also participates in a transparent hit layer with a 22-pixel radius, producing a 44×44 CSS-pixel pointer and touch target around the smaller visual circle. The enlarged hit area is an interaction aid only: it does not encode parcel size, uncertainty or development extent. Legend entries, MapLibre controls and the fit-to-results action use the same 44-pixel minimum target. Ordinary explanatory copy is 14–16 pixels; smaller typography is restricted to concise secondary metadata.
 
 The legend identifies the shared status colours and opens a plain-language guide on hover, focus or tap. The permit explorer remains the complete keyboard-selection path so the canvas does not add hundreds of map stops to the tab sequence. Both visualizations share one selected permit state. Selecting a point highlights the corresponding record in both views, centres the maps at an appropriate overview or street-level zoom, and updates the shared permit-information panel. If a filter removes the selected permit, both views fall back to the first visible result.
 

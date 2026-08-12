@@ -121,7 +121,9 @@ The default OpenStreetMap service is intended for normal interactive use, not bu
 
 Confirm that the configured latitude and longitude mappings are correct. Then adjust `map.fallbackBounds` for the selected community.
 
-Both the overview and street map only plot records with valid coordinates from the City feed. They do not geocode records with missing coordinates. The overview is intentionally simplified; use the street map for granular context. A marker position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
+Both the overview and street map only plot records with valid coordinates from the City feed. They do not geocode records with missing coordinates. Use the community activity pattern for broad context and the street map for granular context. A point position should not be used for lot-line or parcel-level conclusions; verify the address and official City file.
+
+Each visible dot has a transparent 44×44 CSS-pixel hit area. If nearby records appear to share one location or the expected permit is difficult to select, zoom in to separate their hit areas or select the exact record from the permit explorer. The hit area is not a parcel boundary and does not affect the **points in view / total points** count; the count uses the City-published coordinate for each record.
 
 ## The two visualizations show different selections
 

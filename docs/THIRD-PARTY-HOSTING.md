@@ -180,10 +180,12 @@ Before directing users to the third-party deployment, verify:
 - year and status filters work;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the community overview and detailed street map each render one point per filtered permit with valid coordinates;
+- map points remain visually compact but provide 44×44 CSS-pixel pointer/touch targets, and legend and map controls provide at least 44-pixel targets;
 - Calgary streets and the configured map attribution are visible;
 - both maps' in-view counts change independently after panning or zooming and never exceed the filtered total;
 - **Fit filtered permits** frames the filtered results;
 - a map point can select a permit;
+- ordinary instructions and explanatory guidance render at 14–16 pixels, with smaller text limited to concise secondary metadata;
 - selecting a permit row or either map point highlights the same permit in both maps and updates the right-hand details;
 - the official dataset link opens the configured dataset;
 - a known `DPYYYY-number` record produces a DMap link;

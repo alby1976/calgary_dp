@@ -61,6 +61,22 @@ test("HCI findings preserve priorities and measurable acceptance criteria", () =
   assert.match(findings, /ordinary explanatory text now uses 14–16 pixels/i);
 });
 
+test("documentation describes the released target sizes and readable text", () => {
+  const readme = readFileSync(resolve(projectRoot, "README.md"), "utf8");
+  const userGuide = readFileSync(resolve(projectRoot, "docs/USING-THE-DASHBOARD.md"), "utf8");
+  const architecture = readFileSync(resolve(projectRoot, "docs/ARCHITECTURE.md"), "utf8");
+  const hostingGuide = readFileSync(resolve(projectRoot, "docs/THIRD-PARTY-HOSTING.md"), "utf8");
+
+  for (const document of [readme, userGuide, architecture, hostingGuide]) {
+    assert.match(document, /44×44 CSS-pixel/i);
+    assert.match(document, /14–16(?:-| )pixel/i);
+  }
+
+  assert.match(architecture, /transparent hit layer/i);
+  assert.doesNotMatch(architecture, /accessible DOM permit markers/i);
+  assert.match(userGuide, /does not represent a parcel/i);
+});
+
 test("documentation explains the proactive Open Data to DMap workflow", () => {
   const readme = readFileSync(resolve(projectRoot, "README.md"), "utf8");
   const userGuide = readFileSync(resolve(projectRoot, "docs/USING-THE-DASHBOARD.md"), "utf8");

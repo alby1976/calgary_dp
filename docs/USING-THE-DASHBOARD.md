@@ -24,6 +24,8 @@ The same permit then becomes selected everywhere: its row is selected, both map 
 
 Both maps represent every filtered record that has valid City-published coordinates. Each point corresponds to one permit record; the dashboard does not use numbered clusters. Points at the same or very close coordinates can overlap visually, so zoom in to separate nearby locations and use the permit explorer when records share an address.
 
+The visible dots stay compact so the maps remain readable, but each point has a transparent 44×44 CSS-pixel pointer and touch target. Legend entries and map controls also provide at least a 44-pixel target. This larger interactive area does not represent a parcel, distance or development footprint; it only makes the underlying permit point easier to select.
+
 Both maps report **X of Y permit points in this view**. **Y** is the total number of filtered permit records with valid coordinates. **X** is the number whose coordinates fall inside that map's current window. The count recalculates independently after you pan or zoom either map: zooming in normally reduces X and zooming out normally increases it. Use **Fit filtered permits** on either map to return to the full filtered result set. Map locations are not survey or parcel boundaries.
 
 ## Search and filters
@@ -36,6 +38,8 @@ Both maps report **X of Y permit points in this view**. **Y** is the total numbe
 ## Status colour guide
 
 Hover over, focus or tap a legend colour to see its plain-language explanation. Select map points to open their permit records; use the permit explorer as the complete keyboard-selection path.
+
+Ordinary instructions and explanations use 14–16-pixel text. Smaller text is limited to short supporting details such as dates, source labels and compact metadata. Browser zoom remains available when a larger reading size is needed.
 
 - **Active / under review:** the City record indicates that review or processing is still underway.
 - **Green — approved / released:** the City record indicates approval or release. This does not replace the permit conditions or official file.
