@@ -13,7 +13,9 @@
     "test": "npm run build && node --test tests/*.test.mjs",
     "validate:artifact": "bash scripts/validate-artifact.sh",
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
-    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate"
+    "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
+    "db:migrate:cloudflare": "wrangler d1 migrations apply varsity-development-watch-db --remote --config dist/server/wrangler.json",
+    "deploy:cloudflare": "npm run db:migrate:cloudflare && wrangler deploy"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
