@@ -18,14 +18,16 @@ test("each GeoJSON feature and rendered point corresponds to one permit record",
   assert.match(streetMapSource, /features: points\.map/);
   assert.match(streetMapSource, /id: HIT_LAYER_ID/);
   assert.match(streetMapSource, /"circle-radius": 22/);
-  assert.match(streetMapSource, /map\.on\("click", HIT_LAYER_ID/);
+  assert.match(streetMapSource, /initializedMap\.on\("click", HIT_LAYER_ID/);
   assert.match(streetMapSource, /id: POINT_LAYER_ID/);
   assert.doesNotMatch(streetMapSource, /point_count/);
   assert.match(streetMapSource, /onSelectRef\.current\(permitNumber\)/);
 });
 
 test("both map instances report viewport permit points out of the filtered total", () => {
-  assert.match(streetMapSource, /map\.on\("moveend", updateVisibleCount\)/);
+  assert.match(streetMapSource, /initializedMap\.on\("moveend", updateVisibleCount\)/);
   assert.match(streetMapSource, /pointsInsideViewport\(map, points/);
   assert.match(streetMapSource, /of \{points\.length\.toLocaleString\("en-CA"\)\} permit points in this view/);
+  assert.match(streetMapSource, /\{mapReady && \(/);
+  assert.match(streetMapSource, /Math\.min\(visiblePointCount, points\.length\)/);
 });
