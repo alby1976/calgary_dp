@@ -9,6 +9,9 @@ fi
 
 worker="${SITES_PROJECT_ROOT}/dist/server/index.js"
 hosting="${SITES_PROJECT_ROOT}/dist/.openai/hosting.json"
+wrangler_config="${SITES_PROJECT_ROOT}/dist/server/wrangler.json"
+maplibre_worker="${SITES_PROJECT_ROOT}/dist/client/assets/maplibre-gl-worker.mjs"
+migration="${SITES_PROJECT_ROOT}/dist/server/drizzle/0000_sturdy_dexter_bennett.sql"
 
 [[ -f "${worker}" ]] || {
   echo "Missing Sites Worker entry: dist/server/index.js" >&2
@@ -18,13 +21,37 @@ hosting="${SITES_PROJECT_ROOT}/dist/.openai/hosting.json"
   echo "Missing packaged Sites manifest: dist/.openai/hosting.json" >&2
   exit 66
 }
+[[ -s "${maplibre_worker}" ]] || {
+  echo "Missing packaged MapLibre worker: dist/client/assets/maplibre-gl-worker.mjs" >&2
+  exit 66
+}
+[[ -f "${wrangler_config}" ]] || {
+  echo "Missing generated Wrangler configuration: dist/server/wrangler.json" >&2
+  exit 66
+}
+[[ -s "${migration}" ]] || {
+  echo "Missing packaged Cloudflare D1 migration: dist/server/drizzle/0000_sturdy_dexter_bennett.sql" >&2
+  exit 66
+}
 
-node --input-type=module - "${worker}" "${hosting}" <<'NODE'
+node --input-type=module - "${worker}" "${hosting}" "${wrangler_config}" <<'NODE'
 import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
-const [workerPath, hostingPath] = process.argv.slice(2);
+const [workerPath, hostingPath, wranglerPath] = process.argv.slice(2);
 JSON.parse(await readFile(hostingPath, "utf8"));
+
+const wrangler = JSON.parse(await readFile(wranglerPath, "utf8"));
+const database = wrangler.d1_databases?.find(({ binding }) => binding === "DB");
+if (!database) {
+  throw new Error("dist/server/wrangler.json must contain the DB binding");
+}
+if (database.database_name !== "varsity-development-watch-db") {
+  throw new Error("DB binding must target varsity-development-watch-db");
+}
+if (database.database_id !== "988127e3-a01d-4780-a23b-68cf92be351d") {
+  throw new Error("DB binding contains the wrong Cloudflare D1 database ID");
+}
 
 const workerUrl = pathToFileURL(workerPath);
 workerUrl.searchParams.set("sites-validation", `${process.pid}-${Date.now()}`);
@@ -34,4 +61,4 @@ if (!worker.default || typeof worker.default.fetch !== "function") {
 }
 NODE
 
-echo "Validated Sites artifact: ESM Worker default.fetch and hosting manifest are present."
+echo "Validated deployment artifact: Worker, hosting manifest, D1 binding, migration, and MapLibre worker are present."
