@@ -3,8 +3,12 @@ import { defineConfig } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
-const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
-  "00000000-0000-4000-8000-000000000000";
+// D1 database identifiers are public deployment configuration, not secrets.
+// Cloudflare's direct deployment needs the real identifier in the generated
+// dist/server/wrangler.json; Sites continues to resolve its own DB binding by
+// the logical name stored in .openai/hosting.json.
+const CLOUDFLARE_D1_DATABASE_ID =
+  "988127e3-a01d-4780-a23b-68cf92be351d";
 
 const { d1, r2 } = hostingConfig;
 
@@ -18,8 +22,9 @@ const localBindingConfig = {
     ? [
         {
           binding: d1,
-          database_name: "site-creator-d1",
-          database_id: SITE_CREATOR_PLACEHOLDER_DATABASE_ID,
+          database_name: "varsity-development-watch-db",
+          database_id: CLOUDFLARE_D1_DATABASE_ID,
+          migrations_dir: "drizzle",
         },
       ]
     : [],
