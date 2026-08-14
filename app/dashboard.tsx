@@ -146,6 +146,14 @@ type PlottedPermit = {
   group: StatusGuideGroup;
 };
 
+function parseCoordinate(value: string | undefined, minimum: number, maximum: number) {
+  if (!value?.trim()) return null;
+  const coordinate = Number(value);
+  return Number.isFinite(coordinate) && coordinate >= minimum && coordinate <= maximum
+    ? coordinate
+    : null;
+}
+
 export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, config, datasetUrl, filteredQueryUrl }: Props) {
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
@@ -257,13 +265,28 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const maxYearCount = Math.max(1, ...yearCounts.map((item) => item.count));
 
   const plotted = useMemo<PlottedPermit[]>(() => filtered
-    .map((permit) => ({
-      permit,
-      lat: Number(permit.latitude),
-      lon: Number(permit.longitude),
-      group: statusGroup(permit.statuscurrent, config.statuses),
-    }))
-    .filter((item) => Number.isFinite(item.lat) && Number.isFinite(item.lon)), [filtered, config.statuses]);
+    .map((permit) => {
+      // Blank strings become zero with Number(""), which can pull fitBounds to
+      // the Gulf of Guinea and make every real Calgary point look absent.
+      const lat = parseCoordinate(
+        permit.latitude,
+        config.map.fallbackBounds.minLatitude - 0.5,
+        config.map.fallbackBounds.maxLatitude + 0.5,
+      );
+      const lon = parseCoordinate(
+        permit.longitude,
+        config.map.fallbackBounds.minLongitude - 0.5,
+        config.map.fallbackBounds.maxLongitude + 0.5,
+      );
+
+      return lat === null || lon === null ? null : {
+        permit,
+        lat,
+        lon,
+        group: statusGroup(permit.statuscurrent, config.statuses),
+      };
+    })
+    .filter((item): item is PlottedPermit => item !== null), [filtered, config.map.fallbackBounds, config.statuses]);
   return (
     <main>
       <header className="site-header">
