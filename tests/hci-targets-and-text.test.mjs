@@ -6,8 +6,9 @@ const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8
 const mapSource = await readFile(new URL("../app/permit-map.tsx", import.meta.url), "utf8");
 
 test("map points and legend controls provide 44 CSS-pixel targets", () => {
-  assert.match(mapSource, /const HIT_LAYER_ID = "permit-point-hit-targets"/);
-  assert.match(mapSource, /"circle-radius": 22/);
+  assert.match(mapSource, /element\.className = \[/);
+  assert.match(mapSource, /"permit-map-marker"/);
+  assert.match(css, /\.permit-map-marker \{ width: 44px; height: 44px;/);
   assert.match(css, /\.legend-item \{[^}]*min-width: 44px;[^}]*min-height: 44px;/s);
   assert.match(css, /\.permit-map \.maplibregl-ctrl button \{ width: 44px; height: 44px; \}/);
   assert.match(css, /\.fit-map-button \{ min-height: 44px;/);
