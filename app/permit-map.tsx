@@ -7,6 +7,7 @@ import {
   LngLatBounds,
   Map as MapLibreMap,
   NavigationControl,
+  setWorkerUrl,
 } from "maplibre-gl";
 import type { FeatureCollection, Point } from "geojson";
 import type { PublicDashboardConfig } from "../lib/dashboard-config";
@@ -39,6 +40,11 @@ const SOURCE_ID = "filtered-permits";
 const HIT_LAYER_ID = "permit-point-hit-targets";
 const POINT_LAYER_ID = "permit-points";
 const SELECTED_LAYER_ID = "selected-permit";
+const MAPLIBRE_WORKER_URL = "/assets/maplibre-gl-worker.mjs";
+
+// Vite bundles MapLibre into a hashed dashboard chunk. Set the worker path
+// explicitly so it never depends on import.meta.url rewriting or chunk names.
+setWorkerUrl(MAPLIBRE_WORKER_URL);
 
 function safelyRemoveMap(map: MapLibreMap | null) {
   if (!map) return;
@@ -54,7 +60,7 @@ function safelyRemoveMap(map: MapLibreMap | null) {
 
 type MapErrorBoundaryProps = {
   children: ReactNode;
-  mapLabel: string;
+  fallback: ReactNode;
 };
 
 type MapErrorBoundaryState = {
@@ -70,17 +76,93 @@ class MapErrorBoundary extends Component<MapErrorBoundaryProps, MapErrorBoundary
 
   render() {
     if (this.state.failed) {
-      return (
-        <div className="street-map-shell map-isolated-fallback" role="status">
-          <p className="map-status map-error">
-            {this.props.mapLabel} unavailable. Permit records, filters, details and official links remain available.
-          </p>
-        </div>
-      );
+      return this.props.fallback;
     }
 
     return this.props.children;
   }
+}
+
+const FALLBACK_WIDTH = 1000;
+const FALLBACK_HEIGHT = 560;
+const FALLBACK_PADDING = 34;
+
+function StaticPermitPlot({
+  points,
+  selectedPermitNumber,
+  communityName,
+  mapConfig,
+  view,
+  onSelect,
+}: Props) {
+  const mapLabel = view === "overview" ? "Community overview map" : "Street-level permit map";
+  const geographicBounds = points.length ? {
+    minLatitude: Math.min(...points.map(({ lat }) => lat)),
+    maxLatitude: Math.max(...points.map(({ lat }) => lat)),
+    minLongitude: Math.min(...points.map(({ lon }) => lon)),
+    maxLongitude: Math.max(...points.map(({ lon }) => lon)),
+  } : mapConfig.fallbackBounds;
+  const latitudeSpan = Math.max(geographicBounds.maxLatitude - geographicBounds.minLatitude, 0.002);
+  const longitudeSpan = Math.max(geographicBounds.maxLongitude - geographicBounds.minLongitude, 0.002);
+  const project = (lon: number, lat: number) => ({
+    x: FALLBACK_PADDING + ((lon - geographicBounds.minLongitude) / longitudeSpan) * (FALLBACK_WIDTH - FALLBACK_PADDING * 2),
+    y: FALLBACK_PADDING + ((geographicBounds.maxLatitude - lat) / latitudeSpan) * (FALLBACK_HEIGHT - FALLBACK_PADDING * 2),
+  });
+
+  return (
+    <div className="street-map-shell map-isolated-fallback">
+      <svg
+        className={`permit-map static-permit-plot ${view === "overview" ? "overview-map" : "street-level-map"}`}
+        viewBox={`0 0 ${FALLBACK_WIDTH} ${FALLBACK_HEIGHT}`}
+        role="img"
+        aria-label={`${mapLabel} compatibility view for ${communityName}, showing ${points.length.toLocaleString("en-CA")} filtered permit points`}
+        preserveAspectRatio="none"
+      >
+        <rect className="static-map-background" width={FALLBACK_WIDTH} height={FALLBACK_HEIGHT} />
+        {[0.2, 0.4, 0.6, 0.8].map((fraction) => (
+          <g key={fraction} className="static-map-grid" aria-hidden="true">
+            <line x1={FALLBACK_WIDTH * fraction} y1="0" x2={FALLBACK_WIDTH * fraction} y2={FALLBACK_HEIGHT} />
+            <line x1="0" y1={FALLBACK_HEIGHT * fraction} x2={FALLBACK_WIDTH} y2={FALLBACK_HEIGHT * fraction} />
+          </g>
+        ))}
+        {points.map((point, index) => {
+          const permitNumber = point.permit.permitnum?.trim() ?? "";
+          const position = project(point.lon, point.lat);
+          const selected = permitNumber && permitNumber === selectedPermitNumber;
+          return (
+            <g key={`${permitNumber || "permit"}-${index}`}>
+              <circle
+                className="static-map-hit-target"
+                cx={position.x}
+                cy={position.y}
+                r="18"
+                onClick={() => permitNumber && onSelect(permitNumber)}
+              />
+              <circle
+                className={`static-map-point status-${point.group}${selected ? " selected" : ""}`}
+                cx={position.x}
+                cy={position.y}
+                r={selected ? 10 : view === "overview" ? 5 : 7}
+                aria-hidden="true"
+              />
+            </g>
+          );
+        })}
+      </svg>
+      <p className="map-visible-count" role="status">
+        <strong>{points.length.toLocaleString("en-CA")}</strong> permit points shown in compatibility mode
+      </p>
+      <p className="static-map-notice">
+        Interactive street tiles need WebGL2; this coordinate plot keeps every permit location visible.
+      </p>
+      <div className="map-credits">
+        <a href={mapConfig.attributionUrl} target="_blank" rel="noreferrer">
+          Coordinate reference © OpenStreetMap contributors
+        </a>
+        <a href={mapConfig.issueUrl} target="_blank" rel="noreferrer">Report a map issue</a>
+      </div>
+    </div>
+  );
 }
 
 function featureCollection(points: MapPoint[]): FeatureCollection<Point, PermitFeatureProperties> {
@@ -328,6 +410,20 @@ function PermitMapInner({
     }
   }, [focusPermitNumber, mapReady, markMapUnavailable, points, selectedPermitNumber, view]);
 
+  if (mapError) {
+    return (
+      <StaticPermitPlot
+        points={points}
+        selectedPermitNumber={selectedPermitNumber}
+        focusPermitNumber={focusPermitNumber}
+        communityName={communityName}
+        mapConfig={mapConfig}
+        view={view}
+        onSelect={onSelect}
+      />
+    );
+  }
+
   return (
     <div className="street-map-shell">
       <div
@@ -358,11 +454,6 @@ function PermitMapInner({
           </p>
       )}
       {!mapReady && !mapError && <p className="map-status">Loading Calgary street map…</p>}
-      {mapError && (
-        <p className="map-status map-error" role="status">
-          Map unavailable. Permit records, filters, details and official links remain available.
-        </p>
-      )}
       <div className="map-credits">
         <a href={mapConfig.attributionUrl} target="_blank" rel="noreferrer">
           {mapConfig.attributionLabel}
@@ -377,10 +468,8 @@ function PermitMapInner({
 }
 
 export default function PermitMap(props: Props) {
-  const mapLabel = props.view === "overview" ? "Community overview map" : "Street-level permit map";
-
   return (
-    <MapErrorBoundary mapLabel={mapLabel}>
+    <MapErrorBoundary fallback={<StaticPermitPlot {...props} />}>
       <PermitMapInner {...props} />
     </MapErrorBoundary>
   );
