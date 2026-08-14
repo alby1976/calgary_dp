@@ -110,6 +110,17 @@ h1 em { color: var(--green); font-weight: 400; }
 .permit-map .maplibregl-ctrl-top-right { top: 10px; right: 10px; }
 .permit-map .maplibregl-ctrl-group { border-radius: 3px; box-shadow: 0 2px 10px rgba(23,36,45,.2); }
 .permit-map .maplibregl-ctrl button { width: 44px; height: 44px; }
+.permit-map-marker { width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; appearance: none; }
+.permit-map-marker-dot { width: 16px; height: 16px; display: block; box-sizing: border-box; border: 2px solid #fffdf8; border-radius: 50%; background: #8b9497; box-shadow: 0 2px 7px rgba(23,36,45,.5); opacity: .94; transition: width .12s ease, height .12s ease, box-shadow .12s ease; }
+.permit-map-marker.overview-marker .permit-map-marker-dot { width: 13px; height: 13px; }
+.permit-map-marker.status-active .permit-map-marker-dot { background: #d86638; }
+.permit-map-marker.status-approved .permit-map-marker-dot { background: #1b6b55; }
+.permit-map-marker.status-closed .permit-map-marker-dot { background: #a94840; }
+.permit-map-marker:hover .permit-map-marker-dot,
+.permit-map-marker:focus-visible .permit-map-marker-dot { width: 21px; height: 21px; box-shadow: 0 0 0 4px rgba(255,253,248,.86), 0 3px 9px rgba(23,36,45,.55); }
+.permit-map-marker:focus-visible { outline: 3px solid rgba(23,36,45,.72); outline-offset: -5px; }
+.permit-map-marker.selected { z-index: 4; }
+.permit-map-marker.selected .permit-map-marker-dot { width: 24px; height: 24px; border-width: 4px; outline: 4px solid #17242d; outline-offset: 2px; box-shadow: 0 0 0 8px rgba(255,253,248,.78), 0 4px 13px rgba(23,36,45,.55); }
 .granular-map-point { width: 16px; height: 16px; padding: 0; border: 3px solid #fffdf8; border-radius: 50%; box-shadow: 0 2px 7px rgba(23,36,45,.45); cursor: pointer; appearance: none; }
 .granular-map-point:hover, .granular-map-point:focus-visible { width: 20px; height: 20px; outline: 3px solid rgba(23,36,45,.72); outline-offset: 2px; z-index: 8; }
 .granular-map-point.selected { width: 24px; height: 24px; border: 4px solid #fffdf8; outline: 4px solid var(--ink); outline-offset: 2px; box-shadow: 0 0 0 8px rgba(255,253,248,.8), 0 4px 13px rgba(23,36,45,.5); z-index: 10; }

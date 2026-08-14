@@ -16,10 +16,10 @@ test("both maps receive every filtered coordinate without clustering or a record
 
 test("each GeoJSON feature and rendered point corresponds to one permit record", () => {
   assert.match(streetMapSource, /features: points\.map/);
-  assert.match(streetMapSource, /id: HIT_LAYER_ID/);
-  assert.match(streetMapSource, /"circle-radius": 22/);
-  assert.match(streetMapSource, /initializedMap\.on\("click", HIT_LAYER_ID/);
-  assert.match(streetMapSource, /id: POINT_LAYER_ID/);
+  assert.match(streetMapSource, /return points\.map\(\(point\) =>/);
+  assert.match(streetMapSource, /new MapLibreMarker/);
+  assert.match(streetMapSource, /element\.addEventListener\("click"/);
+  assert.match(streetMapSource, /permit-map-marker-dot/);
   assert.doesNotMatch(streetMapSource, /point_count/);
   assert.match(streetMapSource, /onSelectRef\.current\(permitNumber\)/);
 });

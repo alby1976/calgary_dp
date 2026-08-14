@@ -6,6 +6,7 @@ import {
   GeoJSONSource,
   LngLatBounds,
   Map as MapLibreMap,
+  Marker as MapLibreMarker,
   NavigationControl,
   setWorkerUrl,
 } from "maplibre-gl";
@@ -37,9 +38,6 @@ type Props = {
 };
 
 const SOURCE_ID = "filtered-permits";
-const HIT_LAYER_ID = "permit-point-hit-targets";
-const POINT_LAYER_ID = "permit-points";
-const SELECTED_LAYER_ID = "selected-permit";
 const MAPLIBRE_WORKER_URL = "/assets/maplibre-gl-worker.mjs";
 
 // Vite bundles MapLibre into a hashed dashboard chunk. Set the worker path
@@ -214,6 +212,56 @@ function pointsInsideViewport(map: MapLibreMap, points: MapPoint[]) {
   return points.filter(({ lon, lat }) => bounds.contains([lon, lat])).length;
 }
 
+type PermitMarkerHandle = {
+  element: HTMLButtonElement;
+  marker: MapLibreMarker;
+  permitNumber: string;
+};
+
+function removePermitMarkers(markers: PermitMarkerHandle[]) {
+  markers.forEach(({ marker }) => marker.remove());
+}
+
+function createPermitMarkers(
+  map: MapLibreMap,
+  points: MapPoint[],
+  selectedPermitNumber: string | undefined,
+  view: Props["view"],
+  onSelect: (permitNumber: string) => void,
+): PermitMarkerHandle[] {
+  return points.map((point) => {
+    const permitNumber = point.permit.permitnum?.trim() ?? "";
+    const address = point.permit.address?.trim() || "Address not reported";
+    const status = point.permit.statuscurrent?.trim() || "Status not reported";
+    const element = document.createElement("button");
+
+    element.type = "button";
+    element.className = [
+      "permit-map-marker",
+      `status-${point.group}`,
+      view === "overview" ? "overview-marker" : "street-marker",
+      permitNumber && permitNumber === selectedPermitNumber ? "selected" : "",
+    ].filter(Boolean).join(" ");
+    element.setAttribute("aria-label", `${permitNumber || "Permit"}, ${address}, ${status}`);
+    element.title = `${permitNumber || "Permit"} — ${address}`;
+
+    const dot = document.createElement("span");
+    dot.className = "permit-map-marker-dot";
+    dot.setAttribute("aria-hidden", "true");
+    element.append(dot);
+    element.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (permitNumber) onSelect(permitNumber);
+    });
+
+    const marker = new MapLibreMarker({ element, anchor: "center" })
+      .setLngLat([point.lon, point.lat])
+      .addTo(map);
+
+    return { element, marker, permitNumber };
+  });
+}
+
 function PermitMapInner({
   points,
   selectedPermitNumber,
@@ -225,6 +273,7 @@ function PermitMapInner({
 }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<PermitMarkerHandle[]>([]);
   const pointsRef = useRef(points);
   const onSelectRef = useRef(onSelect);
   const selectedPermitRef = useRef(selectedPermitNumber);
@@ -311,60 +360,16 @@ function PermitMapInner({
           data: featureCollection(pointsRef.current),
         });
 
-        // Keep the visual dots compact while giving every record a 44 CSS-pixel
-        // pointer/touch target. This layer is transparent but remains interactive.
-        initializedMap.addLayer({
-          id: HIT_LAYER_ID,
-          type: "circle",
-          source: SOURCE_ID,
-          paint: {
-            "circle-color": "rgba(0,0,0,0)",
-            "circle-radius": 22,
-            "circle-stroke-width": 0,
-          },
-        });
-
-        initializedMap.addLayer({
-          id: POINT_LAYER_ID,
-          type: "circle",
-          source: SOURCE_ID,
-          paint: {
-            "circle-color": [
-              "match",
-              ["get", "group"],
-              "active", "#d86638",
-              "approved", "#1b6b55",
-              "closed", "#a94840",
-              "#8b9497",
-            ],
-            "circle-radius": view === "overview" ? 5 : 7,
-            "circle-stroke-color": "#fffdf8",
-            "circle-stroke-width": view === "overview" ? 1.5 : 2,
-            "circle-opacity": 0.82,
-          },
-        });
-
-        initializedMap.addLayer({
-          id: SELECTED_LAYER_ID,
-          type: "circle",
-          source: SOURCE_ID,
-          filter: ["==", ["get", "permitNumber"], selectedPermitRef.current ?? "__none__"],
-          paint: {
-            "circle-color": "rgba(255,253,248,0)",
-            "circle-radius": view === "overview" ? 11 : 15,
-            "circle-stroke-color": "#17242d",
-            "circle-stroke-width": 4,
-          },
-        });
-
-        initializedMap.on("click", HIT_LAYER_ID, (event) => {
-          const feature = event.features?.[0];
-          const permitNumber = String(feature?.properties?.permitNumber ?? "").trim();
-          if (permitNumber) onSelectRef.current(permitNumber);
-        });
-
-        initializedMap.on("mouseenter", HIT_LAYER_ID, () => { initializedMap.getCanvas().style.cursor = "pointer"; });
-        initializedMap.on("mouseleave", HIT_LAYER_ID, () => { initializedMap.getCanvas().style.cursor = ""; });
+        // DOM markers remain visible even when a browser can draw raster tiles
+        // but fails to paint MapLibre's worker-backed GeoJSON circle layers.
+        // The button is the 44px target; its child is the smaller visual dot.
+        markersRef.current = createPermitMarkers(
+          initializedMap,
+          pointsRef.current,
+          selectedPermitRef.current,
+          view,
+          (permitNumber) => onSelectRef.current(permitNumber),
+        );
 
         initializedMap.on("moveend", updateVisibleCount);
         fitPoints(initializedMap, pointsRef.current, mapConfig.fallbackBounds);
@@ -383,6 +388,8 @@ function PermitMapInner({
 
     return () => {
       mapReadyRef.current = false;
+      removePermitMarkers(markersRef.current);
+      markersRef.current = [];
       if (mapRef.current === initializedMap) mapRef.current = null;
       safelyRemoveMap(initializedMap);
     };
@@ -395,6 +402,14 @@ function PermitMapInner({
     try {
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       source?.setData(featureCollection(points));
+      removePermitMarkers(markersRef.current);
+      markersRef.current = createPermitMarkers(
+        map,
+        points,
+        selectedPermitRef.current,
+        view,
+        (permitNumber) => onSelectRef.current(permitNumber),
+      );
       setVisiblePointCount(pointsInsideViewport(map, points));
     } catch {
       markMapUnavailable(map);
@@ -406,11 +421,11 @@ function PermitMapInner({
     if (!mapReady || !map) return;
 
     try {
-      map.setFilter(SELECTED_LAYER_ID, [
-        "==",
-        ["get", "permitNumber"],
-        selectedPermitNumber ?? "__none__",
-      ]);
+      markersRef.current.forEach(({ element, permitNumber }) => {
+        element.classList.toggle("selected", Boolean(
+          permitNumber && permitNumber === selectedPermitNumber,
+        ));
+      });
 
       const selected = points.find(
         (point) => point.permit.permitnum?.trim() === focusPermitNumber,

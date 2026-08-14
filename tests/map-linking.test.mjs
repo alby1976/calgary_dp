@@ -12,9 +12,8 @@ test("renders every permit as its own GeoJSON point in both map views", () => {
 });
 
 test("linked selection visibly highlights and centres the street map", () => {
-  assert.match(mapSource, /map\.setFilter\(SELECTED_LAYER_ID/);
-  assert.match(mapSource, /id: SELECTED_LAYER_ID/);
-  assert.match(mapSource, /"circle-stroke-width": 4/);
+  assert.match(mapSource, /element\.classList\.toggle\("selected"/);
+  assert.match(mapSource, /permitNumber === selectedPermitNumber/);
   assert.match(mapSource, /map\.easeTo\(\{/);
   assert.match(mapSource, /view === "overview" \? 13 : 15/);
 });
