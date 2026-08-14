@@ -46,6 +46,14 @@ const MAPLIBRE_WORKER_URL = "/assets/maplibre-gl-worker.mjs";
 // explicitly so it never depends on import.meta.url rewriting or chunk names.
 setWorkerUrl(MAPLIBRE_WORKER_URL);
 
+function supportsWebGL2() {
+  try {
+    return Boolean(document.createElement("canvas").getContext("webgl2"));
+  } catch {
+    return false;
+  }
+}
+
 function safelyRemoveMap(map: MapLibreMap | null) {
   if (!map) return;
 
@@ -248,6 +256,15 @@ function PermitMapInner({
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
+    // MapLibre can report a GPU initialization error during construction
+    // before its error listener is attached. Preflight WebGL2 so those
+    // browsers immediately receive the coordinate-based fallback instead of
+    // remaining on a permanent loading state.
+    if (!supportsWebGL2()) {
+      setMapError(true);
+      return;
+    }
 
     let map: MapLibreMap | null = null;
 
