@@ -33,6 +33,8 @@ test("each dashboard map is independently contained by an error boundary", () =>
 test("MapLibre uses an explicit same-origin worker and WebGL failures retain every point", () => {
   assert.match(mapSource, /setWorkerUrl\(MAPLIBRE_WORKER_URL\)/);
   assert.match(mapSource, /const MAPLIBRE_WORKER_URL = "\/assets\/maplibre-gl-worker\.mjs"/);
+  assert.match(mapSource, /getContext\("webgl2"\)/);
+  assert.match(mapSource, /if \(!supportsWebGL2\(\)\)/);
   assert.match(mapSource, /points\.map\(\(point, index\) =>/);
   assert.match(mapSource, /Interactive street tiles need WebGL2/);
 });
