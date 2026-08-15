@@ -144,6 +144,14 @@ The project can run as:
 
 Cloudflare Workers are Vinext's primary production target. The `vinext start` Node server is less complete and should be treated as a compatibility deployment, not an automatic equivalent.
 
+MapLibre's browser worker is split across `maplibre-gl-worker.mjs` and
+`maplibre-gl-shared.mjs`. The first module imports the second from the same
+`/assets/` directory. `scripts/build-verified.sh` copies both dependency-owned
+files into `dist/client/assets`, and `scripts/validate-artifact.sh` rejects an
+incomplete artifact. Packaging only the entry worker produces a browser 404 for
+the shared module and prevents both maps from rendering permit points even when
+the City feed and coordinates are valid.
+
 All deployment modes read the same build-time JSON configuration. Configuration changes require a new build and deployment or a service restart using a newly built artifact. See the [third-party hosting guide](THIRD-PARTY-HOSTING.md) for requirements and acceptance checks.
 ## CanLII metadata flow
 
