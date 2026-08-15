@@ -26,10 +26,12 @@ timeout \
   "${vinext}" build
 
 # MapLibre GL v6 resolves its module worker beside the browser bundle at
-# /assets/maplibre-gl-worker.mjs. Vite currently leaves that dependency-owned
-# module out of dist/client, so package it explicitly for both Sites and direct
+# /assets/maplibre-gl-worker.mjs. That worker imports maplibre-gl-shared.mjs
+# from the same directory. Vite currently leaves both dependency-owned modules
+# out of dist/client, so package the pair explicitly for both Sites and direct
 # Cloudflare Worker deployments.
 maplibre_worker="${SITES_PROJECT_ROOT}/node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs"
+maplibre_shared="${SITES_PROJECT_ROOT}/node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs"
 client_assets="${SITES_PROJECT_ROOT}/dist/client/assets"
 migrations_source="${SITES_PROJECT_ROOT}/drizzle"
 migrations_target="${SITES_PROJECT_ROOT}/dist/server/drizzle"
@@ -38,9 +40,14 @@ migrations_target="${SITES_PROJECT_ROOT}/dist/server/drizzle"
   echo "Missing MapLibre worker module: ${maplibre_worker}" >&2
   exit 66
 }
+[[ -s "${maplibre_shared}" ]] || {
+  echo "Missing MapLibre shared module: ${maplibre_shared}" >&2
+  exit 66
+}
 
 mkdir -p "${client_assets}"
 cp "${maplibre_worker}" "${client_assets}/maplibre-gl-worker.mjs"
+cp "${maplibre_shared}" "${client_assets}/maplibre-gl-shared.mjs"
 
 # Wrangler's direct D1 migration command reads the generated configuration in
 # dist/server, so keep the migration files beside that configuration as well as
