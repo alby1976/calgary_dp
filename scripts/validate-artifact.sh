@@ -11,6 +11,7 @@ worker="${SITES_PROJECT_ROOT}/dist/server/index.js"
 hosting="${SITES_PROJECT_ROOT}/dist/.openai/hosting.json"
 wrangler_config="${SITES_PROJECT_ROOT}/dist/server/wrangler.json"
 maplibre_worker="${SITES_PROJECT_ROOT}/dist/client/assets/maplibre-gl-worker.mjs"
+maplibre_shared="${SITES_PROJECT_ROOT}/dist/client/assets/maplibre-gl-shared.mjs"
 migration="${SITES_PROJECT_ROOT}/dist/server/drizzle/0000_sturdy_dexter_bennett.sql"
 
 [[ -f "${worker}" ]] || {
@@ -23,6 +24,10 @@ migration="${SITES_PROJECT_ROOT}/dist/server/drizzle/0000_sturdy_dexter_bennett.
 }
 [[ -s "${maplibre_worker}" ]] || {
   echo "Missing packaged MapLibre worker: dist/client/assets/maplibre-gl-worker.mjs" >&2
+  exit 66
+}
+[[ -s "${maplibre_shared}" ]] || {
+  echo "Missing packaged MapLibre shared module: dist/client/assets/maplibre-gl-shared.mjs" >&2
   exit 66
 }
 [[ -f "${wrangler_config}" ]] || {
@@ -61,4 +66,4 @@ if (!worker.default || typeof worker.default.fetch !== "function") {
 }
 NODE
 
-echo "Validated deployment artifact: Worker, hosting manifest, D1 binding, migration, and MapLibre worker are present."
+echo "Validated deployment artifact: Worker, hosting manifest, D1 binding, migration, and complete MapLibre worker modules are present."
