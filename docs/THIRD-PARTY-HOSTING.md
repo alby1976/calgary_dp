@@ -166,6 +166,12 @@ An independent Worker deployment therefore requires:
 4. any required asset bindings; and
 5. a separate custom-domain and rollback plan.
 
+Use `npm test` to create and validate the artifact rather than invoking Vinext
+directly. The verified build copies both `maplibre-gl-worker.mjs` and
+`maplibre-gl-shared.mjs` into `dist/client/assets`. MapLibre loads the shared
+module beside its entry worker at runtime; omitting it can leave the City feed
+and permit list working while both maps fail to render their points.
+
 Use the current [Vinext documentation](https://github.com/cloudflare/vinext) and Cloudflare's official Worker deployment documentation when creating that provider-specific configuration. Do not copy credentials or account identifiers into the repository.
 
 ## Acceptance checks
@@ -180,6 +186,7 @@ Before directing users to the third-party deployment, verify:
 - year and status filters work;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the community overview and detailed street map each render one point per filtered permit with valid coordinates;
+- browser requests for `/assets/maplibre-gl-worker.mjs` and `/assets/maplibre-gl-shared.mjs` both return HTTP 200 with non-empty module content;
 - map points remain visually compact but provide 44×44 CSS-pixel pointer/touch targets, and legend and map controls provide at least 44-pixel targets;
 - Calgary streets and the configured map attribution are visible;
 - both maps' in-view counts change independently after panning or zooming and never exceed the filtered total;

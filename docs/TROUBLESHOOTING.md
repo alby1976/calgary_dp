@@ -117,6 +117,34 @@ Check the browser developer console and network panel for failed tile requests. 
 
 The default OpenStreetMap service is intended for normal interactive use, not bulk tile downloading. Review its [tile usage policy](https://operations.osmfoundation.org/policies/tiles/) if traffic or usage patterns change.
 
+## Permit data loads but neither map shows points
+
+Open the browser developer tools and check the Network and Console panels. A
+404 for `/assets/maplibre-gl-shared.mjs` means the deployment packaged
+`maplibre-gl-worker.mjs` without the companion module it imports. Refreshing,
+changing filters or editing City coordinates cannot repair an incomplete build
+artifact.
+
+From the exact source commit being deployed, run:
+
+```bash
+npm ci
+npm test
+```
+
+The verified build must contain both non-empty files:
+
+```text
+dist/client/assets/maplibre-gl-worker.mjs
+dist/client/assets/maplibre-gl-shared.mjs
+```
+
+Deploy the newly verified artifact, then bypass the cached broken version with
+a hard refresh or a private browser window. If both modules return HTTP 200 but
+points remain absent, continue with the coordinate checks below. Do not copy a
+single worker file by hand into production; build and deploy the complete,
+tested artifact so the source commit and runtime files stay aligned.
+
 ## Permit points look misplaced or are missing
 
 Confirm that the configured latitude and longitude mappings are correct. Then adjust `map.fallbackBounds` for the selected community.

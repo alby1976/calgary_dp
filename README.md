@@ -146,6 +146,11 @@ Production validation:
 npm test
 ```
 
+The verified production build packages both MapLibre module-worker files in
+`dist/client/assets`: `maplibre-gl-worker.mjs` and its required companion
+`maplibre-gl-shared.mjs`. The test suite fails if either file is missing, which
+prevents a deployment that loads permit data but cannot render map points.
+
 ## Third-party hosting
 
 The dashboard can be deployed outside ChatGPT Sites, but the hosting model matters. A Cloudflare-compatible Worker is the closest match to the application's primary production runtime. Managed Node, container and VPS deployments are possible only where a persistent Node.js 22 service is supported and the completed deployment is tested.

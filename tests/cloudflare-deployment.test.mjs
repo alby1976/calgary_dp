@@ -21,10 +21,17 @@ test("direct Cloudflare builds target the configured D1 database", () => {
   );
 });
 
-test("production build packages the MapLibre module worker", async () => {
+test("production build packages the complete MapLibre module worker", async () => {
   const workerUrl = new URL("../dist/client/assets/maplibre-gl-worker.mjs", import.meta.url);
   const workerStat = await stat(workerUrl);
   assert.ok(workerStat.size > 1_000, "MapLibre worker should be a non-empty production asset");
+
+  const workerSource = await readFile(workerUrl, "utf8");
+  assert.match(workerSource, /\.\/maplibre-gl-shared\.mjs/);
+
+  const sharedUrl = new URL("../dist/client/assets/maplibre-gl-shared.mjs", import.meta.url);
+  const sharedStat = await stat(sharedUrl);
+  assert.ok(sharedStat.size > 100_000, "MapLibre shared worker module should be packaged beside the worker");
 
   const migrationUrl = new URL(
     "../dist/server/drizzle/0000_sturdy_dexter_bennett.sql",
