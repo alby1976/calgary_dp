@@ -49,16 +49,19 @@ test("documentation explains linked selection and the stable CanLII decision rou
   assert.match(configurationGuide, /Do not replace `id=\{citation\}` with the older free-text `text=\{citation\}` form/);
 });
 
-test("HCI findings preserve priorities and measurable acceptance criteria", () => {
+test("HCI findings preserve open priorities, resolved regressions and measurable criteria", () => {
   const findings = readFileSync(resolve(projectRoot, "docs/HCI-USABILITY-FINDINGS.md"), "utf8");
 
-  assert.match(findings, /\| Critical \|/);
-  assert.match(findings, /former 500-record truncation/i);
-  assert.match(findings, /one GeoJSON point per filtered record/i);
+  assert.match(findings, /\| High \|/);
+  assert.match(findings, /\| Medium \|/);
+  assert.match(findings, /\| Low \|/);
+  assert.match(findings, /## Resolved findings to preserve/);
+  assert.match(findings, /at most 500 records/i);
+  assert.match(findings, /one point corresponds to one valid-coordinate record/i);
   assert.match(findings, /Acceptance criterion/);
   assert.match(findings, /moderated test with five Varsity residents or civic-committee members/i);
-  assert.match(findings, /44×44 CSS-pixel/i);
-  assert.match(findings, /ordinary explanatory text now uses 14–16 pixels/i);
+  assert.match(findings, /44(?:×| by )44 CSS[- ]pixel/i);
+  assert.match(findings, /approximately 14 to 16 pixels/i);
 });
 
 test("documentation describes the released target sizes and readable text", () => {
