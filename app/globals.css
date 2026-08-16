@@ -226,6 +226,7 @@ h1 em { color: var(--green); font-weight: 400; }
 .workspace-explorer .permit-row .status-pill { grid-column: 2; grid-row: 1; max-width: 120px; overflow: hidden; text-overflow: ellipsis; }
 .workspace-explorer .row-arrow { display: none; }
 .workspace-explorer .load-more { flex: 0 0 auto; margin: 14px auto 0; }
+.pinned-selection-note { margin: 0 0 10px; padding: 9px 11px; border-left: 4px solid #76bba3; background: rgba(118,187,163,.14); color: white; font-size: 14px; line-height: 1.45; }
 .filters { display: grid; grid-template-columns: minmax(280px, 1fr) repeat(4, auto); gap: 10px; margin: 32px 0 24px; }
 .filters input, .filters select { width: 100%; height: 50px; border: 1px solid rgba(255,255,255,.2); border-radius: 3px; background: rgba(255,255,255,.07); color: white; padding: 0 15px; outline: none; }
 .filters input::placeholder { color: rgba(255,255,255,.5); }
@@ -235,6 +236,8 @@ h1 em { color: var(--green); font-weight: 400; }
 .permit-list { border-top: 1px solid rgba(255,255,255,.17); }
 .permit-row { width: 100%; display: grid; grid-template-columns: minmax(150px, .52fr) minmax(280px, 1.5fr) auto 24px; align-items: center; gap: 22px; color: white; background: transparent; border: 0; border-bottom: 1px solid rgba(255,255,255,.14); padding: 19px 4px; text-align: left; cursor: pointer; }
 .permit-row:hover, .permit-row.selected { background: rgba(255,255,255,.055); }
+.permit-row.selected { background: rgba(118,187,163,.14); box-shadow: inset 4px 0 0 #76bba3; }
+.permit-row:focus-visible { outline: 3px solid #76bba3; outline-offset: -3px; }
 .permit-id { display: grid; grid-template-columns: 12px 1fr; gap: 0 8px; align-items: center; }
 .permit-id small { grid-column: 2; }
 .permit-row small { display: block; margin-top: 5px; color: rgba(255,255,255,.66); font-size: 12px; line-height: 1.4; }

@@ -21,3 +21,11 @@ test("linked workspace collapses safely on smaller screens", () => {
   assert.match(styles, /@media \(max-width: 960px\)[\s\S]*\.linked-map-grid\s*\{[^}]*height:\s*auto/s);
   assert.match(styles, /@media \(max-width: 960px\)[\s\S]*\.linked-map-grid[^}]*grid-template-columns:\s*1fr/s);
 });
+
+test("a selected older map record stays visible in the collapsed explorer", () => {
+  assert.match(dashboardSource, /const latest = recent\.slice\(0, 12\)/);
+  assert.match(dashboardSource, /selectedOutsideLatest && selectedPermit[\s\S]*\[selectedPermit, \.\.\.latest\]/);
+  assert.match(dashboardSource, /selectedExplorerRow\.current\?\.scrollIntoView\(\{ block: "nearest" \}\)/);
+  assert.match(dashboardSource, /Selected permit \{text\(selectedPermit\?\.permitnum\)\} is pinned above the latest 12 permits\./);
+  assert.match(styles, /\.permit-row\.selected\s*\{[^}]*box-shadow:\s*inset 4px 0 0 #76bba3/s);
+});

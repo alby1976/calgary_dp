@@ -164,6 +164,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
   const [canliiLookups, setCanliiLookups] = useState<Record<string, CanliiUiState>>({});
   const requestedCanliiAppeals = useRef(new Set<string>());
+  const selectedExplorerRow = useRef<HTMLButtonElement | null>(null);
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
@@ -195,8 +196,18 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
     [filtered],
   );
-  const displayed = showAll ? recent : recent.slice(0, 12);
-  const selectedPermit = filtered.find((permit) => permit.permitnum === selected) ?? displayed[0];
+  const latest = recent.slice(0, 12);
+  const selectedPermit = recent.find((permit) => permit.permitnum === selected) ?? latest[0];
+  const selectedOutsideLatest = Boolean(
+    selected
+    && selectedPermit?.permitnum === selected
+    && !latest.some((permit) => permit.permitnum === selected),
+  );
+  const displayed = showAll
+    ? recent
+    : selectedOutsideLatest && selectedPermit
+      ? [selectedPermit, ...latest]
+      : latest;
   const selectedApplicationUrl = developmentMapApplicationUrl(
     selectedPermit?.permitnum,
     config.links.developmentApplicationUrlTemplate,
@@ -233,6 +244,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedAppealIsDecided = Boolean(
     selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
   );
+
+  useEffect(() => {
+    if (!selected) return;
+    selectedExplorerRow.current?.scrollIntoView({ block: "nearest" });
+  }, [selected, showAll, selectedOutsideLatest]);
 
   useEffect(() => {
     if (!selectedAppealNumber || requestedCanliiAppeals.current.has(selectedAppealNumber)) return;
@@ -399,11 +415,17 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               </button>
             )}
           </div>
+          {selectedOutsideLatest && !showAll && (
+            <p className="pinned-selection-note" role="status">
+              Selected permit {text(selectedPermit?.permitnum)} is pinned above the latest 12 permits.
+            </p>
+          )}
           <div className="permit-list" aria-label="Matching permits">
             {displayed.map((permit, index) => (
               <button
                 className={selectedPermit?.permitnum === permit.permitnum ? "permit-row selected" : "permit-row"}
                 key={`${permit.permitnum}-${index}`}
+                ref={selected === permit.permitnum ? selectedExplorerRow : undefined}
                 aria-pressed={selectedPermit?.permitnum === permit.permitnum}
                 onClick={() => setSelected(permit.permitnum ?? null)}
               >
