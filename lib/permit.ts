@@ -52,6 +52,7 @@ export type Permit = {
   permitteddiscretionary?: string;
   landusedistrict?: string;
   landusedistrictdescription?: string;
+  concurrent_loc?: string;
   statuscurrent?: string;
   applieddate?: string;
   decisiondate?: string;
