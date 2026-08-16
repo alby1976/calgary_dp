@@ -89,6 +89,7 @@ const PERMIT_FIELD_TARGETS = {
   permittedDiscretionary: "permitteddiscretionary",
   landUseDistrict: "landusedistrict",
   landUseDistrictDescription: "landusedistrictdescription",
+  concurrentLandUse: "concurrent_loc",
   status: "statuscurrent",
   appliedDate: "applieddate",
   decisionDate: "decisiondate",
