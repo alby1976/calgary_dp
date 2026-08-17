@@ -92,6 +92,13 @@ function permitYear(permit: Permit) {
   return match ? match[0].replace(/^DP/i, "") : yearOf(permit.applieddate);
 }
 
+function landUseDistrictValues(permit: Permit) {
+  return (permit.landusedistrict ?? "")
+    .split(";")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function developmentMapApplicationUrl(permitNumber: string | undefined, template: string) {
   const normalized = permitNumber?.trim().toUpperCase();
   if (!normalized || !/^DP\d{4}-\d+$/.test(normalized)) return null;
@@ -158,6 +165,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [query, setQuery] = useState("");
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
+  const [landUseDistrict, setLandUseDistrict] = useState("all");
   const [appealFilter, setAppealFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -172,6 +180,12 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     [permits],
   );
 
+  const landUseDistricts = useMemo(
+    () => [...new Set(permits.flatMap(landUseDistrictValues))]
+      .sort((a, b) => a.localeCompare(b, "en-CA", { numeric: true })),
+    [permits],
+  );
+
   const grouped = useMemo(() => {
     const counts = { active: 0, approved: 0, closed: 0, other: 0 };
     permits.forEach((permit) => counts[statusGroup(permit.statuscurrent, config.statuses)]++);
@@ -183,14 +197,33 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     return permits.filter((permit) => {
       const matchesGroup = group === "all" || statusGroup(permit.statuscurrent, config.statuses) === group;
       const matchesYear = year === "all" || permitYear(permit) === year;
+      const matchesLandUseDistrict = landUseDistrict === "all"
+        || landUseDistrictValues(permit).includes(landUseDistrict);
       const matchesAppeal = appealFilter === "all" || Boolean(permit.sdabnumber?.trim());
-      const haystack = [permit.permitnum, permit.address, permit.description, permit.applicant, permit.statuscurrent]
+      const haystack = [
+        permit.permitnum,
+        permit.address,
+        permit.description,
+        permit.applicant,
+        permit.proposedusedescription,
+        permit.permitteddiscretionary,
+        permit.landusedistrict,
+        permit.concurrent_loc,
+        permit.statuscurrent,
+        permit.decision,
+        permit.sdabnumber,
+        permit.sdabdecision,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
-      return matchesGroup && matchesYear && matchesAppeal && (!needle || haystack.includes(needle));
+      return matchesGroup
+        && matchesYear
+        && matchesLandUseDistrict
+        && matchesAppeal
+        && (!needle || haystack.includes(needle));
     });
-  }, [permits, query, group, year, appealFilter, config.statuses]);
+  }, [permits, query, group, year, landUseDistrict, appealFilter, config.statuses]);
 
   const recent = useMemo(
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
@@ -395,19 +428,27 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               </select>
             </label>
             <label>
+              <span className="sr-only">Filter by land-use district</span>
+              <select value={landUseDistrict} onChange={(event) => setLandUseDistrict(event.target.value)}>
+                <option value="all">All land-use districts</option>
+                {landUseDistricts.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label>
               <span className="sr-only">Filter by appeal status</span>
               <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
                 <option value="all">All appeal statuses</option>
                 <option value="appealed">Appealed to SDAB</option>
               </select>
             </label>
-            {(query || year !== "all" || group !== "all" || appealFilter !== "all") && (
+            {(query || year !== "all" || group !== "all" || landUseDistrict !== "all" || appealFilter !== "all") && (
               <button
                 className="clear-button"
                 onClick={() => {
                   setQuery("");
                   setYear("all");
                   setGroup("all");
+                  setLandUseDistrict("all");
                   setAppealFilter("all");
                 }}
               >
@@ -518,14 +559,19 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               <p className="linked-selection-note">Highlighted in the community overview and the street-level map.</p>
               <p className="permit-description">{text(selectedPermit.description)}</p>
               <dl className="detail-list">
-                <div><dt>Applied</dt><dd>{formatDate(selectedPermit.applieddate)}</dd></div>
-                <div><dt>Decision</dt><dd>{formatDate(selectedPermit.decisiondate)}</dd></div>
-                <div><dt>Released</dt><dd>{formatDate(selectedPermit.releasedate)}</dd></div>
-                <div><dt>Must commence</dt><dd>{formatDate(selectedPermit.mustcommencedate)}</dd></div>
-                <div><dt>Use</dt><dd>{text(selectedPermit.proposedusedescription)}</dd></div>
-                <div><dt>Land use</dt><dd>{text(selectedPermit.landusedistrict)}</dd></div>
+                <div><dt>Proposed use</dt><dd>{text(selectedPermit.proposedusedescription)}</dd></div>
+                <div><dt>Permitted / discretionary</dt><dd>{text(selectedPermit.permitteddiscretionary)}</dd></div>
+                <div><dt>Land-use district</dt><dd>{text(selectedPermit.landusedistrict)}</dd></div>
+                <div><dt>Concurrent land-use redesignation</dt><dd>{text(selectedPermit.concurrent_loc)}</dd></div>
+                <div><dt>Current status</dt><dd>{text(selectedPermit.statuscurrent)}</dd></div>
+                <div><dt>Applied date</dt><dd>{formatDate(selectedPermit.applieddate)}</dd></div>
+                <div><dt>Decision</dt><dd>{text(selectedPermit.decision)}</dd></div>
+                <div><dt>Decision date</dt><dd>{formatDate(selectedPermit.decisiondate)}</dd></div>
+                <div><dt>Released date</dt><dd>{formatDate(selectedPermit.releasedate)}</dd></div>
+                <div><dt>Must commence date</dt><dd>{formatDate(selectedPermit.mustcommencedate)}</dd></div>
                 <div><dt>Decision by</dt><dd>{text(selectedPermit.decisionby)}</dd></div>
-                <div><dt>SDAB</dt><dd>{selectedPermit.sdabnumber ? `${selectedPermit.sdabnumber} · ${text(selectedPermit.sdabdecision)}` : "No appeal reported"}</dd></div>
+                <div><dt>SDAB number</dt><dd>{text(selectedPermit.sdabnumber)}</dd></div>
+                <div><dt>SDAB decision</dt><dd>{text(selectedPermit.sdabdecision)}</dd></div>
               </dl>
               {selectedAppealNumber && (
                 <div className={`appeal-action ${selectedPermit.appealreporturl ? "" : "appeal-package-missing"}`}>

@@ -30,10 +30,12 @@ Both maps report **X of Y permit points in this view**. **Y** is the total numbe
 
 ## Search and filters
 
-- Search accepts an address, permit number, applicant or description.
-- Year and status filters narrow the same record set used by the table and both maps.
+- Search accepts an address, permit number, applicant, description, proposed use, land-use district, decision or SDAB information.
+- Year, status and land-use-district filters narrow the same record set used by the table and both maps. If a permit lists several semicolon-separated districts, selecting any one of them includes that permit.
 - **Appealed to SDAB** shows only permits with an appeal number recorded in the City feed.
 - **Clear filters** restores the full Varsity result set.
+
+The linked details panel displays the City-published proposed use, permitted/discretionary classification, land-use district, concurrent land-use redesignation number, current status, application and decision dates, release and commencement dates, and SDAB number and decision. **Not reported** means the City feed did not provide a value; it does not automatically mean “none.”
 
 ## Status colour guide
 
