@@ -183,7 +183,7 @@ Before directing users to the third-party deployment, verify:
 - the permit total is not unexpectedly zero;
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
-- year and status filters work;
+- year, status, land-use-district, permitted/discretionary and appeal filters work together and **Clear filters** resets them;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the community overview and detailed street map each render one point per filtered permit with valid coordinates;
 - browser requests for `/assets/maplibre-gl-worker.mjs` and `/assets/maplibre-gl-shared.mjs` both return HTTP 200 with non-empty module content;
@@ -194,6 +194,7 @@ Before directing users to the third-party deployment, verify:
 - a map point can select a permit;
 - ordinary instructions and explanatory guidance render at 14–16 pixels, with smaller text limited to concise secondary metadata;
 - selecting a permit row or either map point highlights the same permit in both maps and updates the right-hand details;
+- in a WebGL2-capable browser, the street map centres on the first permit selected at initial load and later selections move to close property-level context without zooming out a closer user-controlled view;
 - the official dataset link opens the configured dataset;
 - a known `DPYYYY-number` record produces a DMap link;
 - an appealed record either shows cached CanLII metadata or clearly reports that optional enrichment is unavailable while retaining the CanLII search link;

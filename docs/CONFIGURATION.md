@@ -114,13 +114,15 @@ The first matching group wins. A status matching none of the lists appears under
 | `attributionUrl` | HTTPS link explaining the map-data attribution |
 | `issueUrl` | HTTPS link for reporting a basemap problem |
 | `minZoom` | Furthest-out zoom allowed |
-| `maxZoom` | Closest-in zoom allowed; must be greater than `minZoom` and no more than 22 |
+| `maxZoom` | Closest-in zoom allowed; must be greater than `minZoom` and no more than 22. It also caps the street map's selected-permit target of zoom 18. |
 | `overviewLabels` | Legacy simplified-overview labels retained for configuration compatibility; the current interactive overview uses basemap labels instead |
 | `fallbackBounds` | Minimum and maximum latitude and longitude used when no visible permit has coordinates |
 
 The default uses the standard OpenStreetMap tile service. Keep its visible attribution, do not bulk-download or prefetch tiles, and review the [OpenStreetMap tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before operating a high-traffic or commercial deployment. A custom provider must allow browser use from the dashboard's public domain.
 
-Both geographic views use the latitude and longitude published in the City feed. The community overview begins at a broad scale and the street map supplies granular location context. Each GeoJSON point corresponds to one permit record, and each view reports its current in-view count out of the filtered total. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
+Both geographic views use the latitude and longitude published in the City feed. The community overview begins at a broad scale and the street map supplies granular location context. On initial load, the street map centres on the first selected permit after the map becomes ready. Later selections centre it at the closer of its current zoom or zoom 18, capped by `maxZoom`, so selecting a record does not zoom out a closer user-controlled view. Each GeoJSON point corresponds to one permit record, and each view reports its current in-view count out of the filtered total. Neither is a parcel or survey map. Addresses and official City records remain authoritative.
+
+The land-use-district and permitted/discretionary filter menus are data-driven rather than separately configured. Their options come from the exact non-blank values in the normalized City permit records. Changing the feed or field mappings therefore changes the available options automatically.
 
 The three-pane desktop layout and its 960-pixel responsive breakpoint are presentation behaviour in `app/dashboard.tsx` and `app/globals.css`, not feed configuration. A third-party host does not need an additional setting to enable linked selection.
 

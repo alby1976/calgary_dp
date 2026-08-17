@@ -85,7 +85,7 @@ The adapter also:
 External City requests run on the server. The client receives normalized permit records and a limited public configuration object. Browser-side code handles only presentation and local interactions:
 
 - text search;
-- year, permit-status and recorded-SDAB-appeal filters;
+- year, permit-status, land-use-district, permitted/discretionary and recorded-SDAB-appeal filters;
 - selected permit state;
 - chart calculations and map selection; and
 - show-more behaviour.
@@ -96,7 +96,7 @@ No user search or filter state is currently stored on the server.
 
 The desktop interface is a three-pane workspace: the permit explorer is on the left, both linked maps are in the centre, and selected-permit details are on the right. The list and details panes scroll independently. This keeps the comparison context visible and reduces full-page navigation.
 
-One client-side `selectedPermitNumber` state coordinates the permit row, both MapLibre point layers and the details panel. A selection event from any of the three entry points updates all four presentations. The same filtered array drives the explorer and both maps, preventing one visualization from silently showing a different subset. Below the 960-pixel breakpoint, CSS changes the workspace to a one-column document flow while preserving the same selection state and source order.
+One client-side selection coordinates the permit row, both MapLibre point layers and the details panel. Before a user makes an explicit selection, the effective selected permit is the first record in the date-sorted filtered results. The street map receives that effective permit as both its highlighted and focused record, so it centres correctly after MapLibre finishes loading instead of waiting for a second click. A selection event from any of the three entry points updates all four presentations. The same filtered array drives the explorer and both maps, preventing one visualization from silently showing a different subset. Below the 960-pixel breakpoint, CSS changes the workspace to a one-column document flow while preserving the same selection state and source order.
 
 ## Street map
 
@@ -106,7 +106,9 @@ Every filtered permit with valid City coordinates is supplied to both MapLibre v
 
 Each record also participates in a transparent hit layer with a 22-pixel radius, producing a 44×44 CSS-pixel pointer and touch target around the smaller visual circle. The enlarged hit area is an interaction aid only: it does not encode parcel size, uncertainty or development extent. Legend entries, MapLibre controls and the fit-to-results action use the same 44-pixel minimum target. Ordinary explanatory copy is 14–16 pixels; smaller typography is restricted to concise secondary metadata.
 
-The legend identifies the shared status colours and opens a plain-language guide on hover, focus or tap. The permit explorer remains the complete keyboard-selection path so the canvas does not add hundreds of map stops to the tab sequence. Both visualizations share one selected permit state. Selecting a point highlights the corresponding record in both views, centres the maps at an appropriate overview or street-level zoom, and updates the shared permit-information panel. If a filter removes the selected permit, both views fall back to the first visible result.
+The legend identifies the shared status colours and opens a plain-language guide on hover, focus or tap. The permit explorer remains the complete keyboard-selection path so the canvas does not add hundreds of map stops to the tab sequence. Both visualizations share one selected permit state. Selecting a point highlights the corresponding record in both views, centres the overview at zoom 13 and centres the street map at the closer of its current zoom or a property-context target capped at zoom 18. This rule never zooms out a street view the user has already enlarged. The shared permit-information panel updates at the same time. If a filter removes the selected permit, both views fall back to the first visible result and the street map centres on that replacement.
+
+Land-use-district options are generated from the City values in the loaded permit records, including individual values from semicolon-separated district fields. Permitted/discretionary options are also generated from the exact non-blank City values. Both filters use exact matching, combine with every other filter and reset through **Clear filters**.
 
 Each map independently counts the permit coordinates inside its current MapLibre bounds on load and after every pan or zoom. Both labels report **permit points in view / total filtered permit points**. Zooming in normally reduces the numerator; zooming out normally increases it. **Fit filtered permits** returns either viewport to the complete filtered result set. If the filtered records have no valid coordinates, both views use the configured community bounds.
 

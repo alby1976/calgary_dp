@@ -22,6 +22,8 @@
 
 **Implementation follow-up:** August 16, 2026 — the map-to-explorer linked-selection correction passed production retesting in both compatibility maps.
 
+**Post-retest implementation update:** August 17, 2026 — production added the permitted/discretionary filter, property-context street-map zoom and initial centring on the first selected permit. The production build and 40 automated tests passed. These additions have not yet received a new hands-on usability retest and are not counted as August 16 task evidence.
+
 **Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch Calgary's Development Map (DMap) even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists, predict when Calgary will publish it or replace verification through Calgary's official Development Map.
 
 ## Overall assessment
@@ -46,6 +48,8 @@ This report combines:
 - the 35-test production validation result recorded for the merged linked-selection change.
 
 The cloud test browser did not provide WebGL2. This deliberately exercised the failure path affecting unsupported graphics hardware, disabled hardware acceleration, remote-desktop sessions and similar environments. It prevented hands-on pan, zoom and point-selection testing in the normal MapLibre tile view.
+
+The August 17 first-load centring and property-context zoom changes affect the normal MapLibre path. Their automated regression coverage verifies the data flow and target zoom, but a WebGL2-capable browser must still confirm the visible movement, timing and user experience.
 
 Narrow-screen behavior was source-verified through the 960-pixel and 680-pixel responsive rules, but it was not interactively tested on a resized phone viewport or physical touch device. This remains an expert evaluation, not a moderated study with community participants or a complete screen-reader conformance audit.
 
@@ -141,6 +145,9 @@ Repeat all task scenarios after corrections. Include:
 - WebGL2 unavailable before initial render;
 - MapLibre construction throwing synchronously;
 - successful WebGL2 initialization with real pan, zoom and map-point selection;
+- first visit with the first explorer record already selected, confirming that the street map centres on it as soon as the map is ready;
+- row, overview-point and street-point selection at zoom levels below and above 18, confirming that selection reaches property context without zooming out a closer user view;
+- permitted/discretionary filtering alone and in combination with land-use district, year, status, appeal and search, including **Clear filters**;
 - tile or worker requests failing after construction begins;
 - result sets changing from all records to one, zero and back to all;
 - regression coverage for map selection outside the latest 12, including **Show all**, collapse and active filters;
