@@ -155,7 +155,13 @@ Each visible dot has a transparent 44×44 CSS-pixel hit area. If nearby records 
 
 ## The two visualizations show different selections
 
-They are designed to share one selected permit. Selecting a permit row or a point in either view should enlarge or outline the matching point in both maps, centre the street map and update the right-hand details. If a filter removes that permit, all views select the first remaining visible result. Refresh the page if an older cached script leaves the views out of sync.
+They are designed to share one selected permit. On first load, the first explorer record is the effective selection and the street map should centre on it as soon as MapLibre is ready. Selecting a permit row or a point in either view should enlarge or outline the matching point in both maps, centre the street map at close property-level context and update the right-hand details. A closer user-controlled street zoom is preserved. If a filter removes that permit, all views select the first remaining visible result and the street map centres on the replacement. Refresh the page if an older cached script leaves the views out of sync.
+
+If the point highlights but the street map stays broad, confirm that the selected record has valid City-published coordinates and that `map.maxZoom` is not configured below the desired detail level. The normal target is zoom 18, capped by `map.maxZoom`. Compatibility plots used when WebGL2 is unavailable highlight the selected coordinate but cannot pan or zoom like MapLibre.
+
+## A land-use or permitted/discretionary filter option is missing
+
+These filter menus are generated from the exact non-blank City values in the loaded permit records. Confirm that the feed includes `landusedistrict` and `permitteddiscretionary`, that both fields are mapped correctly, and that the expected records are inside the configured community query. Land-use values separated by semicolons become individual options; permitted/discretionary values remain exact City classifications. **Clear filters** resets both menus.
 
 ## The workspace is stacked instead of three columns
 
