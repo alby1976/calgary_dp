@@ -99,6 +99,10 @@ function landUseDistrictValues(permit: Permit) {
     .filter(Boolean);
 }
 
+function permittedDiscretionaryValue(permit: Permit) {
+  return permit.permitteddiscretionary?.trim() ?? "";
+}
+
 function developmentMapApplicationUrl(permitNumber: string | undefined, template: string) {
   const normalized = permitNumber?.trim().toUpperCase();
   if (!normalized || !/^DP\d{4}-\d+$/.test(normalized)) return null;
@@ -166,6 +170,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [group, setGroup] = useState("all");
   const [year, setYear] = useState("all");
   const [landUseDistrict, setLandUseDistrict] = useState("all");
+  const [permittedDiscretionary, setPermittedDiscretionary] = useState("all");
   const [appealFilter, setAppealFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -186,6 +191,12 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     [permits],
   );
 
+  const permittedDiscretionaryValues = useMemo(
+    () => [...new Set(permits.map(permittedDiscretionaryValue).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "en-CA")),
+    [permits],
+  );
+
   const grouped = useMemo(() => {
     const counts = { active: 0, approved: 0, closed: 0, other: 0 };
     permits.forEach((permit) => counts[statusGroup(permit.statuscurrent, config.statuses)]++);
@@ -199,6 +210,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       const matchesYear = year === "all" || permitYear(permit) === year;
       const matchesLandUseDistrict = landUseDistrict === "all"
         || landUseDistrictValues(permit).includes(landUseDistrict);
+      const matchesPermittedDiscretionary = permittedDiscretionary === "all"
+        || permittedDiscretionaryValue(permit) === permittedDiscretionary;
       const matchesAppeal = appealFilter === "all" || Boolean(permit.sdabnumber?.trim());
       const haystack = [
         permit.permitnum,
@@ -220,10 +233,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       return matchesGroup
         && matchesYear
         && matchesLandUseDistrict
+        && matchesPermittedDiscretionary
         && matchesAppeal
         && (!needle || haystack.includes(needle));
     });
-  }, [permits, query, group, year, landUseDistrict, appealFilter, config.statuses]);
+  }, [permits, query, group, year, landUseDistrict, permittedDiscretionary, appealFilter, config.statuses]);
 
   const recent = useMemo(
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
@@ -435,13 +449,20 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               </select>
             </label>
             <label>
+              <span className="sr-only">Filter by permitted or discretionary classification</span>
+              <select value={permittedDiscretionary} onChange={(event) => setPermittedDiscretionary(event.target.value)}>
+                <option value="all">All permitted / discretionary</option>
+                {permittedDiscretionaryValues.map((value) => <option key={value} value={value}>{value}</option>)}
+              </select>
+            </label>
+            <label>
               <span className="sr-only">Filter by appeal status</span>
               <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
                 <option value="all">All appeal statuses</option>
                 <option value="appealed">Appealed to SDAB</option>
               </select>
             </label>
-            {(query || year !== "all" || group !== "all" || landUseDistrict !== "all" || appealFilter !== "all") && (
+            {(query || year !== "all" || group !== "all" || landUseDistrict !== "all" || permittedDiscretionary !== "all" || appealFilter !== "all") && (
               <button
                 className="clear-button"
                 onClick={() => {
@@ -449,6 +470,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                   setYear("all");
                   setGroup("all");
                   setLandUseDistrict("all");
+                  setPermittedDiscretionary("all");
                   setAppealFilter("all");
                 }}
               >
@@ -538,7 +560,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           <PermitMap
             points={plotted}
             selectedPermitNumber={selectedPermit?.permitnum}
-            focusPermitNumber={selected ?? undefined}
+            focusPermitNumber={selectedPermit?.permitnum}
             communityName={config.site.communityDisplayName}
             mapConfig={config.map}
             view="street"
