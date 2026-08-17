@@ -20,7 +20,7 @@ Choose a permit in any of these ways:
 - select its point in the community activity pattern; or
 - select its marker in the street-level map.
 
-The same permit then becomes selected everywhere: its row is selected, both map points are highlighted, the street map centres on it, and the right-hand details update. If a map-selected permit is older than the explorer's latest 12 records, the dashboard pins that permit above the latest 12 and scrolls its highlighted row into view without changing your filters. Changing a filter may remove that permit; when this happens, the first visible result becomes the new shared selection.
+The same permit then becomes selected everywhere: its row is selected, both map points are highlighted, the street map centres on it and zooms to close property-level context, and the right-hand details update. If a map-selected permit is older than the explorer's latest 12 records, the dashboard pins that permit above the latest 12 and scrolls its highlighted row into view without changing your filters. Changing a filter may remove that permit; when this happens, the first visible result becomes the new shared selection.
 
 Both maps represent every filtered record that has valid City-published coordinates. Each point corresponds to one permit record; the dashboard does not use numbered clusters. Points at the same or very close coordinates can overlap visually, so zoom in to separate nearby locations and use the permit explorer when records share an address.
 
@@ -31,7 +31,7 @@ Both maps report **X of Y permit points in this view**. **Y** is the total numbe
 ## Search and filters
 
 - Search accepts an address, permit number, applicant, description, proposed use, land-use district, decision or SDAB information.
-- Year, status and land-use-district filters narrow the same record set used by the table and both maps. If a permit lists several semicolon-separated districts, selecting any one of them includes that permit.
+- Year, status, land-use-district and permitted/discretionary filters narrow the same record set used by the table and both maps. If a permit lists several semicolon-separated districts, selecting any one of them includes that permit.
 - **Appealed to SDAB** shows only permits with an appeal number recorded in the City feed.
 - **Clear filters** restores the full Varsity result set.
 

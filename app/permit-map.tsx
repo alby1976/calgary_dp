@@ -431,16 +431,19 @@ function PermitMapInner({
         (point) => point.permit.permitnum?.trim() === focusPermitNumber,
       );
       if (selected) {
+        const selectionZoom = view === "overview"
+          ? 13
+          : Math.min(mapConfig.maxZoom, 18);
         map.easeTo({
           center: [selected.lon, selected.lat],
-          zoom: Math.max(map.getZoom(), view === "overview" ? 13 : 15),
+          zoom: Math.max(map.getZoom(), selectionZoom),
           duration: 450,
         });
       }
     } catch {
       markMapUnavailable(map);
     }
-  }, [focusPermitNumber, mapReady, markMapUnavailable, points, selectedPermitNumber, view]);
+  }, [focusPermitNumber, mapConfig.maxZoom, mapReady, markMapUnavailable, points, selectedPermitNumber, view]);
 
   if (mapError) {
     return (

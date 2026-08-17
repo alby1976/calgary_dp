@@ -38,6 +38,14 @@ test("land-use district is an exact table filter and can be cleared", () => {
   assert.match(dashboardSource, /setLandUseDistrict\("all"\)/);
 });
 
+test("permitted or discretionary classification is an exact filter and can be cleared", () => {
+  assert.match(dashboardSource, /const \[permittedDiscretionary, setPermittedDiscretionary\] = useState\("all"\)/);
+  assert.match(dashboardSource, /permittedDiscretionaryValue\(permit\) === permittedDiscretionary/);
+  assert.match(dashboardSource, /Filter by permitted or discretionary classification/);
+  assert.match(dashboardSource, /All permitted \/ discretionary/);
+  assert.match(dashboardSource, /setPermittedDiscretionary\("all"\)/);
+});
+
 test("selected permit details display every requested field separately", () => {
   const labels = [
     "Proposed use",
