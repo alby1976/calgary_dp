@@ -114,6 +114,8 @@ https://api.canlii.org/v1/caseBrowse/{language}/{databaseId}/{caseId}/?api_key={
 
 For Calgary SDAB, the configured database is `cgysdab`. Appeal `2025-0118` maps to case ID `2025cgysdab118`. The `legislationBrowse` route is only for statutes and regulations and must not be substituted here.
 
+CanLII metadata may return an official decision link on either `canlii.ca` or `canlii.org`. The Worker accepts HTTPS links from both CanLII-owned domains and rejects unrelated hosts.
+
 `Not found` means the API returned no exact case at the expected identifier; it does not prove that no decision exists. `Rate limited` means the dashboard stopped before exceeding the configured rolling allowance. Existing cached metadata and public search links remain available in either case.
 
 ## The street map is blank but permit details load
