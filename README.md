@@ -23,7 +23,7 @@ The dashboard's permit-specific DMap link is a convenience, not an authoritative
 - Core instructions and explanatory guidance at 14–16 pixels, with smaller type reserved for short secondary metadata
 - Permit status summary, hover/focus plain-language colour guide, and applications-by-year chart
 - Search by address, permit number, applicant, description, proposed use, land-use district, decision or SDAB information
-- Filters by year, permit status, land-use district, permitted/discretionary classification and recorded SDAB appeal
+- A compact search toolbar and overlay filter drawer for year, permit status, land-use district, permitted/discretionary classification and recorded SDAB appeal, leaving more room for permit rows
 - Application, decision, release and SDAB appeal details, including always-readable appeal cards, a plain-language field guide and the original Calgary JSON verification link
 - A proactive signal when an Open Data permit may not have appeared in DMap yet, plus links to development plans when Calgary publishes them
 - Public SDAB appeal packages when the City publishes them, with Calgary Open Data, CanLII decision-search and SDAB-contact fallbacks after packages disappear

@@ -183,7 +183,9 @@ Before directing users to the third-party deployment, verify:
 - the permit total is not unexpectedly zero;
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
+- the compact **Filters** control opens an overlay drawer without reducing the permit-list area, and the drawer closes with **Show matches**, its close control, the shaded background and the `Esc` key;
 - every categorical filter supports multiple checked values, selected counts stay accurate, and **Clear filters** resets the current view;
+- active filter categories produce removable summary chips, and selecting a chip restores every value in that category;
 - **Set current as default** survives a reload in the same browser, **Restore saved default** reapplies it and **Forget saved default** removes it;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the community overview and detailed street map each render one point per filtered permit with valid coordinates;
@@ -201,7 +203,7 @@ Before directing users to the third-party deployment, verify:
 - an appealed record either shows cached CanLII metadata or clearly reports that optional enrichment is unavailable while retaining the CanLII search link;
 - an appeal-package button appears only for a known public exact match;
 - the community-scope disclaimer names the configured community and filter; and
-- mobile-width content stacks into a readable one-column flow.
+- mobile-width content stacks into a readable one-column flow and the filter drawer becomes a bottom sheet.
 
 An apparent success page with an empty feed is not a successful deployment.
 

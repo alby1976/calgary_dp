@@ -492,12 +492,14 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [excludedAppealStatuses, setExcludedAppealStatuses] = useState<string[]>([]);
   const [savedFilterDefaults, setSavedFilterDefaults] = useState<FilterDefaults | null>(null);
   const [filterDefaultsMessage, setFilterDefaultsMessage] = useState("");
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [fieldGuideQuery, setFieldGuideQuery] = useState("");
   const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
   const [canliiLookups, setCanliiLookups] = useState<Record<string, CanliiUiState>>({});
   const requestedCanliiAppeals = useRef(new Set<string>());
+  const filterToggleButton = useRef<HTMLButtonElement | null>(null);
   const selectedExplorerRow = useRef<HTMLButtonElement | null>(null);
   const permitFieldGuide = useRef<HTMLDetailsElement | null>(null);
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
@@ -566,6 +568,23 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    if (!filterDrawerOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setFilterDrawerOpen(false);
+      window.requestAnimationFrame(() => filterToggleButton.current?.focus());
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [filterDrawerOpen]);
+
   const currentFilterDefaults = useMemo<FilterDefaults>(() => ({
     query,
     excludedYears,
@@ -589,6 +608,13 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     || excludedPermittedDiscretionary.length
     || excludedAppealStatuses.length,
   );
+  const activeFilterCategoryCount = [
+    excludedYears,
+    excludedStatusGroups,
+    excludedLandUseDistricts,
+    excludedPermittedDiscretionary,
+    excludedAppealStatuses,
+  ].filter((values) => values.length > 0).length;
   const savedDefaultMatchesCurrent = Boolean(
     savedFilterDefaults
     && JSON.stringify(savedFilterDefaults) === JSON.stringify(currentFilterDefaults),
@@ -634,6 +660,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       excludedAppealStatuses: [],
     });
     setFilterDefaultsMessage("");
+  }
+
+  function closeFilterDrawer() {
+    setFilterDrawerOpen(false);
+    window.requestAnimationFrame(() => filterToggleButton.current?.focus());
   }
 
   const excludedYearSet = useMemo(() => new Set(excludedYears), [excludedYears]);
@@ -909,80 +940,145 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
             <div><p className="eyebrow">Find and select</p><h2>Permit explorer</h2></div>
             <p>{filtered.length.toLocaleString("en-CA")} matches</p>
           </div>
-          <div className="filters">
-            <label className="search-field">
+          <div className="filter-toolbar">
+            <label className="search-field filter-search-field">
               <span className="sr-only">Search permits</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search permits or addresses…" />
             </label>
-            <MultiSelectFilter
-              label="Years"
-              values={years}
-              excludedValues={excludedYears}
-              onChange={setExcludedYears}
-            />
-            <MultiSelectFilter
-              label="Permit statuses"
-              values={STATUS_FILTER_VALUES}
-              excludedValues={excludedStatusGroups}
-              onChange={setExcludedStatusGroups}
-              formatValue={statusFilterValueLabel}
-            />
-            <MultiSelectFilter
-              label="Land-use districts"
-              values={landUseDistricts}
-              excludedValues={excludedLandUseDistricts}
-              onChange={setExcludedLandUseDistricts}
-              formatValue={dataFilterValueLabel}
-            />
-            <MultiSelectFilter
-              label="Permitted / discretionary"
-              values={permittedDiscretionaryValues}
-              excludedValues={excludedPermittedDiscretionary}
-              onChange={setExcludedPermittedDiscretionary}
-              formatValue={dataFilterValueLabel}
-            />
-            <MultiSelectFilter
-              label="Appeal statuses"
-              values={APPEAL_FILTER_VALUES}
-              excludedValues={excludedAppealStatuses}
-              onChange={setExcludedAppealStatuses}
-              formatValue={appealStatusFilterValueLabel}
-            />
-            <div className="filter-preference-actions">
-              <button
-                type="button"
-                className="save-default-button"
-                onClick={saveCurrentFiltersAsDefault}
-                disabled={savedDefaultMatchesCurrent}
-              >
-                {savedDefaultMatchesCurrent ? "Default saved" : "Set current as default"}
+            <button
+              ref={filterToggleButton}
+              className="filter-drawer-toggle"
+              type="button"
+              aria-expanded={filterDrawerOpen}
+              aria-controls="permit-filter-drawer"
+              onClick={() => setFilterDrawerOpen(true)}
+            >
+              Filters
+              {activeFilterCategoryCount > 0 && <strong aria-label={`${activeFilterCategoryCount} active filter categories`}>{activeFilterCategoryCount}</strong>}
+            </button>
+            {hasActiveFilters && (
+              <button className="clear-button" type="button" onClick={clearCurrentFilters}>
+                Clear
               </button>
-              {savedFilterDefaults && !savedDefaultMatchesCurrent && (
-                <button type="button" onClick={() => {
-                  applyFilterDefaults(savedFilterDefaults);
-                  setFilterDefaultsMessage("Saved filter default restored.");
-                }}>
-                  Restore saved default
+            )}
+          </div>
+          {activeFilterCategoryCount > 0 && (
+            <div className="active-filter-chips" aria-label="Active filter categories">
+              {excludedYears.length > 0 && (
+                <button type="button" onClick={() => setExcludedYears([])} aria-label="Show all years">
+                  Years: {excludedYears.length} hidden <span aria-hidden="true">×</span>
                 </button>
               )}
-              {hasActiveFilters && (
-                <button
-                  className="clear-button"
-                  type="button"
-                  onClick={clearCurrentFilters}
-                >
-                  Clear filters
+              {excludedStatusGroups.length > 0 && (
+                <button type="button" onClick={() => setExcludedStatusGroups([])} aria-label="Show all permit statuses">
+                  Statuses: {excludedStatusGroups.length} hidden <span aria-hidden="true">×</span>
                 </button>
               )}
-              {savedFilterDefaults && (
-                <button type="button" onClick={removeSavedFilterDefault}>Forget saved default</button>
+              {excludedLandUseDistricts.length > 0 && (
+                <button type="button" onClick={() => setExcludedLandUseDistricts([])} aria-label="Show all land-use districts">
+                  Districts: {excludedLandUseDistricts.length} hidden <span aria-hidden="true">×</span>
+                </button>
+              )}
+              {excludedPermittedDiscretionary.length > 0 && (
+                <button type="button" onClick={() => setExcludedPermittedDiscretionary([])} aria-label="Show all permitted and discretionary values">
+                  Permit type: {excludedPermittedDiscretionary.length} hidden <span aria-hidden="true">×</span>
+                </button>
+              )}
+              {excludedAppealStatuses.length > 0 && (
+                <button type="button" onClick={() => setExcludedAppealStatuses([])} aria-label="Show all appeal statuses">
+                  Appeals: {excludedAppealStatuses.length} hidden <span aria-hidden="true">×</span>
+                </button>
               )}
             </div>
-            <p className="filter-storage-note">
-              Your saved default stays only in this browser until you replace it, forget it here or clear this site&apos;s browser data.
-            </p>
-            <p className="filter-default-status" role="status" aria-live="polite">{filterDefaultsMessage}</p>
-          </div>
+          )}
+          <p className="filter-default-status" role="status" aria-live="polite">{filterDefaultsMessage}</p>
+          {filterDrawerOpen && (
+            <div className="filter-drawer-backdrop" role="presentation" onMouseDown={closeFilterDrawer}>
+              <section
+                id="permit-filter-drawer"
+                className="filter-drawer"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="permit-filter-drawer-title"
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className="filter-drawer-header">
+                  <div>
+                    <p className="eyebrow">Choose what to show</p>
+                    <h2 id="permit-filter-drawer-title">Table and map filters</h2>
+                  </div>
+                  <button type="button" className="filter-drawer-close" onClick={closeFilterDrawer} autoFocus aria-label="Close filters">×</button>
+                </div>
+                <div className="filter-drawer-body">
+                  <p className="filter-drawer-intro">Changes update the table and both maps immediately.</p>
+                  <div className="filters filter-drawer-controls">
+                    <MultiSelectFilter
+                      label="Years"
+                      values={years}
+                      excludedValues={excludedYears}
+                      onChange={setExcludedYears}
+                    />
+                    <MultiSelectFilter
+                      label="Permit statuses"
+                      values={STATUS_FILTER_VALUES}
+                      excludedValues={excludedStatusGroups}
+                      onChange={setExcludedStatusGroups}
+                      formatValue={statusFilterValueLabel}
+                    />
+                    <MultiSelectFilter
+                      label="Land-use districts"
+                      values={landUseDistricts}
+                      excludedValues={excludedLandUseDistricts}
+                      onChange={setExcludedLandUseDistricts}
+                      formatValue={dataFilterValueLabel}
+                    />
+                    <MultiSelectFilter
+                      label="Permitted / discretionary"
+                      values={permittedDiscretionaryValues}
+                      excludedValues={excludedPermittedDiscretionary}
+                      onChange={setExcludedPermittedDiscretionary}
+                      formatValue={dataFilterValueLabel}
+                    />
+                    <MultiSelectFilter
+                      label="Appeal statuses"
+                      values={APPEAL_FILTER_VALUES}
+                      excludedValues={excludedAppealStatuses}
+                      onChange={setExcludedAppealStatuses}
+                      formatValue={appealStatusFilterValueLabel}
+                    />
+                  </div>
+                  <div className="filter-preference-actions">
+                    <button
+                      type="button"
+                      className="save-default-button"
+                      onClick={saveCurrentFiltersAsDefault}
+                      disabled={savedDefaultMatchesCurrent}
+                    >
+                      {savedDefaultMatchesCurrent ? "Default saved" : "Set current as default"}
+                    </button>
+                    {savedFilterDefaults && !savedDefaultMatchesCurrent && (
+                      <button type="button" onClick={() => {
+                        applyFilterDefaults(savedFilterDefaults);
+                        setFilterDefaultsMessage("Saved filter default restored.");
+                      }}>
+                        Restore saved default
+                      </button>
+                    )}
+                    {hasActiveFilters && <button type="button" onClick={clearCurrentFilters}>Clear filters</button>}
+                    {savedFilterDefaults && (
+                      <button type="button" onClick={removeSavedFilterDefault}>Forget saved default</button>
+                    )}
+                  </div>
+                  <p className="filter-storage-note">
+                    Your saved default stays only in this browser until you replace it, forget it here or clear this site&apos;s browser data.
+                  </p>
+                </div>
+                <button type="button" className="filter-drawer-apply" onClick={closeFilterDrawer}>
+                  Show {filtered.length.toLocaleString("en-CA")} matches
+                </button>
+              </section>
+            </div>
+          )}
           {selectedOutsideLatest && !showAll && (
             <p className="pinned-selection-note" role="status">
               Selected permit {text(selectedPermit?.permitnum)} is pinned above the latest 12 permits.

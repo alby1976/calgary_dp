@@ -42,8 +42,7 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Approved \/ released/i);
   assert.match(html, /Refused \/ cancelled/i);
   assert.match(html, /Other status/i);
-  assert.match(html, /Appeal statuses/i);
-  assert.match(html, /Appealed to SDAB/i);
+  assert.match(html, /Filters/i);
   assert.match(html, /Still moving through the City process/i);
   assert.match(html, /The City said yes—check which stage/i);
   assert.match(html, /Stopped in its current form/i);
@@ -56,6 +55,7 @@ test("renders development preview metadata", async () => {
   assert.match(html, /Open data is an early signal/i);
   assert.match(html, /Development Map \(DMap\)/i);
   const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
+  assert.match(dashboardSource, /Appealed to SDAB/i);
   assert.match(dashboardSource, /Highlighted in the community overview and the street-level map/i);
   assert.match(dashboardSource, /Double-check Calgary(?:&apos;|')s official Development Map/i);
   assert.match(dashboardSource, /permit-specific link above is only a convenience/i);

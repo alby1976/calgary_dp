@@ -24,6 +24,8 @@
 
 **Post-retest implementation update:** August 17, 2026 — production added the permitted/discretionary filter, property-context street-map zoom and initial centring on the first selected permit. A later August 17 implementation added an on-page searchable permit-field guide, field-level help controls and a concise selection live region in place of the atomic details announcement. These additions have not yet received a new hands-on usability retest and are not counted as August 16 task evidence.
 
+**Filter-layout implementation update:** August 18, 2026 — the five persistent categorical menus and browser-default controls moved into an overlay drawer, leaving the permit explorer's normal flow for search, active-filter summaries and more permit rows. The drawer becomes a bottom sheet on narrow screens, applies changes immediately, supports `Escape` and returns focus to its trigger. This change has automated regression coverage but has not yet received a new hands-on usability retest.
+
 **Design intent:** The dashboard is a proactive early-warning tool. A permit appearing in Calgary Open Data can alert users to watch Calgary's Development Map (DMap) even when the corresponding DMap application page or public plans are not available yet. The dashboard must not imply that a DMap record already exists, predict when Calgary will publish it or replace verification through Calgary's official Development Map.
 
 ## Overall assessment
