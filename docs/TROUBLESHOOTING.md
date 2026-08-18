@@ -102,7 +102,8 @@ If the key is installed but metadata remains unavailable, check:
 - the `DB` D1 binding and migration are active;
 - outbound HTTPS to `api.canlii.org` is allowed;
 - the appeal number matches `YYYY-NNNN`; and
-- the configured database remains `cgysdab`.
+- the CanLII API database remains `absdab`; and
+- the case-ID prefix remains `cgysdab`.
 
 Paste only the API key itself into the `CANLII_API_KEY` secret. The Worker also tolerates the common `.env` forms `CANLII_API_KEY=...`, `"..."` and `'...'`, but the raw value is preferred. If the dashboard reports that CanLII rejected the installed key, replace the secret with an active key issued by CanLII; the secret exists in Cloudflare, but CanLII did not accept it.
 
@@ -112,7 +113,7 @@ The appeal metadata request uses CanLII's case-law route:
 https://api.canlii.org/v1/caseBrowse/{language}/{databaseId}/{caseId}/?api_key={key}
 ```
 
-For Calgary SDAB, the configured database is `cgysdab`. Appeal `2025-0118` maps to case ID `2025cgysdab118`. The `legislationBrowse` route is only for statutes and regulations and must not be substituted here.
+For Calgary SDAB, the API metadata record uses database ID `absdab`, while the neutral citation and case ID use `cgysdab`. Appeal `2025-0118` therefore maps to case ID `2025cgysdab118`, and the Worker queries it inside the `absdab` database. The `legislationBrowse` route is only for statutes and regulations and must not be substituted here.
 
 CanLII metadata may return an official decision link on either `canlii.ca` or `canlii.org`. The Worker accepts HTTPS links from both CanLII-owned domains and rejects unrelated hosts.
 
