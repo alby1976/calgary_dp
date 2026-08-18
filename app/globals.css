@@ -148,9 +148,40 @@ h1 em { color: var(--green); font-weight: 400; }
 .status-pill.status-closed { background: #f0d9d6; color: var(--red); }
 .permit-description { margin: 30px 0; padding: 22px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font: 18px/1.55 Georgia, serif; }
 .detail-list { margin: 0; }
-.detail-list > div { display: grid; grid-template-columns: 105px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px solid rgba(217,212,201,.8); font-size: 14px; line-height: 1.45; }
+.detail-list > div { display: grid; grid-template-columns: 138px 1fr; gap: 15px; padding: 12px 0; border-bottom: 1px solid rgba(217,212,201,.8); font-size: 14px; line-height: 1.45; }
 .detail-list dt { color: var(--muted); }
 .detail-list dd { margin: 0; font-weight: 700; }
+.field-term { display: flex; align-items: start; justify-content: space-between; gap: 6px; }
+.field-term > span:first-child { padding-top: 4px; }
+.field-help-button { flex: 0 0 44px; width: 44px; height: 44px; margin: -8px -6px -8px 0; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--green); cursor: pointer; }
+.field-help-button > span { width: 25px; height: 25px; display: grid; place-items: center; border: 1px solid #7da496; border-radius: 50%; background: rgba(255,255,255,.72); font-size: 14px; line-height: 1; font-weight: 900; }
+.field-help-button:hover > span { background: var(--green); color: white; }
+.field-help-button:focus-visible { outline: 3px solid rgba(27,107,85,.45); outline-offset: -3px; }
+.permit-field-guide { margin-top: 18px; border: 1px solid #b8cdc3; border-radius: 4px; background: #f2f8f5; }
+.permit-field-guide summary { min-height: 48px; padding: 14px 16px; cursor: pointer; color: var(--ink); font-size: 15px; line-height: 1.35; font-weight: 900; }
+.permit-field-guide summary:focus-visible { outline: 3px solid rgba(27,107,85,.45); outline-offset: -3px; }
+.permit-field-guide-content { padding: 0 16px 16px; }
+.permit-field-guide-content > label { display: block; margin: 4px 0 6px; color: var(--ink); font-size: 14px; font-weight: 800; }
+.permit-field-guide-content > input { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid #9fb9ad; border-radius: 3px; background: white; color: var(--ink); font-size: 16px; }
+.permit-field-guide-content > input:focus { outline: 3px solid rgba(27,107,85,.32); border-color: var(--green); }
+.permit-field-guide-content dl { margin: 14px 0; }
+.permit-field-definition { padding: 11px 0; border-top: 1px solid rgba(23,36,45,.12); }
+.permit-field-definition:focus { outline: 3px solid rgba(27,107,85,.32); outline-offset: 3px; }
+.permit-field-definition dt { color: var(--ink); font-size: 13px; font-weight: 900; }
+.permit-field-definition dd { margin: 4px 0 0; color: #43545b; font-size: 14px; line-height: 1.55; }
+.field-value-glossary { margin-top: 10px; border: 1px solid rgba(23,36,45,.14); border-radius: 3px; background: rgba(255,255,255,.58); }
+.field-value-glossary summary { min-height: 44px; padding: 11px 12px; color: var(--green); font-size: 13px; line-height: 1.4; font-weight: 900; }
+.field-value-glossary summary:focus-visible { outline: 3px solid rgba(27,107,85,.38); outline-offset: -3px; }
+.field-value-glossary ul { margin: 0; padding: 0 12px 8px; list-style: none; }
+.field-value-glossary li { display: grid; grid-template-columns: minmax(90px, 150px) 1fr; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(23,36,45,.1); }
+.field-value-glossary li strong { color: var(--ink); font-size: 13px; overflow-wrap: anywhere; }
+.field-value-glossary li span { color: #43545b; font-size: 13px; line-height: 1.5; }
+.field-guide-note, .empty-field-guide { color: #4f6067; font-size: 14px; line-height: 1.55; }
+.field-guide-note { margin: 12px 0; }
+.empty-field-guide { margin: 14px 0; font-weight: 800; }
+@media (max-width: 560px) {
+  .field-value-glossary li { grid-template-columns: 1fr; gap: 4px; }
+}
 .appeal-action { margin-top: 24px; padding: 18px; border-left: 4px solid var(--orange); background: var(--orange-soft); }
 .appeal-action.appeal-package-missing { border-left-color: #78858a; background: #e5e5e0; }
 .appeal-action .appeal-label { margin: 0; color: #94421f; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }

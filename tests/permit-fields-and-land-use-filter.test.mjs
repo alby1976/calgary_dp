@@ -10,6 +10,7 @@ const requestedSourceFields = [
   "proposedusedescription",
   "permitteddiscretionary",
   "landusedistrict",
+  "landusedistrictdescription",
   "concurrent_loc",
   "statuscurrent",
   "applieddate",
@@ -63,6 +64,35 @@ test("selected permit details display every requested field separately", () => {
   ];
 
   for (const label of labels) {
-    assert.match(dashboardSource, new RegExp(`<dt>${label.replace("/", "\\/")}</dt>`), label);
+    assert.match(dashboardSource, new RegExp(`FieldTerm label="${label.replace("/", "\\/")}"`), label);
   }
+});
+
+test("permit field definitions stay on the main page and open from accessible help controls", () => {
+  assert.match(dashboardSource, /const PERMIT_FIELD_DEFINITIONS = \[/);
+  assert.match(dashboardSource, /aria-label=\{`Explain \$\{label\}`\}/);
+  assert.match(dashboardSource, /aria-controls="permit-field-guide"/);
+  assert.match(dashboardSource, /<details id="permit-field-guide"/);
+  assert.match(dashboardSource, /Search field definitions/);
+  assert.match(dashboardSource, /Not reported<\/strong> means the City source did not provide a value/);
+  assert.doesNotMatch(dashboardSource, /className="panel detail-panel linked-detail-panel" aria-live/);
+  assert.match(dashboardSource, /Selected permit \{text\(selectedPermit\.permitnum\)\}; details updated\./);
+});
+
+test("field guide explains loaded land-use district and current-status values", () => {
+  assert.match(dashboardSource, /function landUseDistrictValueMeanings\(permits: Permit\[\]\)/);
+  assert.match(dashboardSource, /permit\.landusedistrictdescription/);
+  assert.match(dashboardSource, /const CURRENT_STATUS_MEANINGS: Record<string, string>/);
+  assert.match(dashboardSource, /"pending release":/);
+  assert.match(dashboardSource, /"released":/);
+  assert.match(dashboardSource, /Meanings of \{values\.length\} values in the loaded Varsity records/);
+  assert.match(dashboardSource, /valueGlossary instanceof HTMLDetailsElement/);
+});
+
+test("field guide explains loaded permitted and discretionary values", () => {
+  assert.match(dashboardSource, /const PERMITTED_DISCRETIONARY_MEANINGS: Record<string, string>/);
+  assert.match(dashboardSource, /"permitted with a relaxation":/);
+  assert.match(dashboardSource, /"discretionary":/);
+  assert.match(dashboardSource, /"unspecified":/);
+  assert.match(dashboardSource, /"permitted-discretionary": permittedDiscretionaryValueMeanings\(permits\)/);
 });

@@ -17,6 +17,11 @@ type Props = {
 
 type CanliiUiState = CanliiLookupResponse | { status: "loading" };
 
+type FieldValueMeaning = {
+  value: string;
+  meaning: string;
+};
+
 function text(value?: string) {
   return value?.trim() || "Not reported";
 }
@@ -99,6 +104,102 @@ function landUseDistrictValues(permit: Permit) {
     .filter(Boolean);
 }
 
+function semicolonValues(value?: string) {
+  return (value ?? "")
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function districtModifierMeaning(district: string) {
+  const meanings: string[] = [];
+  const density = district.match(/d(\d+(?:\.\d+)?)/i)?.[1];
+  const floorAreaRatio = district.match(/f(\d+(?:\.\d+)?)/i)?.[1];
+  const height = district.match(/h(\d+(?:\.\d+)?)/i)?.[1];
+
+  if (density) meanings.push(`d${density} sets the maximum density at ${density} units per hectare`);
+  if (floorAreaRatio) meanings.push(`f${floorAreaRatio} sets the maximum floor-area ratio at ${floorAreaRatio}`);
+  if (height) meanings.push(`h${height} sets the maximum building height at ${height} metres`);
+  return meanings.length ? ` The modifiers mean: ${meanings.join("; ")}.` : "";
+}
+
+function landUseDistrictValueMeanings(permits: Permit[]): FieldValueMeaning[] {
+  const descriptionsByDistrict = new Map<string, Map<string, string>>();
+
+  for (const permit of permits) {
+    const districts = landUseDistrictValues(permit);
+    const descriptions = semicolonValues(permit.landusedistrictdescription);
+    districts.forEach((district, index) => {
+      const description = descriptions[index];
+      if (!descriptionsByDistrict.has(district)) descriptionsByDistrict.set(district, new Map());
+      if (description) {
+        descriptionsByDistrict.get(district)?.set(description.toLocaleLowerCase("en-CA"), description);
+      }
+    });
+  }
+
+  return [...descriptionsByDistrict.entries()]
+    .sort(([a], [b]) => a.localeCompare(b, "en-CA", { numeric: true }))
+    .map(([district, descriptions]) => {
+      const publishedDescriptions = [...descriptions.values()];
+      const description = publishedDescriptions.length
+        ? `The City dataset describes this as ${publishedDescriptions.map((value) => `“${value}”`).join(" or ")}.`
+        : "The City dataset does not provide a description for this value.";
+      const directControl = district.toUpperCase() === "DC"
+        ? " Direct Control rules are site-specific, so the applicable Direct Control bylaw must be checked."
+        : "";
+      return {
+        value: district,
+        meaning: `${description}${directControl}${districtModifierMeaning(district)}`,
+      };
+    });
+}
+
+const CURRENT_STATUS_MEANINGS: Record<string, string> = {
+  "new": "The application has recently entered the City's system. This is not a decision.",
+  "under review": "City staff are assessing the application. No final decision is recorded yet.",
+  "in circulation": "The application has been sent to relevant City teams or other reviewers for comments. This is not a decision.",
+  "in advertising": "The City is publishing notice of the application or decision. Check the official file for the notice dates and any appeal deadline.",
+  "pending decision": "Review is still underway and the dataset does not yet record a final decision.",
+  "pending release": "A decision has been made, but the permit has not yet been released. Requirements, conditions or an appeal period may still remain.",
+  "pending appeal": "The application or decision is awaiting an appeal step or outcome. The official SDAB file controls the result and dates.",
+  "approved": "A favourable decision is recorded, but the permit may still need to complete conditions or an appeal period before release.",
+  "released": "The permit has been released after the applicable processing steps. This does not mean construction has started or finished.",
+  "refused": "The application was refused. Appeal rights and deadlines may apply; check the official decision.",
+  "cancelled": "The application was cancelled or closed without a released permit. Check the official file for the reason.",
+  "cancelled - pending refund": "The application was cancelled and the related refund process was still outstanding when the status was published.",
+  "expired": "The City records the application or permit as expired. Do not assume that it still authorizes development.",
+  "lapsed": "The application or approval is no longer active after a required step or deadline was not completed. Check the official file for the exact cause.",
+  "inactive": "The file is no longer active in the current workflow. The dataset does not explain the reason, so check the official file.",
+};
+
+function currentStatusValueMeanings(permits: Permit[]): FieldValueMeaning[] {
+  return [...new Set(permits.map((permit) => permit.statuscurrent?.trim()).filter(Boolean) as string[])]
+    .sort((a, b) => a.localeCompare(b, "en-CA"))
+    .map((value) => ({
+      value,
+      meaning: CURRENT_STATUS_MEANINGS[value.toLocaleLowerCase("en-CA")]
+        ?? "This is the exact status currently published by the City. Its detailed meaning is not documented in the dataset, so check the official application before relying on it.",
+    }));
+}
+
+const PERMITTED_DISCRETIONARY_MEANINGS: Record<string, string> = {
+  "permitted": "The proposed use is listed as permitted in the applicable land-use district. If it meets every relevant bylaw rule, the Development Authority must approve it.",
+  "permitted with a relaxation": "The proposed use is permitted, but part of the proposal does not meet one or more bylaw rules. The requested relaxation is reviewed case by case and is not automatically approved.",
+  "discretionary": "The proposed use is listed as discretionary in the district. The City may consider planning policy, site conditions, compatibility, access, parking, servicing and public feedback before approving or refusing it.",
+  "unspecified": "The City dataset does not specify the classification for this record. It does not mean that the use is automatically permitted or exempt from review.",
+};
+
+function permittedDiscretionaryValueMeanings(permits: Permit[]): FieldValueMeaning[] {
+  return [...new Set(permits.map(permittedDiscretionaryValue).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "en-CA"))
+    .map((value) => ({
+      value,
+      meaning: PERMITTED_DISCRETIONARY_MEANINGS[value.toLocaleLowerCase("en-CA")]
+        ?? "This is the exact classification currently published by the City. Check the applicable land-use district and official application for its legal meaning.",
+    }));
+}
+
 function permittedDiscretionaryValue(permit: Permit) {
   return permit.permitteddiscretionary?.trim() ?? "";
 }
@@ -150,6 +251,99 @@ function StatusDot({ group }: { group: string }) {
   return <span className={`status-dot status-${group}`} aria-hidden="true" />;
 }
 
+const PERMIT_FIELD_DEFINITIONS = [
+  {
+    id: "proposed-use",
+    label: "Proposed use",
+    definition: "The City-published description of what the application proposes to build, operate or change. It does not mean the proposal has been approved.",
+  },
+  {
+    id: "permitted-discretionary",
+    label: "Permitted / discretionary",
+    definition: "How the proposed use is classified under the applicable land-use district. A permitted use generally must meet the district rules; a discretionary use requires planning judgment and may involve notice or additional conditions. The Land Use Bylaw and official file control.",
+  },
+  {
+    id: "land-use-district",
+    label: "Land-use district",
+    definition: "The zoning designation and development rules the City applies to the property. A record may list more than one district.",
+  },
+  {
+    id: "concurrent-redesignation",
+    label: "Concurrent land-use redesignation",
+    definition: "A related application to change the property's land-use district while the development permit is being considered. The value is normally the related City file number.",
+  },
+  {
+    id: "current-status",
+    label: "Current status",
+    definition: "The latest processing stage published in the City dataset, such as under review, approved, released, refused or cancelled. Read the exact City wording before drawing a conclusion.",
+  },
+  {
+    id: "applied-date",
+    label: "Applied date",
+    definition: "The date the City records the development-permit application as received.",
+  },
+  {
+    id: "decision",
+    label: "Decision",
+    definition: "The City's recorded result for the application, such as approved or refused. Conditions, appeal rights and legal effect come from the official decision and permit.",
+  },
+  {
+    id: "decision-date",
+    label: "Decision date",
+    definition: "The date the City records the development-permit decision as made.",
+  },
+  {
+    id: "released-date",
+    label: "Released date",
+    definition: "The date the City records the permit as released after applicable review steps or conditions. It is not necessarily the date construction started.",
+  },
+  {
+    id: "must-commence-date",
+    label: "Must commence date",
+    definition: "The recorded deadline for beginning the approved development before the permit may lapse. Verify the controlling date and conditions on the official permit.",
+  },
+  {
+    id: "decision-by",
+    label: "Decision by",
+    definition: "The City authority, role or decision-making body recorded as responsible for the permit decision.",
+  },
+  {
+    id: "sdab-number",
+    label: "SDAB number",
+    definition: "The tracking number assigned by Calgary's Subdivision and Development Appeal Board. It is different from the development-permit number.",
+  },
+  {
+    id: "sdab-decision",
+    label: "SDAB decision",
+    definition: "The Board's published appeal outcome. The complete written decision controls the conditions, reasons and legal effect.",
+  },
+] as const;
+
+function FieldTerm({
+  label,
+  definitionId,
+  onExplain,
+}: {
+  label: string;
+  definitionId: string;
+  onExplain: (definitionId: string) => void;
+}) {
+  return (
+    <dt className="field-term">
+      <span>{label}</span>
+      <button
+        type="button"
+        className="field-help-button"
+        aria-label={`Explain ${label}`}
+        aria-controls="permit-field-guide"
+        onClick={() => onExplain(definitionId)}
+      >
+        <span aria-hidden="true">?</span>
+      </button>
+    </dt>
+  );
+}
+
 type PlottedPermit = {
   permit: Permit;
   lat: number;
@@ -174,10 +368,12 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [appealFilter, setAppealFilter] = useState("all");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [fieldGuideQuery, setFieldGuideQuery] = useState("");
   const [hoveredGuide, setHoveredGuide] = useState<StatusGuideGroup | null>(null);
   const [canliiLookups, setCanliiLookups] = useState<Record<string, CanliiUiState>>({});
   const requestedCanliiAppeals = useRef(new Set<string>());
   const selectedExplorerRow = useRef<HTMLButtonElement | null>(null);
+  const permitFieldGuide = useRef<HTMLDetailsElement | null>(null);
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
@@ -196,6 +392,12 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       .sort((a, b) => a.localeCompare(b, "en-CA")),
     [permits],
   );
+
+  const fieldValueMeanings = useMemo<Record<string, FieldValueMeaning[]>>(() => ({
+    "land-use-district": landUseDistrictValueMeanings(permits),
+    "current-status": currentStatusValueMeanings(permits),
+    "permitted-discretionary": permittedDiscretionaryValueMeanings(permits),
+  }), [permits]);
 
   const grouped = useMemo(() => {
     const counts = { active: 0, approved: 0, closed: 0, other: 0 };
@@ -291,6 +493,33 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const selectedAppealIsDecided = Boolean(
     selectedPermit?.sdabdecisiondate?.trim() || selectedPermit?.sdabdecision?.trim(),
   );
+  const visiblePermitFieldDefinitions = useMemo(() => {
+    const needle = fieldGuideQuery.trim().toLowerCase();
+    return PERMIT_FIELD_DEFINITIONS.flatMap(({ id, label, definition }) => {
+      const values = fieldValueMeanings[id] ?? [];
+      if (!needle) return [{ id, label, definition, values }];
+      const definitionMatches = `${label} ${definition}`.toLowerCase().includes(needle);
+      const matchingValues = values.filter(({ value, meaning }) => (
+        `${value} ${meaning}`.toLowerCase().includes(needle)
+      ));
+      return definitionMatches || matchingValues.length
+        ? [{ id, label, definition, values: definitionMatches ? values : matchingValues }]
+        : [];
+    });
+  }, [fieldGuideQuery, fieldValueMeanings]);
+
+  const revealPermitFieldDefinition = (definitionId: string) => {
+    setFieldGuideQuery("");
+    if (permitFieldGuide.current) permitFieldGuide.current.open = true;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const definition = document.getElementById(`permit-field-definition-${definitionId}`);
+        const valueGlossary = definition?.querySelector("details");
+        if (valueGlossary instanceof HTMLDetailsElement) valueGlossary.open = true;
+        definition?.focus();
+      });
+    });
+  };
 
   useEffect(() => {
     if (!selected) return;
@@ -570,10 +799,13 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
           </article>
         </div>
 
-        <article className="panel detail-panel linked-detail-panel" aria-live="polite" aria-atomic="true">
+        <article className="panel detail-panel linked-detail-panel">
           <p className="eyebrow">Linked selection · both views</p>
           {selectedPermit ? (
             <>
+              <p className="sr-only" role="status" aria-live="polite">
+                Selected permit {text(selectedPermit.permitnum)}; details updated.
+              </p>
               <div className="permit-title-row">
                 <div><h2>{text(selectedPermit.permitnum)}</h2><p>{text(selectedPermit.address)}</p></div>
                 <span className={`status-pill status-${groupFor(selectedPermit.statuscurrent)}`}>{text(selectedPermit.statuscurrent)}</span>
@@ -581,20 +813,61 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               <p className="linked-selection-note">Highlighted in the community overview and the street-level map.</p>
               <p className="permit-description">{text(selectedPermit.description)}</p>
               <dl className="detail-list">
-                <div><dt>Proposed use</dt><dd>{text(selectedPermit.proposedusedescription)}</dd></div>
-                <div><dt>Permitted / discretionary</dt><dd>{text(selectedPermit.permitteddiscretionary)}</dd></div>
-                <div><dt>Land-use district</dt><dd>{text(selectedPermit.landusedistrict)}</dd></div>
-                <div><dt>Concurrent land-use redesignation</dt><dd>{text(selectedPermit.concurrent_loc)}</dd></div>
-                <div><dt>Current status</dt><dd>{text(selectedPermit.statuscurrent)}</dd></div>
-                <div><dt>Applied date</dt><dd>{formatDate(selectedPermit.applieddate)}</dd></div>
-                <div><dt>Decision</dt><dd>{text(selectedPermit.decision)}</dd></div>
-                <div><dt>Decision date</dt><dd>{formatDate(selectedPermit.decisiondate)}</dd></div>
-                <div><dt>Released date</dt><dd>{formatDate(selectedPermit.releasedate)}</dd></div>
-                <div><dt>Must commence date</dt><dd>{formatDate(selectedPermit.mustcommencedate)}</dd></div>
-                <div><dt>Decision by</dt><dd>{text(selectedPermit.decisionby)}</dd></div>
-                <div><dt>SDAB number</dt><dd>{text(selectedPermit.sdabnumber)}</dd></div>
-                <div><dt>SDAB decision</dt><dd>{text(selectedPermit.sdabdecision)}</dd></div>
+                <div><FieldTerm label="Proposed use" definitionId="proposed-use" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.proposedusedescription)}</dd></div>
+                <div><FieldTerm label="Permitted / discretionary" definitionId="permitted-discretionary" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.permitteddiscretionary)}</dd></div>
+                <div><FieldTerm label="Land-use district" definitionId="land-use-district" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.landusedistrict)}</dd></div>
+                <div><FieldTerm label="Concurrent land-use redesignation" definitionId="concurrent-redesignation" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.concurrent_loc)}</dd></div>
+                <div><FieldTerm label="Current status" definitionId="current-status" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.statuscurrent)}</dd></div>
+                <div><FieldTerm label="Applied date" definitionId="applied-date" onExplain={revealPermitFieldDefinition} /><dd>{formatDate(selectedPermit.applieddate)}</dd></div>
+                <div><FieldTerm label="Decision" definitionId="decision" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.decision)}</dd></div>
+                <div><FieldTerm label="Decision date" definitionId="decision-date" onExplain={revealPermitFieldDefinition} /><dd>{formatDate(selectedPermit.decisiondate)}</dd></div>
+                <div><FieldTerm label="Released date" definitionId="released-date" onExplain={revealPermitFieldDefinition} /><dd>{formatDate(selectedPermit.releasedate)}</dd></div>
+                <div><FieldTerm label="Must commence date" definitionId="must-commence-date" onExplain={revealPermitFieldDefinition} /><dd>{formatDate(selectedPermit.mustcommencedate)}</dd></div>
+                <div><FieldTerm label="Decision by" definitionId="decision-by" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.decisionby)}</dd></div>
+                <div><FieldTerm label="SDAB number" definitionId="sdab-number" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.sdabnumber)}</dd></div>
+                <div><FieldTerm label="SDAB decision" definitionId="sdab-decision" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.sdabdecision)}</dd></div>
               </dl>
+              <details id="permit-field-guide" className="permit-field-guide" ref={permitFieldGuide}>
+                <summary>What do these permit fields mean?</summary>
+                <div className="permit-field-guide-content">
+                  <label htmlFor="permit-field-guide-search">Search field definitions</label>
+                  <input
+                    id="permit-field-guide-search"
+                    type="search"
+                    value={fieldGuideQuery}
+                    onChange={(event) => setFieldGuideQuery(event.target.value)}
+                    placeholder="Search definitions…"
+                  />
+                  <p className="field-guide-note">
+                    These explanations summarize City-published fields. The official application, decision, permit, Land Use Bylaw and appeal decision remain authoritative.
+                  </p>
+                  <dl>
+                    {visiblePermitFieldDefinitions.map(({ id, label, definition, values }) => (
+                      <div id={`permit-field-definition-${id}`} className="permit-field-definition" tabIndex={-1} key={id}>
+                        <dt>{label}</dt>
+                        <dd>{definition}</dd>
+                        {!!values.length && (
+                          <details className="field-value-glossary" open={fieldGuideQuery.trim() ? true : undefined}>
+                            <summary>Meanings of {values.length} values in the loaded Varsity records</summary>
+                            <ul>
+                              {values.map(({ value, meaning }) => (
+                                <li key={`${id}-${value}`}>
+                                  <strong>{value}</strong>
+                                  <span>{meaning}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </details>
+                        )}
+                      </div>
+                    ))}
+                  </dl>
+                  {!visiblePermitFieldDefinitions.length && (
+                    <p className="empty-field-guide">No field definitions match that search.</p>
+                  )}
+                  <p className="field-guide-note"><strong>Not reported</strong> means the City source did not provide a value. It does not automatically mean “none,” “no” or “not applicable.”</p>
+                </div>
+              </details>
               {selectedAppealNumber && (
                 <div className={`appeal-action ${selectedPermit.appealreporturl ? "" : "appeal-package-missing"}`}>
                   <p className="appeal-label">
