@@ -51,6 +51,30 @@ function optionalText(record: Record<string, unknown>, key: string) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function optionalLocalizedText(record: Record<string, unknown>, key: string) {
+  const direct = optionalText(record, key);
+  if (direct) return direct;
+
+  const value = record[key];
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const localized = value as Record<string, unknown>;
+  for (const language of ["en", "fr"]) {
+    const candidate = localized[language];
+    if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+  }
+  return undefined;
+}
+
+function canliiMetadataRecord(payload: unknown) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const record = payload as Record<string, unknown>;
+  if (!Array.isArray(record.cases)) return record;
+  const [firstCase] = record.cases;
+  return firstCase && typeof firstCase === "object" && !Array.isArray(firstCase)
+    ? firstCase as Record<string, unknown>
+    : null;
+}
+
 function safeDecisionUrl(value: unknown) {
   if (typeof value !== "string") return null;
   try {
@@ -73,11 +97,11 @@ export function normalizeCanliiMetadata(
   expectedDatabaseId: string,
   expectedCaseId: string,
 ): CanliiMetadata | null {
-  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
-  const record = payload as Record<string, unknown>;
+  const record = canliiMetadataRecord(payload);
+  if (!record) return null;
   const databaseId = optionalText(record, "databaseId");
-  const caseId = optionalText(record, "caseId");
-  const url = safeDecisionUrl(record.url);
+  const caseId = optionalLocalizedText(record, "caseId");
+  const url = safeDecisionUrl(optionalLocalizedText(record, "url"));
   const title = optionalText(record, "title");
   const citation = optionalText(record, "citation");
 
@@ -102,5 +126,26 @@ export function normalizeCanliiMetadata(
     decisionDate: optionalText(record, "decisionDate"),
     keywords: optionalText(record, "keywords"),
     concatenatedId: optionalText(record, "concatenatedId"),
+  };
+}
+
+export function summarizeCanliiPayload(payload: unknown) {
+  const record = canliiMetadataRecord(payload);
+  if (!record) return { shape: Array.isArray(payload) ? "array" : typeof payload };
+  const rawUrl = optionalLocalizedText(record, "url");
+  let urlHostname: string | null = null;
+  try {
+    urlHostname = rawUrl ? new URL(rawUrl).hostname : null;
+  } catch {
+    urlHostname = "invalid";
+  }
+  return {
+    shape: Array.isArray((payload as Record<string, unknown>)?.cases) ? "cases-wrapper" : "record",
+    keys: Object.keys(record).sort(),
+    databaseId: optionalText(record, "databaseId") ?? null,
+    caseId: optionalLocalizedText(record, "caseId") ?? null,
+    urlHostname,
+    hasTitle: Boolean(optionalText(record, "title")),
+    hasCitation: Boolean(optionalText(record, "citation")),
   };
 }
