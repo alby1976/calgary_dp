@@ -22,20 +22,21 @@ export function normalizeCanliiApiKey(value: string | null | undefined) {
   return apiKey || null;
 }
 
-export function canliiCaseIdForAppeal(appealNumber: string, databaseId: string) {
+export function canliiCaseIdForAppeal(appealNumber: string, caseIdPrefix: string) {
   const match = normalizeCanliiAppealNumber(appealNumber)?.match(APPEAL_NUMBER);
   if (!match) return null;
-  return `${match[1]}${databaseId.toLowerCase()}${Number(match[2])}`;
+  return `${match[1]}${caseIdPrefix.toLowerCase()}${Number(match[2])}`;
 }
 
 export function canliiMetadataUrl(options: {
   apiBaseUrl: string;
   language: string;
   databaseId: string;
+  caseIdPrefix: string;
   appealNumber: string;
   apiKey: string;
 }) {
-  const caseId = canliiCaseIdForAppeal(options.appealNumber, options.databaseId);
+  const caseId = canliiCaseIdForAppeal(options.appealNumber, options.caseIdPrefix);
   if (!caseId) return null;
   const base = options.apiBaseUrl.endsWith("/") ? options.apiBaseUrl : `${options.apiBaseUrl}/`;
   const url = new URL(

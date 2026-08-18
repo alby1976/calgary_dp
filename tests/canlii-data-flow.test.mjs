@@ -26,6 +26,9 @@ test("CanLII appeal metadata uses caseBrowse and accepts common secret-entry for
   assert.match(canliiSource, /optionalLocalizedText\(record, "caseId"\)/);
   assert.match(canliiSource, /Array\.isArray\(record\.cases\)/);
   assert.match(workerSource, /summarizeCanliiPayload\(payload\)/);
+  assert.match(workerSource, /databaseId: dashboardConfig\.canlii\.databaseId/);
+  assert.match(workerSource, /caseIdPrefix: dashboardConfig\.canlii\.caseIdPrefix/);
+  assert.match(workerSource, /canliiCaseIdForAppeal\(appealNumber, dashboardConfig\.canlii\.caseIdPrefix\)/);
 });
 
 test("CanLII requests use durable caching and global coordination", () => {

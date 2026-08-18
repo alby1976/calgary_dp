@@ -109,7 +109,8 @@
   "canlii": {
     "apiBaseUrl": "https://api.canlii.org/v1/",
     "language": "en",
-    "databaseId": "cgysdab",
+    "databaseId": "absdab",
+    "caseIdPrefix": "cgysdab",
     "dailyQueryLimit": 5000,
     "requestsPerSecond": 2,
     "maxConcurrentRequests": 1,

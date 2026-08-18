@@ -45,6 +45,7 @@ export type DashboardConfig = {
     apiBaseUrl: string;
     language: "en" | "fr";
     databaseId: string;
+    caseIdPrefix: string;
     dailyQueryLimit: number;
     requestsPerSecond: number;
     maxConcurrentRequests: number;
@@ -196,6 +197,9 @@ function validateConfig(value: typeof rawConfig): DashboardConfig {
   positiveInteger(value.canlii.errorCacheSeconds, "canlii.errorCacheSeconds");
   if (!/^[a-z0-9-]+$/i.test(value.canlii.databaseId)) {
     throw new Error("canlii.databaseId is invalid");
+  }
+  if (!/^[a-z0-9-]+$/i.test(value.canlii.caseIdPrefix)) {
+    throw new Error("canlii.caseIdPrefix is invalid");
   }
   if (value.canlii.language !== "en" && value.canlii.language !== "fr") {
     throw new Error("canlii.language must be en or fr");
