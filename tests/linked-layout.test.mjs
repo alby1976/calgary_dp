@@ -41,3 +41,12 @@ test("table filters use a compact toolbar and overlay drawer", () => {
   assert.match(styles, /\.filter-drawer\s*\{[^}]*width:\s*min\(420px, 100%\)/s);
   assert.match(styles, /\.workspace-explorer \.permit-list\s*\{[^}]*flex:\s*1 1 auto/s);
 });
+
+test("permit field value guide uses the same overlay drawer pattern", () => {
+  assert.match(dashboardSource, /className="permit-field-guide-toggle"/);
+  assert.match(dashboardSource, /className="filter-drawer-backdrop permit-guide-backdrop"/);
+  assert.match(dashboardSource, /className="filter-drawer permit-guide-drawer"/);
+  assert.match(dashboardSource, /aria-modal="true"/);
+  assert.match(dashboardSource, /event\.key !== "Escape"/);
+  assert.match(styles, /\.filter-drawer\.permit-guide-drawer\s*\{[^}]*width:\s*min\(620px, 100%\)/s);
+});

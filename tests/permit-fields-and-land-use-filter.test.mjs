@@ -97,11 +97,15 @@ test("selected permit details display every requested field separately", () => {
   }
 });
 
-test("permit field definitions stay on the main page and open from accessible help controls", () => {
+test("permit field definitions open in an accessible searchable drawer", () => {
   assert.match(dashboardSource, /const PERMIT_FIELD_DEFINITIONS = \[/);
   assert.match(dashboardSource, /aria-label=\{`Explain \$\{label\}`\}/);
   assert.match(dashboardSource, /aria-controls="permit-field-guide"/);
-  assert.match(dashboardSource, /<details id="permit-field-guide"/);
+  assert.match(dashboardSource, /className="permit-field-guide-toggle"/);
+  assert.match(dashboardSource, /id="permit-field-guide"/);
+  assert.match(dashboardSource, /aria-label="Close permit field value guide"/);
+  assert.match(dashboardSource, /Close guide/);
+  assert.match(dashboardSource, /closePermitFieldGuide\(\)/);
   assert.match(dashboardSource, /Search field definitions/);
   assert.match(dashboardSource, /Not reported<\/strong> means the City source did not provide a value/);
   assert.doesNotMatch(dashboardSource, /className="panel detail-panel linked-detail-panel" aria-live/);

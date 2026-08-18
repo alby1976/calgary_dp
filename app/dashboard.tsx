@@ -493,6 +493,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [savedFilterDefaults, setSavedFilterDefaults] = useState<FilterDefaults | null>(null);
   const [filterDefaultsMessage, setFilterDefaultsMessage] = useState("");
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [fieldGuideOpen, setFieldGuideOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [fieldGuideQuery, setFieldGuideQuery] = useState("");
@@ -500,8 +501,10 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const [canliiLookups, setCanliiLookups] = useState<Record<string, CanliiUiState>>({});
   const requestedCanliiAppeals = useRef(new Set<string>());
   const filterToggleButton = useRef<HTMLButtonElement | null>(null);
+  const fieldGuideToggleButton = useRef<HTMLButtonElement | null>(null);
+  const fieldGuideReturnFocus = useRef<HTMLElement | null>(null);
   const selectedExplorerRow = useRef<HTMLButtonElement | null>(null);
-  const permitFieldGuide = useRef<HTMLDetailsElement | null>(null);
+  const permitFieldGuide = useRef<HTMLElement | null>(null);
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
@@ -585,6 +588,22 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     };
   }, [filterDrawerOpen]);
 
+  useEffect(() => {
+    if (!fieldGuideOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      closePermitFieldGuide();
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [fieldGuideOpen]);
+
   const currentFilterDefaults = useMemo<FilterDefaults>(() => ({
     query,
     excludedYears,
@@ -665,6 +684,18 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   function closeFilterDrawer() {
     setFilterDrawerOpen(false);
     window.requestAnimationFrame(() => filterToggleButton.current?.focus());
+  }
+
+  function openPermitFieldGuide(returnFocus: HTMLElement | null) {
+    fieldGuideReturnFocus.current = returnFocus ?? fieldGuideToggleButton.current;
+    setFieldGuideOpen(true);
+  }
+
+  function closePermitFieldGuide() {
+    setFieldGuideOpen(false);
+    window.requestAnimationFrame(() => (
+      fieldGuideReturnFocus.current ?? fieldGuideToggleButton.current
+    )?.focus());
   }
 
   const excludedYearSet = useMemo(() => new Set(excludedYears), [excludedYears]);
@@ -796,7 +827,7 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
 
   const revealPermitFieldDefinition = (definitionId: string) => {
     setFieldGuideQuery("");
-    if (permitFieldGuide.current) permitFieldGuide.current.open = true;
+    openPermitFieldGuide(document.activeElement instanceof HTMLElement ? document.activeElement : null);
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
         const definition = document.getElementById(`permit-field-definition-${definitionId}`);
@@ -1199,9 +1230,36 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                 <div><FieldTerm label="SDAB number" definitionId="sdab-number" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.sdabnumber)}</dd></div>
                 <div><FieldTerm label="SDAB decision" definitionId="sdab-decision" onExplain={revealPermitFieldDefinition} /><dd>{text(selectedPermit.sdabdecision)}</dd></div>
               </dl>
-              <details id="permit-field-guide" className="permit-field-guide" ref={permitFieldGuide}>
-                <summary>What do these permit fields mean?</summary>
-                <div className="permit-field-guide-content">
+              <button
+                ref={fieldGuideToggleButton}
+                type="button"
+                className="permit-field-guide-toggle"
+                aria-expanded={fieldGuideOpen}
+                aria-controls="permit-field-guide"
+                onClick={(event) => openPermitFieldGuide(event.currentTarget)}
+              >
+                <span><strong>Permit field value guide</strong><small>Search definitions and value meanings</small></span>
+                <span aria-hidden="true">→</span>
+              </button>
+              {fieldGuideOpen && (
+                <div className="filter-drawer-backdrop permit-guide-backdrop" role="presentation" onMouseDown={closePermitFieldGuide}>
+                  <section
+                    id="permit-field-guide"
+                    className="filter-drawer permit-guide-drawer"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="permit-field-guide-title"
+                    ref={permitFieldGuide}
+                    onMouseDown={(event) => event.stopPropagation()}
+                  >
+                    <div className="filter-drawer-header">
+                      <div>
+                        <p className="eyebrow">Definitions without leaving the dashboard</p>
+                        <h2 id="permit-field-guide-title">Permit field value guide</h2>
+                      </div>
+                      <button type="button" className="filter-drawer-close" onClick={closePermitFieldGuide} autoFocus aria-label="Close permit field value guide">×</button>
+                    </div>
+                    <div className="filter-drawer-body permit-field-guide-content">
                   <label htmlFor="permit-field-guide-search">Search field definitions</label>
                   <input
                     id="permit-field-guide-search"
@@ -1238,8 +1296,11 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                     <p className="empty-field-guide">No field definitions match that search.</p>
                   )}
                   <p className="field-guide-note"><strong>Not reported</strong> means the City source did not provide a value. It does not automatically mean “none,” “no” or “not applicable.”</p>
+                    </div>
+                    <button type="button" className="filter-drawer-apply" onClick={closePermitFieldGuide}>Close guide</button>
+                  </section>
                 </div>
-              </details>
+              )}
               {selectedAppealNumber && (
                 <div className={`appeal-action ${selectedPermit.appealreporturl ? "" : "appeal-package-missing"}`}>
                   <p className="appeal-label">
