@@ -192,10 +192,11 @@ async function handleCanliiMetadata(request: Request, env: Env) {
         apiBaseUrl: dashboardConfig.canlii.apiBaseUrl,
         language: dashboardConfig.canlii.language,
         databaseId: dashboardConfig.canlii.databaseId,
+        caseIdPrefix: dashboardConfig.canlii.caseIdPrefix,
         appealNumber,
         apiKey,
       });
-      const caseId = canliiCaseIdForAppeal(appealNumber, dashboardConfig.canlii.databaseId);
+      const caseId = canliiCaseIdForAppeal(appealNumber, dashboardConfig.canlii.caseIdPrefix);
       if (!apiUrl || !caseId) return jsonResponse({ status: "unavailable" });
 
       const response = await fetch(apiUrl, {
