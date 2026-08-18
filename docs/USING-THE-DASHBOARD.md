@@ -31,9 +31,10 @@ Both maps report **X of Y permit points in this view**. **Y** is the total numbe
 ## Search and filters
 
 - Search accepts an address, permit number, applicant, description, proposed use, land-use district, decision or SDAB information.
-- Year, status, land-use-district and permitted/discretionary filters narrow the same record set used by the table and both maps. Land-use and permitted/discretionary options come from the values currently published by the City. If a permit lists several semicolon-separated districts, selecting any one of them includes that permit; the permitted/discretionary filter matches the City's classification exactly.
-- **Appealed to SDAB** shows only permits with an appeal number recorded in the City feed.
-- **Clear filters** restores the full Varsity result set.
+- **Years**, **Permit statuses**, **Land-use districts**, **Permitted / discretionary** and **Appeal statuses** are all multi-select menus. Every value starts selected. Open a menu and uncheck as many values as you do not want to see; its selected-count summary updates immediately. **Select all** restores every value in that menu, while **Deselect all** removes every listed value.
+- The year bars and status-summary cards use the same selections as their menus. Clicking one hides or restores that value. If a permit lists several semicolon-separated districts, deselecting any one of those districts hides the permit. **Not reported** is selectable where the City feed contains blank values.
+- **Set current as default** saves the search text and all five filter selections in this browser. The saved default is automatically restored on the next visit in the same browser. It is not sent to the server or shared with other browsers or devices. Use **Restore saved default** after temporary changes, **Forget saved default** to remove it immediately, or clear the site's cookies and browser data.
+- **Clear filters** restores the full Varsity result set for the current view. It does not erase a saved default.
 
 The linked details panel displays the City-published proposed use, permitted/discretionary classification, land-use district, concurrent land-use redesignation number, current status, application and decision dates, release and commencement dates, and SDAB number and decision. **Not reported** means the City feed did not provide a value; it does not automatically mean “none.”
 

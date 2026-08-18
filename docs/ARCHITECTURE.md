@@ -85,12 +85,12 @@ The adapter also:
 External City requests run on the server. The client receives normalized permit records and a limited public configuration object. Browser-side code handles only presentation and local interactions:
 
 - text search;
-- year, permit-status, land-use-district, permitted/discretionary and recorded-SDAB-appeal filters;
+- multi-select exclusions for year, permit status, land-use district, permitted/discretionary and appeal status;
 - selected permit state;
 - chart calculations and map selection; and
 - show-more behaviour.
 
-No user search or filter state is currently stored on the server.
+No user search or filter state is stored on the server. When a user chooses **Set current as default**, the dashboard writes a versioned JSON snapshot to that browser's `localStorage`. A guarded client-side effect validates and restores the snapshot after hydration. The saved value remains device- and browser-local until it is replaced, removed in the dashboard or deleted with the site's browser data.
 
 ## Coordinated workspace
 
@@ -108,7 +108,7 @@ Each record also participates in a transparent hit layer with a 22-pixel radius,
 
 The legend identifies the shared status colours and opens a plain-language guide on hover, focus or tap. The permit explorer remains the complete keyboard-selection path so the canvas does not add hundreds of map stops to the tab sequence. Both visualizations share one selected permit state. Selecting a point highlights the corresponding record in both views, centres the overview at zoom 13 and centres the street map at the closer of its current zoom or a property-context target capped at zoom 18. This rule never zooms out a street view the user has already enlarged. The shared permit-information panel updates at the same time. If a filter removes the selected permit, both views fall back to the first visible result and the street map centres on that replacement.
 
-Land-use-district options are generated from the City values in the loaded permit records, including individual values from semicolon-separated district fields. Permitted/discretionary options are also generated from the exact non-blank City values. Both filters use exact matching, combine with every other filter and reset through **Clear filters**.
+Every categorical filter starts fully selected and stores only exclusions. Year, land-use-district and permitted/discretionary options are generated from the loaded records; blank district and classification values use an internal sentinel displayed as **Not reported**. Permit-status options use the four dashboard status groups, and appeal status distinguishes records with and without a recorded SDAB number. A permit is hidden when its year, grouped status, permitted/discretionary value or appeal status is excluded, or when any value in its semicolon-separated district field is excluded. The year chart and status cards read and change the same exclusion state as their checkbox menus. All filters combine and reset through **Clear filters**.
 
 The selected-permit panel keeps field help on the main page. `PERMIT_FIELD_DEFINITIONS` supplies one plain-language definition for every displayed permit field. The land-use value glossary is derived from the loaded `landusedistrict` and `landusedistrictdescription` pairs. The permitted/discretionary and current-status glossaries combine distinct loaded values with cautious explanations and fallbacks for future unknown values. Each 44-pixel **?** button opens the native `<details>` guide, expands any matching value glossary and moves focus to the definition. The guide's local search matches both field definitions and individual values. The full details article is not a live region. A separate concise status message announces the newly selected permit so opening or searching the guide does not cause assistive technology to reread the entire record.
 

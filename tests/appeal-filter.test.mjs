@@ -4,11 +4,12 @@ import test from "node:test";
 
 const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
 
-test("appeal filter selects permits with a recorded SDAB number", () => {
-  assert.match(dashboardSource, /appealFilter === "all" \|\| Boolean\(permit\.sdabnumber\?\.trim\(\)\)/);
-  assert.match(dashboardSource, /value="appealed">Appealed to SDAB/);
+test("appeal filter can independently include or exclude appealed and non-appealed permits", () => {
+  assert.match(dashboardSource, /return permit\.sdabnumber\?\.trim\(\) \? "appealed" : "not-appealed"/);
+  assert.match(dashboardSource, /!excludedAppealStatusSet\.has\(appealFilterValue\(permit\)\)/);
+  assert.match(dashboardSource, /const APPEAL_FILTER_VALUES = \["appealed", "not-appealed"\]/);
 });
 
 test("clear filters restores all appeal statuses", () => {
-  assert.match(dashboardSource, /setAppealFilter\("all"\)/);
+  assert.match(dashboardSource, /excludedAppealStatuses: \[],/);
 });

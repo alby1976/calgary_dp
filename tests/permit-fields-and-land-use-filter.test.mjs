@@ -31,20 +31,49 @@ test("requested permit fields are fetched and mapped into the dashboard model", 
   assert.match(permitSource, /concurrent_loc\?: string/);
 });
 
-test("land-use district is an exact table filter and can be cleared", () => {
-  assert.match(dashboardSource, /const \[landUseDistrict, setLandUseDistrict\] = useState\("all"\)/);
-  assert.match(dashboardSource, /landUseDistrictValues\(permit\)\.includes\(landUseDistrict\)/);
-  assert.match(dashboardSource, /Filter by land-use district/);
-  assert.match(dashboardSource, /All land-use districts/);
-  assert.match(dashboardSource, /setLandUseDistrict\("all"\)/);
+test("every categorical filter supports multiple exclusions and reset", () => {
+  assert.match(dashboardSource, /const \[excludedYears, setExcludedYears\] = useState<string\[]>\(\[]\)/);
+  assert.match(dashboardSource, /const \[excludedStatusGroups, setExcludedStatusGroups\] = useState<string\[]>\(\[]\)/);
+  assert.match(dashboardSource, /const \[excludedLandUseDistricts, setExcludedLandUseDistricts\] = useState<string\[]>\(\[]\)/);
+  assert.match(dashboardSource, /const \[excludedPermittedDiscretionary, setExcludedPermittedDiscretionary\] = useState<string\[]>\(\[]\)/);
+  assert.match(dashboardSource, /const \[excludedAppealStatuses, setExcludedAppealStatuses\] = useState<string\[]>\(\[]\)/);
+  assert.match(dashboardSource, /!excludedStatusGroupSet\.has\(statusGroup\(permit\.statuscurrent, config\.statuses\)\)/);
+  assert.match(dashboardSource, /!excludedYearSet\.has\(permitYear\(permit\)\)/);
+  assert.match(dashboardSource, /\.every\(\(value\) => !excludedLandUseDistrictSet\.has\(value\)\)/);
+  assert.match(dashboardSource, /\.has\(permittedDiscretionaryFilterValue\(permit\)\)/);
+  assert.match(dashboardSource, /!excludedAppealStatusSet\.has\(appealFilterValue\(permit\)\)/);
+  assert.match(dashboardSource, /label="Years"/);
+  assert.match(dashboardSource, /label="Permit statuses"/);
+  assert.match(dashboardSource, /label="Land-use districts"/);
+  assert.match(dashboardSource, /label="Permitted \/ discretionary"/);
+  assert.match(dashboardSource, /label="Appeal statuses"/);
+  assert.match(dashboardSource, /Select all<\/button>/);
+  assert.match(dashboardSource, /Deselect all<\/button>/);
+  assert.match(dashboardSource, /excludedYears: \[],/);
+  assert.match(dashboardSource, /excludedStatusGroups: \[],/);
+  assert.match(dashboardSource, /excludedLandUseDistricts: \[],/);
+  assert.match(dashboardSource, /excludedPermittedDiscretionary: \[],/);
+  assert.match(dashboardSource, /excludedAppealStatuses: \[],/);
+  assert.match(dashboardSource, /aria-pressed=\{!excludedYearSet\.has\(item\.year\)\}/);
 });
 
-test("permitted or discretionary classification is an exact filter and can be cleared", () => {
-  assert.match(dashboardSource, /const \[permittedDiscretionary, setPermittedDiscretionary\] = useState\("all"\)/);
-  assert.match(dashboardSource, /permittedDiscretionaryValue\(permit\) === permittedDiscretionary/);
-  assert.match(dashboardSource, /Filter by permitted or discretionary classification/);
-  assert.match(dashboardSource, /All permitted \/ discretionary/);
-  assert.match(dashboardSource, /setPermittedDiscretionary\("all"\)/);
+test("missing categorical values remain explicitly selectable", () => {
+  assert.match(dashboardSource, /const NOT_REPORTED_FILTER_VALUE = "__not_reported__"/);
+  assert.match(dashboardSource, /return values\.length \? values : \[NOT_REPORTED_FILTER_VALUE\]/);
+  assert.match(dashboardSource, /return permittedDiscretionaryValue\(permit\) \|\| NOT_REPORTED_FILTER_VALUE/);
+  assert.match(dashboardSource, /function dataFilterValueLabel\(value: string\)/);
+  assert.match(dashboardSource, /if \(value === NOT_REPORTED_FILTER_VALUE\) return "Not reported"/);
+});
+
+test("filter defaults persist in browser storage and can be restored or forgotten", () => {
+  assert.match(dashboardSource, /const FILTER_DEFAULTS_STORAGE_KEY = "varsity-development-watch\.filter-defaults\.v1"/);
+  assert.match(dashboardSource, /window\.localStorage\.getItem\(FILTER_DEFAULTS_STORAGE_KEY\)/);
+  assert.match(dashboardSource, /window\.localStorage\.setItem\(FILTER_DEFAULTS_STORAGE_KEY, JSON\.stringify\(currentFilterDefaults\)\)/);
+  assert.match(dashboardSource, /window\.localStorage\.removeItem\(FILTER_DEFAULTS_STORAGE_KEY\)/);
+  assert.match(dashboardSource, /Set current as default/);
+  assert.match(dashboardSource, /Restore saved default/);
+  assert.match(dashboardSource, /Forget saved default/);
+  assert.match(dashboardSource, /clear this site&apos;s browser data/);
 });
 
 test("selected permit details display every requested field separately", () => {
