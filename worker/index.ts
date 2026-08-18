@@ -5,6 +5,7 @@ import { dashboardConfig } from "../lib/dashboard-config";
 import {
   canliiCaseIdForAppeal,
   canliiMetadataUrl,
+  normalizeCanliiApiKey,
   normalizeCanliiAppealNumber,
   normalizeCanliiMetadata,
 } from "../lib/canlii";
@@ -178,7 +179,7 @@ async function handleCanliiMetadata(request: Request, env: Env) {
       return jsonResponse(cached, 200, secondsRemaining);
     }
 
-    const apiKey = env.CANLII_API_KEY?.trim();
+    const apiKey = normalizeCanliiApiKey(env.CANLII_API_KEY);
     if (!apiKey) return jsonResponse({ status: "not_configured" });
 
     const lease = await acquireCanliiLease(env.DB);
@@ -214,7 +215,29 @@ async function handleCanliiMetadata(request: Request, env: Env) {
         return jsonResponse(result, 200, dashboardConfig.canlii.notFoundCacheSeconds);
       }
 
+      if (response.status === 401 || response.status === 403) {
+        console.warn("CanLII rejected the configured API key", {
+          upstreamStatus: response.status,
+          databaseId: dashboardConfig.canlii.databaseId,
+          caseId,
+        });
+        return jsonResponse({ status: "authentication_failed" });
+      }
+
+      if (response.status === 429) {
+        console.warn("CanLII rate-limited the metadata request", {
+          databaseId: dashboardConfig.canlii.databaseId,
+          caseId,
+        });
+        return jsonResponse({ status: "rate_limited" });
+      }
+
       if (!response.ok) {
+        console.warn("CanLII metadata request failed", {
+          upstreamStatus: response.status,
+          databaseId: dashboardConfig.canlii.databaseId,
+          caseId,
+        });
         const result = await writeCanliiCache(
           env.DB,
           appealNumber,
@@ -232,6 +255,10 @@ async function handleCanliiMetadata(request: Request, env: Env) {
         caseId,
       );
       if (!metadata) {
+        console.warn("CanLII returned an unexpected metadata payload", {
+          databaseId: dashboardConfig.canlii.databaseId,
+          caseId,
+        });
         const result = await writeCanliiCache(
           env.DB,
           appealNumber,
