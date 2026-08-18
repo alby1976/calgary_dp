@@ -37,6 +37,10 @@ Both maps report **X of Y permit points in this view**. **Y** is the total numbe
 
 The linked details panel displays the City-published proposed use, permitted/discretionary classification, land-use district, concurrent land-use redesignation number, current status, application and decision dates, release and commencement dates, and SDAB number and decision. **Not reported** means the City feed did not provide a value; it does not automatically mean “none.”
 
+Open **What do these permit fields mean?** to see the searchable field guide without leaving the dashboard. The **Land-use district** entry lists the district codes found in the loaded Varsity records beside the descriptions published in the City feed. It also explains common `d`, `f` and `h` modifiers and flags Direct Control districts as site-specific. The **Permitted / discretionary** entry explains each loaded classification, including permitted with a relaxation and unspecified values. The **Current status** entry gives a cautious plain-language meaning for every status found in those records. These lists update as City values change; an unfamiliar future value remains visible with advice to check the official application.
+
+Select the **?** control beside any field to open its definition without leaving the dashboard. The expandable **What do these permit fields mean?** guide also includes a search box for browsing all definitions. Each help control has a 44×44 CSS-pixel target and moves keyboard focus to the matching definition. The explanations are plain-language summaries; official City and SDAB records remain authoritative.
+
 ## Status colour guide
 
 Hover over, focus or tap a legend colour to see its plain-language explanation. Select map points to open their permit records; use the permit explorer as the complete keyboard-selection path.
