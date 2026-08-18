@@ -22,6 +22,99 @@ type FieldValueMeaning = {
   meaning: string;
 };
 
+type MultiSelectFilterProps = {
+  label: string;
+  values: string[];
+  excludedValues: string[];
+  onChange: (values: string[]) => void;
+  formatValue?: (value: string) => string;
+};
+
+type FilterDefaults = {
+  query: string;
+  excludedYears: string[];
+  excludedStatusGroups: string[];
+  excludedLandUseDistricts: string[];
+  excludedPermittedDiscretionary: string[];
+  excludedAppealStatuses: string[];
+};
+
+const FILTER_DEFAULTS_STORAGE_KEY = "varsity-development-watch.filter-defaults.v1";
+const NOT_REPORTED_FILTER_VALUE = "__not_reported__";
+
+function storedStringArray(value: unknown) {
+  return Array.isArray(value)
+    ? [...new Set(value.filter((item): item is string => typeof item === "string"))]
+    : [];
+}
+
+function readStoredFilterDefaults(value: string | null): FilterDefaults | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Record<string, unknown>;
+    return {
+      query: typeof parsed.query === "string" ? parsed.query : "",
+      excludedYears: storedStringArray(parsed.excludedYears),
+      excludedStatusGroups: storedStringArray(parsed.excludedStatusGroups),
+      excludedLandUseDistricts: storedStringArray(parsed.excludedLandUseDistricts),
+      excludedPermittedDiscretionary: storedStringArray(parsed.excludedPermittedDiscretionary),
+      excludedAppealStatuses: storedStringArray(parsed.excludedAppealStatuses),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function toggledExclusions(excludedValues: string[], value: string) {
+  return excludedValues.includes(value)
+    ? excludedValues.filter((excludedValue) => excludedValue !== value)
+    : [...excludedValues, value];
+}
+
+function MultiSelectFilter({ label, values, excludedValues, onChange, formatValue = (value) => value }: MultiSelectFilterProps) {
+  const excluded = new Set(excludedValues);
+  const selectedCount = values.filter((value) => !excluded.has(value)).length;
+  const selectionSummary = selectedCount === values.length
+    ? `All ${values.length} selected`
+    : selectedCount === 0
+      ? "None selected"
+      : `${selectedCount} of ${values.length} selected`;
+
+  function toggleValue(value: string) {
+    onChange(excluded.has(value)
+      ? excludedValues.filter((excludedValue) => excludedValue !== value)
+      : [...excludedValues, value]);
+  }
+
+  return (
+    <details className="multi-select-filter">
+      <summary aria-label={`${label}: ${selectionSummary}`}>
+        <span>{label}</span>
+        <small>{selectionSummary}</small>
+      </summary>
+      <div className="multi-select-filter-panel">
+        <div className="multi-select-actions">
+          <button type="button" onClick={() => onChange([])} disabled={selectedCount === values.length}>Select all</button>
+          <button type="button" onClick={() => onChange([...values])} disabled={selectedCount === 0}>Deselect all</button>
+        </div>
+        <fieldset>
+          <legend className="sr-only">{label} values to show</legend>
+          {values.map((value) => (
+            <label key={value}>
+              <input
+                type="checkbox"
+                checked={!excluded.has(value)}
+                onChange={() => toggleValue(value)}
+              />
+              <span>{formatValue(value)}</span>
+            </label>
+          ))}
+        </fieldset>
+      </div>
+    </details>
+  );
+}
+
 function text(value?: string) {
   return value?.trim() || "Not reported";
 }
@@ -84,6 +177,24 @@ const STATUS_GUIDES = {
 
 type StatusGuideGroup = keyof typeof STATUS_GUIDES;
 
+const STATUS_FILTER_VALUES = Object.keys(STATUS_GUIDES) as StatusGuideGroup[];
+const APPEAL_FILTER_VALUES = ["appealed", "not-appealed"];
+
+function dataFilterValueLabel(value: string) {
+  if (value === NOT_REPORTED_FILTER_VALUE) return "Not reported";
+  return value;
+}
+
+function statusFilterValueLabel(value: string) {
+  return STATUS_GUIDES[value as StatusGuideGroup]?.label ?? value;
+}
+
+function appealStatusFilterValueLabel(value: string) {
+  if (value === "appealed") return "Appealed to SDAB";
+  if (value === "not-appealed") return "No SDAB appeal recorded";
+  return value;
+}
+
 function statusGroup(status: string | undefined, keywords: PublicDashboardConfig["statuses"]): StatusGuideGroup {
   const value = (status ?? "unknown").toLowerCase();
   if (keywords.active.some((word) => value.includes(word.toLowerCase()))) return "active";
@@ -102,6 +213,11 @@ function landUseDistrictValues(permit: Permit) {
     .split(";")
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+function landUseDistrictFilterValues(permit: Permit) {
+  const values = landUseDistrictValues(permit);
+  return values.length ? values : [NOT_REPORTED_FILTER_VALUE];
 }
 
 function semicolonValues(value?: string) {
@@ -202,6 +318,14 @@ function permittedDiscretionaryValueMeanings(permits: Permit[]): FieldValueMeani
 
 function permittedDiscretionaryValue(permit: Permit) {
   return permit.permitteddiscretionary?.trim() ?? "";
+}
+
+function permittedDiscretionaryFilterValue(permit: Permit) {
+  return permittedDiscretionaryValue(permit) || NOT_REPORTED_FILTER_VALUE;
+}
+
+function appealFilterValue(permit: Permit) {
+  return permit.sdabnumber?.trim() ? "appealed" : "not-appealed";
 }
 
 function developmentMapApplicationUrl(permitNumber: string | undefined, template: string) {
@@ -361,11 +485,13 @@ function parseCoordinate(value: string | undefined, minimum: number, maximum: nu
 
 export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live, config, datasetUrl, filteredQueryUrl }: Props) {
   const [query, setQuery] = useState("");
-  const [group, setGroup] = useState("all");
-  const [year, setYear] = useState("all");
-  const [landUseDistrict, setLandUseDistrict] = useState("all");
-  const [permittedDiscretionary, setPermittedDiscretionary] = useState("all");
-  const [appealFilter, setAppealFilter] = useState("all");
+  const [excludedYears, setExcludedYears] = useState<string[]>([]);
+  const [excludedStatusGroups, setExcludedStatusGroups] = useState<string[]>([]);
+  const [excludedLandUseDistricts, setExcludedLandUseDistricts] = useState<string[]>([]);
+  const [excludedPermittedDiscretionary, setExcludedPermittedDiscretionary] = useState<string[]>([]);
+  const [excludedAppealStatuses, setExcludedAppealStatuses] = useState<string[]>([]);
+  const [savedFilterDefaults, setSavedFilterDefaults] = useState<FilterDefaults | null>(null);
+  const [filterDefaultsMessage, setFilterDefaultsMessage] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [fieldGuideQuery, setFieldGuideQuery] = useState("");
@@ -377,19 +503,31 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
   const groupFor = (status?: string) => statusGroup(status, config.statuses);
 
   const years = useMemo(
-    () => [...new Set(permits.map(permitYear).filter((value) => value !== "Unknown"))].sort((a, b) => b.localeCompare(a)),
+    () => [...new Set(permits.map(permitYear))].sort((a, b) => {
+      if (a === "Unknown") return 1;
+      if (b === "Unknown") return -1;
+      return b.localeCompare(a);
+    }),
     [permits],
   );
 
   const landUseDistricts = useMemo(
-    () => [...new Set(permits.flatMap(landUseDistrictValues))]
-      .sort((a, b) => a.localeCompare(b, "en-CA", { numeric: true })),
+    () => [...new Set(permits.flatMap(landUseDistrictFilterValues))]
+      .sort((a, b) => {
+        if (a === NOT_REPORTED_FILTER_VALUE) return 1;
+        if (b === NOT_REPORTED_FILTER_VALUE) return -1;
+        return a.localeCompare(b, "en-CA", { numeric: true });
+      }),
     [permits],
   );
 
   const permittedDiscretionaryValues = useMemo(
-    () => [...new Set(permits.map(permittedDiscretionaryValue).filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b, "en-CA")),
+    () => [...new Set(permits.map(permittedDiscretionaryFilterValue))]
+      .sort((a, b) => {
+        if (a === NOT_REPORTED_FILTER_VALUE) return 1;
+        if (b === NOT_REPORTED_FILTER_VALUE) return -1;
+        return a.localeCompare(b, "en-CA");
+      }),
     [permits],
   );
 
@@ -405,16 +543,124 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
     return counts;
   }, [permits, config.statuses]);
 
+  useEffect(() => {
+    let stored: FilterDefaults | null = null;
+    try {
+      stored = readStoredFilterDefaults(window.localStorage.getItem(FILTER_DEFAULTS_STORAGE_KEY));
+    } catch {
+      return;
+    }
+    if (!stored) return;
+
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled || !stored) return;
+      setQuery(stored.query);
+      setExcludedYears(stored.excludedYears);
+      setExcludedStatusGroups(stored.excludedStatusGroups);
+      setExcludedLandUseDistricts(stored.excludedLandUseDistricts);
+      setExcludedPermittedDiscretionary(stored.excludedPermittedDiscretionary);
+      setExcludedAppealStatuses(stored.excludedAppealStatuses);
+      setSavedFilterDefaults(stored);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const currentFilterDefaults = useMemo<FilterDefaults>(() => ({
+    query,
+    excludedYears,
+    excludedStatusGroups,
+    excludedLandUseDistricts,
+    excludedPermittedDiscretionary,
+    excludedAppealStatuses,
+  }), [
+    query,
+    excludedYears,
+    excludedStatusGroups,
+    excludedLandUseDistricts,
+    excludedPermittedDiscretionary,
+    excludedAppealStatuses,
+  ]);
+  const hasActiveFilters = Boolean(
+    query
+    || excludedYears.length
+    || excludedStatusGroups.length
+    || excludedLandUseDistricts.length
+    || excludedPermittedDiscretionary.length
+    || excludedAppealStatuses.length,
+  );
+  const savedDefaultMatchesCurrent = Boolean(
+    savedFilterDefaults
+    && JSON.stringify(savedFilterDefaults) === JSON.stringify(currentFilterDefaults),
+  );
+
+  function applyFilterDefaults(defaults: FilterDefaults) {
+    setQuery(defaults.query);
+    setExcludedYears(defaults.excludedYears);
+    setExcludedStatusGroups(defaults.excludedStatusGroups);
+    setExcludedLandUseDistricts(defaults.excludedLandUseDistricts);
+    setExcludedPermittedDiscretionary(defaults.excludedPermittedDiscretionary);
+    setExcludedAppealStatuses(defaults.excludedAppealStatuses);
+    setShowAll(false);
+  }
+
+  function saveCurrentFiltersAsDefault() {
+    try {
+      window.localStorage.setItem(FILTER_DEFAULTS_STORAGE_KEY, JSON.stringify(currentFilterDefaults));
+      setSavedFilterDefaults(currentFilterDefaults);
+      setFilterDefaultsMessage("Current filters saved as this browser's default.");
+    } catch {
+      setFilterDefaultsMessage("This browser could not save the filter default.");
+    }
+  }
+
+  function removeSavedFilterDefault() {
+    try {
+      window.localStorage.removeItem(FILTER_DEFAULTS_STORAGE_KEY);
+      setSavedFilterDefaults(null);
+      setFilterDefaultsMessage("Saved filter default removed from this browser.");
+    } catch {
+      setFilterDefaultsMessage("This browser could not remove the saved filter default.");
+    }
+  }
+
+  function clearCurrentFilters() {
+    applyFilterDefaults({
+      query: "",
+      excludedYears: [],
+      excludedStatusGroups: [],
+      excludedLandUseDistricts: [],
+      excludedPermittedDiscretionary: [],
+      excludedAppealStatuses: [],
+    });
+    setFilterDefaultsMessage("");
+  }
+
+  const excludedYearSet = useMemo(() => new Set(excludedYears), [excludedYears]);
+  const excludedStatusGroupSet = useMemo(() => new Set(excludedStatusGroups), [excludedStatusGroups]);
+  const excludedLandUseDistrictSet = useMemo(
+    () => new Set(excludedLandUseDistricts),
+    [excludedLandUseDistricts],
+  );
+  const excludedPermittedDiscretionarySet = useMemo(
+    () => new Set(excludedPermittedDiscretionary),
+    [excludedPermittedDiscretionary],
+  );
+  const excludedAppealStatusSet = useMemo(
+    () => new Set(excludedAppealStatuses),
+    [excludedAppealStatuses],
+  );
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return permits.filter((permit) => {
-      const matchesGroup = group === "all" || statusGroup(permit.statuscurrent, config.statuses) === group;
-      const matchesYear = year === "all" || permitYear(permit) === year;
-      const matchesLandUseDistrict = landUseDistrict === "all"
-        || landUseDistrictValues(permit).includes(landUseDistrict);
-      const matchesPermittedDiscretionary = permittedDiscretionary === "all"
-        || permittedDiscretionaryValue(permit) === permittedDiscretionary;
-      const matchesAppeal = appealFilter === "all" || Boolean(permit.sdabnumber?.trim());
+      const matchesGroup = !excludedStatusGroupSet.has(statusGroup(permit.statuscurrent, config.statuses));
+      const matchesYear = !excludedYearSet.has(permitYear(permit));
+      const matchesLandUseDistrict = landUseDistrictFilterValues(permit)
+        .every((value) => !excludedLandUseDistrictSet.has(value));
+      const matchesPermittedDiscretionary = !excludedPermittedDiscretionarySet
+        .has(permittedDiscretionaryFilterValue(permit));
+      const matchesAppeal = !excludedAppealStatusSet.has(appealFilterValue(permit));
       const haystack = [
         permit.permitnum,
         permit.address,
@@ -439,7 +685,16 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
         && matchesAppeal
         && (!needle || haystack.includes(needle));
     });
-  }, [permits, query, group, year, landUseDistrict, permittedDiscretionary, appealFilter, config.statuses]);
+  }, [
+    permits,
+    query,
+    excludedStatusGroupSet,
+    excludedYearSet,
+    excludedLandUseDistrictSet,
+    excludedPermittedDiscretionarySet,
+    excludedAppealStatusSet,
+    config.statuses,
+  ]);
 
   const recent = useMemo(
     () => [...filtered].sort((a, b) => (b.applieddate ?? "").localeCompare(a.applieddate ?? "")),
@@ -630,14 +885,20 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
 
       <section className="signal-strip" aria-label="Permit status summary">
         {[
-          ["active", "Active / under review", grouped.active],
-          ["approved", "Approved / released", grouped.approved],
-          ["closed", "Refused / cancelled", grouped.closed],
-          ["other", "Other status", grouped.other],
-        ].map(([key, label, count]) => (
-          <button key={String(key)} className={group === key ? "signal active-filter" : "signal"} onClick={() => setGroup(group === key ? "all" : String(key))}>
-            <StatusDot group={String(key)} />
-            <span><strong>{Number(count).toLocaleString("en-CA")}</strong>{String(label)}</span>
+          { key: "active", label: "Active / under review", count: grouped.active },
+          { key: "approved", label: "Approved / released", count: grouped.approved },
+          { key: "closed", label: "Refused / cancelled", count: grouped.closed },
+          { key: "other", label: "Other status", count: grouped.other },
+        ].map(({ key, label, count }) => (
+          <button
+            key={key}
+            className={excludedStatusGroupSet.has(key) ? "signal excluded-filter" : "signal"}
+            aria-pressed={!excludedStatusGroupSet.has(key)}
+            aria-label={`${label}: ${count.toLocaleString("en-CA")} permits; ${excludedStatusGroupSet.has(key) ? "show status" : "hide status"}`}
+            onClick={() => setExcludedStatusGroups(toggledExclusions(excludedStatusGroups, key))}
+          >
+            <StatusDot group={key} />
+            <span><strong>{count.toLocaleString("en-CA")}</strong>{label}</span>
           </button>
         ))}
       </section>
@@ -653,59 +914,74 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
               <span className="sr-only">Search permits</span>
               <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search permits or addresses…" />
             </label>
-            <label>
-              <span className="sr-only">Filter by year</span>
-              <select value={year} onChange={(event) => setYear(event.target.value)}>
-                <option value="all">All years</option>
-                {years.map((value) => <option key={value} value={value}>{value}</option>)}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">Filter by status</span>
-              <select value={group} onChange={(event) => setGroup(event.target.value)}>
-                <option value="all">All statuses</option>
-                <option value="active">Active / under review</option>
-                <option value="approved">Approved / released</option>
-                <option value="closed">Refused / cancelled</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">Filter by land-use district</span>
-              <select value={landUseDistrict} onChange={(event) => setLandUseDistrict(event.target.value)}>
-                <option value="all">All land-use districts</option>
-                {landUseDistricts.map((value) => <option key={value} value={value}>{value}</option>)}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">Filter by permitted or discretionary classification</span>
-              <select value={permittedDiscretionary} onChange={(event) => setPermittedDiscretionary(event.target.value)}>
-                <option value="all">All permitted / discretionary</option>
-                {permittedDiscretionaryValues.map((value) => <option key={value} value={value}>{value}</option>)}
-              </select>
-            </label>
-            <label>
-              <span className="sr-only">Filter by appeal status</span>
-              <select value={appealFilter} onChange={(event) => setAppealFilter(event.target.value)}>
-                <option value="all">All appeal statuses</option>
-                <option value="appealed">Appealed to SDAB</option>
-              </select>
-            </label>
-            {(query || year !== "all" || group !== "all" || landUseDistrict !== "all" || permittedDiscretionary !== "all" || appealFilter !== "all") && (
+            <MultiSelectFilter
+              label="Years"
+              values={years}
+              excludedValues={excludedYears}
+              onChange={setExcludedYears}
+            />
+            <MultiSelectFilter
+              label="Permit statuses"
+              values={STATUS_FILTER_VALUES}
+              excludedValues={excludedStatusGroups}
+              onChange={setExcludedStatusGroups}
+              formatValue={statusFilterValueLabel}
+            />
+            <MultiSelectFilter
+              label="Land-use districts"
+              values={landUseDistricts}
+              excludedValues={excludedLandUseDistricts}
+              onChange={setExcludedLandUseDistricts}
+              formatValue={dataFilterValueLabel}
+            />
+            <MultiSelectFilter
+              label="Permitted / discretionary"
+              values={permittedDiscretionaryValues}
+              excludedValues={excludedPermittedDiscretionary}
+              onChange={setExcludedPermittedDiscretionary}
+              formatValue={dataFilterValueLabel}
+            />
+            <MultiSelectFilter
+              label="Appeal statuses"
+              values={APPEAL_FILTER_VALUES}
+              excludedValues={excludedAppealStatuses}
+              onChange={setExcludedAppealStatuses}
+              formatValue={appealStatusFilterValueLabel}
+            />
+            <div className="filter-preference-actions">
               <button
-                className="clear-button"
-                onClick={() => {
-                  setQuery("");
-                  setYear("all");
-                  setGroup("all");
-                  setLandUseDistrict("all");
-                  setPermittedDiscretionary("all");
-                  setAppealFilter("all");
-                }}
+                type="button"
+                className="save-default-button"
+                onClick={saveCurrentFiltersAsDefault}
+                disabled={savedDefaultMatchesCurrent}
               >
-                Clear filters
+                {savedDefaultMatchesCurrent ? "Default saved" : "Set current as default"}
               </button>
-            )}
+              {savedFilterDefaults && !savedDefaultMatchesCurrent && (
+                <button type="button" onClick={() => {
+                  applyFilterDefaults(savedFilterDefaults);
+                  setFilterDefaultsMessage("Saved filter default restored.");
+                }}>
+                  Restore saved default
+                </button>
+              )}
+              {hasActiveFilters && (
+                <button
+                  className="clear-button"
+                  type="button"
+                  onClick={clearCurrentFilters}
+                >
+                  Clear filters
+                </button>
+              )}
+              {savedFilterDefaults && (
+                <button type="button" onClick={removeSavedFilterDefault}>Forget saved default</button>
+              )}
+            </div>
+            <p className="filter-storage-note">
+              Your saved default stays only in this browser until you replace it, forget it here or clear this site&apos;s browser data.
+            </p>
+            <p className="filter-default-status" role="status" aria-live="polite">{filterDefaultsMessage}</p>
           </div>
           {selectedOutsideLatest && !showAll && (
             <p className="pinned-selection-note" role="status">
@@ -1031,11 +1307,17 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
       <section className="panel activity-panel">
         <div className="panel-heading">
           <div><p className="eyebrow">How the pace has changed</p><h2>Applications by permit year</h2></div>
-          <p>Latest 8 years in feed</p>
+          <p>Latest 8 years · select a bar to show or hide that year</p>
         </div>
         <div className="bar-chart" aria-label="Permit counts by year">
           {yearCounts.map((item) => (
-            <button key={item.year} className={year === item.year ? "bar-column selected" : "bar-column"} onClick={() => setYear(year === item.year ? "all" : item.year)}>
+            <button
+              key={item.year}
+              className={excludedYearSet.has(item.year) ? "bar-column excluded" : "bar-column"}
+              aria-pressed={!excludedYearSet.has(item.year)}
+              aria-label={`${item.year}: ${item.count} permits; ${excludedYearSet.has(item.year) ? "show year" : "hide year"}`}
+              onClick={() => setExcludedYears(toggledExclusions(excludedYears, item.year))}
+            >
               <span className="bar-value">{item.count}</span>
               <span className="bar-track"><span style={{ height: `${Math.max(5, (item.count / maxYearCount) * 100)}%` }} /></span>
               <span className="bar-year">{item.year}</span>

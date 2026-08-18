@@ -183,7 +183,8 @@ Before directing users to the third-party deployment, verify:
 - the permit total is not unexpectedly zero;
 - the City data-updated and dashboard-refreshed labels remain distinct;
 - address and permit search work;
-- year, status, land-use-district, permitted/discretionary and appeal filters work together and **Clear filters** resets them;
+- every categorical filter supports multiple checked values, selected counts stay accurate, and **Clear filters** resets the current view;
+- **Set current as default** survives a reload in the same browser, **Restore saved default** reapplies it and **Forget saved default** removes it;
 - at desktop width, the permit explorer, linked map pair and selected details appear together in the three-pane workspace;
 - the community overview and detailed street map each render one point per filtered permit with valid coordinates;
 - browser requests for `/assets/maplibre-gl-worker.mjs` and `/assets/maplibre-gl-shared.mjs` both return HTTP 200 with non-empty module content;

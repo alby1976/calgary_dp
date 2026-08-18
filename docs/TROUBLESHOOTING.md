@@ -161,7 +161,11 @@ If the point highlights but the street map stays broad, confirm that the selecte
 
 ## A land-use or permitted/discretionary filter option is missing
 
-These filter menus are generated from the exact non-blank City values in the loaded permit records. Confirm that the feed includes `landusedistrict` and `permitteddiscretionary`, that both fields are mapped correctly, and that the expected records are inside the configured community query. Land-use values separated by semicolons become individual options; permitted/discretionary values remain exact City classifications. **Clear filters** resets both menus.
+These filter menus are generated from the City values in the loaded permit records. Confirm that the feed includes `landusedistrict` and `permitteddiscretionary`, that both fields are mapped correctly, and that the expected records are inside the configured community query. Land-use values separated by semicolons become individual checkbox options; unchecking any one of a permit's districts hides that permit. Blank district or permitted/discretionary values appear as **Not reported**. **Select all** restores a multi-select menu, and **Clear filters** resets every menu in the current view.
+
+## My saved filter default did not return
+
+Saved defaults use this site's browser-local storage. They do not follow the user to another browser, private-browsing session, device or site hostname. Confirm that browser settings are not clearing site data when the browser closes. **Forget saved default**, clearing cookies and site data, or storage restrictions will remove it. If a saved default still exists but temporary changes are showing, choose **Restore saved default**.
 
 ## The workspace is stacked instead of three columns
 
