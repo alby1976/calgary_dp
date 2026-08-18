@@ -201,7 +201,8 @@ The `canlii` section controls the optional authorized metadata connection:
 
 - `apiBaseUrl`: official HTTPS API root;
 - `language`: `en` or `fr`;
-- `databaseId`: Calgary SDAB collection identifier, currently `cgysdab`;
+- `databaseId`: CanLII API database identifier for the Calgary SDAB collection, currently `absdab`;
+- `caseIdPrefix`: neutral-citation prefix used inside Calgary SDAB case IDs, currently `cgysdab`;
 - `dailyQueryLimit`: may not exceed the approved 5,000-query allowance;
 - `requestsPerSecond`: may not exceed 2;
 - `maxConcurrentRequests`: must remain 1;
