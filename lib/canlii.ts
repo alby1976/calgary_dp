@@ -55,7 +55,12 @@ function safeDecisionUrl(value: unknown) {
   if (typeof value !== "string") return null;
   try {
     const url = new URL(value);
-    if (url.hostname !== "canlii.ca" && !url.hostname.endsWith(".canlii.ca")) return null;
+    const hostname = url.hostname.toLowerCase();
+    const isCanliiHost = hostname === "canlii.ca"
+      || hostname.endsWith(".canlii.ca")
+      || hostname === "canlii.org"
+      || hostname.endsWith(".canlii.org");
+    if (!isCanliiHost) return null;
     url.protocol = "https:";
     return url.toString();
   } catch {
