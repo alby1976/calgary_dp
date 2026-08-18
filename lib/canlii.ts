@@ -7,6 +7,21 @@ export function normalizeCanliiAppealNumber(value: string | null | undefined) {
   return match ? `${match[1]}-${match[2]}` : null;
 }
 
+export function normalizeCanliiApiKey(value: string | null | undefined) {
+  let apiKey = value?.trim();
+  if (!apiKey) return null;
+
+  const assignment = apiKey.match(/^CANLII_API_KEY\s*=\s*(.+)$/i);
+  if (assignment) apiKey = assignment[1].trim();
+
+  const hasMatchingQuotes =
+    (apiKey.startsWith('"') && apiKey.endsWith('"')) ||
+    (apiKey.startsWith("'") && apiKey.endsWith("'"));
+  if (hasMatchingQuotes) apiKey = apiKey.slice(1, -1).trim();
+
+  return apiKey || null;
+}
+
 export function canliiCaseIdForAppeal(appealNumber: string, databaseId: string) {
   const match = normalizeCanliiAppealNumber(appealNumber)?.match(APPEAL_NUMBER);
   if (!match) return null;

@@ -1231,6 +1231,8 @@ export default function Dashboard({ permits, fetchedAt, cityDataUpdatedAt, live,
                       <p className="canlii-state">
                         {selectedCanliiLookup.status === "not_configured"
                           ? "The secure CanLII connection is ready, but its API key has not been installed. The search links below still work."
+                          : selectedCanliiLookup.status === "authentication_failed"
+                            ? "CanLII rejected the installed API key. The key must be replaced in the Cloudflare Worker secret before live metadata can be retrieved."
                           : selectedCanliiLookup.status === "not_found"
                             ? "CanLII has not returned a matching decision record yet. Publication can follow Calgary’s initial appeal result."
                             : selectedCanliiLookup.status === "rate_limited"

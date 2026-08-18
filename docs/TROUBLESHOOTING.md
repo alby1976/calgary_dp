@@ -104,6 +104,16 @@ If the key is installed but metadata remains unavailable, check:
 - the appeal number matches `YYYY-NNNN`; and
 - the configured database remains `cgysdab`.
 
+Paste only the API key itself into the `CANLII_API_KEY` secret. The Worker also tolerates the common `.env` forms `CANLII_API_KEY=...`, `"..."` and `'...'`, but the raw value is preferred. If the dashboard reports that CanLII rejected the installed key, replace the secret with an active key issued by CanLII; the secret exists in Cloudflare, but CanLII did not accept it.
+
+The appeal metadata request uses CanLII's case-law route:
+
+```text
+https://api.canlii.org/v1/caseBrowse/{language}/{databaseId}/{caseId}/?api_key={key}
+```
+
+For Calgary SDAB, the configured database is `cgysdab`. Appeal `2025-0118` maps to case ID `2025cgysdab118`. The `legislationBrowse` route is only for statutes and regulations and must not be substituted here.
+
 `Not found` means the API returned no exact case at the expected identifier; it does not prove that no decision exists. `Rate limited` means the dashboard stopped before exceeding the configured rolling allowance. Existing cached metadata and public search links remain available in either case.
 
 ## The street map is blank but permit details load

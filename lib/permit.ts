@@ -35,7 +35,7 @@ export type CanliiLookupResponse =
       cached: boolean;
     }
   | {
-      status: "not_found" | "not_configured" | "rate_limited" | "unavailable";
+      status: "not_found" | "not_configured" | "authentication_failed" | "rate_limited" | "unavailable";
       cachedAt?: string;
       expiresAt?: string;
       cached?: boolean;
