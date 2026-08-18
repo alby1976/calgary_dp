@@ -8,6 +8,7 @@ import {
   normalizeCanliiApiKey,
   normalizeCanliiAppealNumber,
   normalizeCanliiMetadata,
+  summarizeCanliiPayload,
 } from "../lib/canlii";
 import type { CanliiLookupResponse, CanliiMetadata } from "../lib/permit";
 
@@ -249,8 +250,9 @@ async function handleCanliiMetadata(request: Request, env: Env) {
         return jsonResponse(result, 200, dashboardConfig.canlii.errorCacheSeconds);
       }
 
+      const payload: unknown = await response.json();
       const metadata = normalizeCanliiMetadata(
-        await response.json(),
+        payload,
         dashboardConfig.canlii.databaseId,
         caseId,
       );
@@ -258,6 +260,7 @@ async function handleCanliiMetadata(request: Request, env: Env) {
         console.warn("CanLII returned an unexpected metadata payload", {
           databaseId: dashboardConfig.canlii.databaseId,
           caseId,
+          payload: summarizeCanliiPayload(payload),
         });
         const result = await writeCanliiCache(
           env.DB,
