@@ -29,3 +29,15 @@ test("a selected older map record stays visible in the collapsed explorer", () =
   assert.match(dashboardSource, /Selected permit \{text\(selectedPermit\?\.permitnum\)\} is pinned above the latest 12 permits\./);
   assert.match(styles, /\.permit-row\.selected\s*\{[^}]*box-shadow:\s*inset 4px 0 0 #76bba3/s);
 });
+
+test("table filters use a compact toolbar and overlay drawer", () => {
+  assert.match(dashboardSource, /className="filter-toolbar"/);
+  assert.match(dashboardSource, /className="filter-drawer-toggle"/);
+  assert.match(dashboardSource, /aria-controls="permit-filter-drawer"/);
+  assert.match(dashboardSource, /role="dialog"/);
+  assert.match(dashboardSource, /className="active-filter-chips"/);
+  assert.match(dashboardSource, /Show \{filtered\.length\.toLocaleString\("en-CA"\)\} matches/);
+  assert.match(styles, /\.filter-drawer-backdrop\s*\{[^}]*position:\s*fixed/s);
+  assert.match(styles, /\.filter-drawer\s*\{[^}]*width:\s*min\(420px, 100%\)/s);
+  assert.match(styles, /\.workspace-explorer \.permit-list\s*\{[^}]*flex:\s*1 1 auto/s);
+});
