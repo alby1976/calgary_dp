@@ -51,7 +51,8 @@ test("external application link remains configuration-driven", () => {
 
 test("CanLII limits and cache durations are configuration-driven and conservative", () => {
   assert.equal(new URL(config.canlii.apiBaseUrl).protocol, "https:");
-  assert.equal(config.canlii.databaseId, "cgysdab");
+  assert.equal(config.canlii.databaseId, "absdab");
+  assert.equal(config.canlii.caseIdPrefix, "cgysdab");
   assert.ok(config.canlii.dailyQueryLimit <= 5000);
   assert.ok(config.canlii.requestsPerSecond <= 2);
   assert.equal(config.canlii.maxConcurrentRequests, 1);
