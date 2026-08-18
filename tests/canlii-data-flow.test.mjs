@@ -6,11 +6,21 @@ import config from "../config/dashboard.json" with { type: "json" };
 const workerSource = await readFile(new URL("../worker/index.ts", import.meta.url), "utf8");
 const dashboardSource = await readFile(new URL("../app/dashboard.tsx", import.meta.url), "utf8");
 const schemaSource = await readFile(new URL("../db/schema.ts", import.meta.url), "utf8");
+const canliiSource = await readFile(new URL("../lib/canlii.ts", import.meta.url), "utf8");
 
 test("CanLII key remains server-side", () => {
   assert.match(workerSource, /env\.CANLII_API_KEY/);
   assert.doesNotMatch(dashboardSource, /CANLII_API_KEY/);
   assert.doesNotMatch(JSON.stringify(config), /api[_-]?key/i);
+});
+
+test("CanLII appeal metadata uses caseBrowse and accepts common secret-entry formats", () => {
+  assert.match(canliiSource, /caseBrowse\//);
+  assert.doesNotMatch(canliiSource, /legislationBrowse\//);
+  assert.match(canliiSource, /CANLII_API_KEY\\s\*=\\s\*/);
+  assert.match(workerSource, /normalizeCanliiApiKey\(env\.CANLII_API_KEY\)/);
+  assert.match(workerSource, /response\.status === 401 \|\| response\.status === 403/);
+  assert.match(dashboardSource, /authentication_failed/);
 });
 
 test("CanLII requests use durable caching and global coordination", () => {
