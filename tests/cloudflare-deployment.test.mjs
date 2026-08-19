@@ -17,7 +17,11 @@ test("direct Cloudflare builds target the configured D1 database", () => {
   );
   assert.equal(
     packageJson.scripts["deploy:cloudflare"],
-    "npm run db:migrate:cloudflare && wrangler deploy",
+    "npm run db:migrate:cloudflare && wrangler deploy --config dist/server/wrangler.json",
+  );
+  assert.equal(
+    packageJson.scripts["preview:cloudflare"],
+    "wrangler versions upload --config dist/server/wrangler.json",
   );
 });
 
