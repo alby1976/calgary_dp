@@ -15,7 +15,8 @@
     "lint": "bash scripts/sites-env.sh -- eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "bash scripts/sites-env.sh -- drizzle-kit generate",
     "db:migrate:cloudflare": "wrangler d1 migrations apply varsity-development-watch-db --remote --config dist/server/wrangler.json",
-    "deploy:cloudflare": "npm run db:migrate:cloudflare && wrangler deploy"
+    "deploy:cloudflare": "npm run db:migrate:cloudflare && wrangler deploy --config dist/server/wrangler.json",
+    "preview:cloudflare": "wrangler versions upload --config dist/server/wrangler.json"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",
